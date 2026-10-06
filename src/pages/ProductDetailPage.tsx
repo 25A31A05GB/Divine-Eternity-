@@ -436,7 +436,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
               <ul className="space-y-1.5 text-xs text-slate-600 dark:text-slate-300">
                 {product.features.map((feat, i) => (
                   <li key={i} className="flex items-start gap-2">
-                    <span className="text-[#E11D48] font-bold">✦</span>
+                    <Sparkles className="w-3.5 h-3.5 text-[#5B8CFF] shrink-0 mt-0.5" />
                     <span>{feat}</span>
                   </li>
                 ))}

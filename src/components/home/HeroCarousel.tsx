@@ -42,12 +42,12 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
   };
 
   return (
-    <section aria-label="Hero Promotion" className="relative overflow-hidden pt-4 pb-10 sm:pt-6 sm:pb-14 border-b border-[#EFE7DE] dark:border-[#282127]">
+    <section aria-label="Hero Promotion" className="relative overflow-hidden pt-4 pb-10 sm:pt-6 sm:pb-14 border-b border-[#E5DFD5] dark:border-[#2A2B2F]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Carousel Slide Card Container */}
         <div
-          className={`relative rounded-3xl p-6 sm:p-10 lg:p-14 bg-gradient-to-br ${slide.bgGradient} border border-[#EFE7DE] dark:border-[#2A2229] shadow-sm overflow-hidden transition-all duration-700`}
+          className={`relative rounded-3xl p-6 sm:p-10 lg:p-14 bg-gradient-to-br ${slide.bgGradient} border border-[#E5DFD5] dark:border-[#2A2B2F] shadow-sm overflow-hidden transition-all duration-700`}
         >
           {/* Real Background Video Support if set by Admin */}
           {slide.customVideoUrl && (
@@ -61,52 +61,52 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
             />
           )}
 
-          {/* Subtle Ambient Gold Accents */}
-          <div className="absolute top-6 left-8 text-xl text-[#C5A059] opacity-70 animate-pulse-glow">✦</div>
-          <div className="absolute bottom-10 left-1/3 text-lg text-[#C5A059] opacity-50 animate-pulse-glow">✦</div>
-          <div className="absolute top-1/4 right-8 text-2xl text-[#881337]/30">✦</div>
+          {/* Subtle Ambient Accents */}
+          <Sparkles className="absolute top-6 left-8 w-5 h-5 text-[#5B8CFF] opacity-70 animate-pulse-glow" />
+          <Sparkles className="absolute bottom-10 left-1/3 w-4 h-4 text-[#8B5CF6] opacity-50 animate-pulse-glow" />
+          <Sparkles className="absolute top-1/4 right-8 w-6 h-6 text-[#22D3EE]/30" />
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
             
             {/* Left Column: Headlines, Promo Badge & CTA */}
             <div className="lg:col-span-7 space-y-5 text-left">
               <div className="flex items-center gap-3">
-                <span className="bg-[#881337] dark:bg-[#BE123C] text-white text-[11px] font-bold px-3 py-1 rounded-md uppercase tracking-widest shadow-xs inline-flex items-center gap-1.5">
-                  <Sparkles className="w-3 h-3 text-[#E5C378]" />
+                <span className="bg-[#D6B36A] text-[#08090B] text-[11px] font-bold px-3 py-1 rounded-md uppercase tracking-widest shadow-xs inline-flex items-center gap-1.5">
+                  <Sparkles className="w-3 h-3 text-[#08090B]" />
                   {slide.eyebrow}
                 </span>
-                <span className="text-xs font-semibold text-stone-600 dark:text-stone-300">
+                <span className="text-xs font-semibold text-[#5B5A56] dark:text-[#A7A7A2]">
                   {slide.highlightBadge}
                 </span>
               </div>
 
               {/* Main Headline with Serif Typography */}
-              <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-[#1C1917] dark:text-[#F5F0EB] leading-[1.15] text-balance">
+              <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-[#111318] dark:text-[#F5F2EA] leading-[1.15] text-balance">
                 {slide.title.split(' ')[0]}{' '}
-                <span className="italic text-[#881337] dark:text-[#FB7185]">
+                <span className="italic text-[#B8934A] dark:text-[#D6B36A]">
                   {slide.title.split(' ').slice(1, 4).join(' ')}
                 </span>{' '}
                 {slide.title.split(' ').slice(4).join(' ')}
               </h1>
 
               {/* Tagline */}
-              <p className="text-sm sm:text-base text-stone-600 dark:text-stone-300 max-w-lg leading-relaxed font-normal">
+              <p className="text-sm sm:text-base text-[#5B5A56] dark:text-[#A7A7A2] max-w-lg leading-relaxed font-normal">
                 {slide.tagline}
               </p>
 
               {/* Coupon Badge Bar */}
               {slide.coupon && (
-                <div className="bg-white/90 dark:bg-[#1A161A]/90 backdrop-blur-md p-2.5 px-4 rounded-xl border border-[#EFE7DE] dark:border-[#2F252D] inline-flex flex-wrap items-center gap-3 shadow-xs">
-                  <span className="text-xs font-medium text-stone-600 dark:text-stone-300">
+                <div className="bg-white/90 dark:bg-[#17191F]/90 backdrop-blur-md p-2.5 px-4 rounded-xl border border-[#E5DFD5] dark:border-[#2A2B2F] inline-flex flex-wrap items-center gap-3 shadow-xs">
+                  <span className="text-xs font-medium text-[#5B5A56] dark:text-[#A7A7A2]">
                     Special Atelier Code:
                   </span>
                   <button
                     onClick={() => handleApplyCoupon(slide.coupon)}
-                    className="bg-[#1C1917] hover:bg-[#881337] dark:bg-white dark:hover:bg-[#BE123C] text-white dark:text-[#1C1917] hover:text-white dark:hover:text-white px-3 py-1 rounded-lg text-xs font-mono font-bold tracking-wider transition-colors"
+                    className="bg-[#111318] hover:bg-[#D6B36A] dark:bg-[#F5F2EA] dark:hover:bg-[#D6B36A] text-white dark:text-[#08090B] hover:text-[#08090B] dark:hover:text-[#08090B] px-3 py-1 rounded-lg text-xs font-mono font-bold tracking-wider transition-colors"
                   >
                     {slide.coupon}
                   </button>
-                  <span className="text-[11px] text-[#881337] dark:text-[#FB7185] font-semibold">
+                  <span className="text-[11px] text-[#B8934A] dark:text-[#D6B36A] font-semibold">
                     (Click to Apply)
                   </span>
                 </div>
@@ -116,7 +116,7 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
               <div className="flex flex-wrap items-center gap-3 pt-2">
                 <button
                   onClick={() => onShopNow(slide.ctaCategory || 'all')}
-                  className="bg-[#881337] hover:bg-[#700f2d] dark:bg-[#BE123C] dark:hover:bg-[#9f1239] text-white px-7 py-3.5 rounded-xl font-bold text-xs sm:text-sm tracking-widest uppercase shadow-md flex items-center gap-2 transition-all transform active:scale-98"
+                  className="bg-[#D6B36A] hover:bg-[#b8934a] text-[#08090B] px-7 py-3.5 rounded-xl font-bold text-xs sm:text-sm tracking-widest uppercase shadow-md flex items-center gap-2 transition-all transform active:scale-98"
                 >
                   <span>{slide.ctaText}</span>
                   <ArrowRight className="w-4 h-4" />
@@ -125,7 +125,7 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
                 {featuredProd && (
                   <button
                     onClick={() => onQuickView(featuredProd)}
-                    className="bg-white dark:bg-stone-900 hover:bg-stone-50 dark:hover:bg-stone-800 text-stone-800 dark:text-stone-200 px-5 py-3.5 rounded-xl font-bold text-xs sm:text-sm tracking-wider uppercase border border-[#EFE7DE] dark:border-stone-700 transition-colors shadow-xs"
+                    className="bg-white dark:bg-[#17191F] hover:bg-stone-50 dark:hover:bg-[#111318] text-[#111318] dark:text-[#F5F2EA] px-5 py-3.5 rounded-xl font-bold text-xs sm:text-sm tracking-wider uppercase border border-[#E5DFD5] dark:border-[#2A2B2F] transition-colors shadow-xs"
                   >
                     Quick Customize
                   </button>

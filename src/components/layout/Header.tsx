@@ -84,7 +84,7 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, ope
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-[#FAF7F2]/95 dark:bg-[#0F0D10]/95 backdrop-blur-md border-b border-[#EFE7DE] dark:border-[#282127] transition-colors">
+    <header className="sticky top-0 z-40 w-full bg-[#08090B]/90 backdrop-blur-xl border-b border-[#242C3D] transition-all duration-300">
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-14 sm:h-20 flex items-center justify-between gap-2 sm:gap-4">
         
         {/* Zone 1: Brand Wordmark */}
@@ -93,7 +93,7 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, ope
             onClick={() => navigateTo('home')}
             className="flex flex-col text-left group focus:outline-none"
           >
-            <span className="font-serif text-lg xs:text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-[#1C1917] dark:text-[#F5F0EB] group-hover:text-[#881337] dark:group-hover:text-[#FB7185] transition-colors whitespace-nowrap">
+            <span className="font-serif text-lg xs:text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-[#F7F4EC] group-hover:text-[#22D3EE] transition-colors whitespace-nowrap">
               Divine's Eternity
             </span>
           </button>
@@ -102,7 +102,7 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, ope
         {/* Live Search Input Bar (Desktop) */}
         <div ref={searchContainerRef} className="hidden lg:block relative flex-1 max-w-xs xl:max-w-sm mx-2">
           <div className="relative flex items-center">
-            <Search className="w-4 h-4 text-stone-400 absolute left-3 pointer-events-none" />
+            <Search className="w-4 h-4 text-[#A7AFBD] absolute left-3 pointer-events-none" />
             <input
               type="text"
               value={headerSearchQuery}
@@ -112,13 +112,13 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, ope
               }}
               onFocus={() => setIsSearchDropdownOpen(true)}
               placeholder="Search jewelry, roses, plaques..."
-              className="w-full bg-white dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-full pl-9 pr-8 py-1.5 text-xs text-stone-900 dark:text-white placeholder-stone-400 focus:ring-2 focus:ring-[#881337] focus:outline-none shadow-xs transition-all"
+              className="w-full bg-[#151A24] border border-[#242C3D] rounded-full pl-9 pr-8 py-1.5 text-xs text-[#F7F4EC] placeholder-[#737C8C] focus:ring-2 focus:ring-[#5B8CFF] focus:border-transparent focus:outline-none shadow-xs transition-all"
             />
             {headerSearchQuery && (
               <button
                 onClick={() => setHeaderSearchQuery('')}
                 aria-label="Clear search"
-                className="absolute right-2.5 text-stone-400 hover:text-stone-600 p-0.5"
+                className="absolute right-2.5 text-[#A7AFBD] hover:text-white p-0.5"
               >
                 <X className="w-3 h-3" />
               </button>
@@ -213,9 +213,7 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, ope
                       <span className="w-1.5 h-1.5 rounded-full bg-[#881337] dark:bg-[#FB7185] group-hover:scale-150 transition-transform" />
                       <span className="truncate max-w-[200px]">{cat.name}</span>
                     </span>
-                    <span className="text-[10px] text-stone-400 group-hover:text-[#881337]">
-                      ✦
-                    </span>
+                    <Sparkles className="w-3 h-3 text-[#5B8CFF] opacity-0 group-hover:opacity-100 transition-opacity" />
                   </button>
                 ))}
                 <div className="pt-2 mt-1 border-t border-stone-100 dark:border-stone-800">

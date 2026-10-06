@@ -19,18 +19,18 @@ export const VideoShoppingRow: React.FC<VideoShoppingRowProps> = ({
   const activeReels = videoReels.filter((r) => r.isActive);
 
   return (
-    <section className="py-14 bg-[#FAF7F2] dark:bg-[#120F12] border-b border-[#EFE7DE] dark:border-[#282127]">
+    <section className="py-14 bg-[#FAF8F5] dark:bg-[#111318] border-b border-[#E5DFD5] dark:border-[#2A2B2F]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Heading */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 mb-8">
           <div>
-            <div className="text-xs font-semibold uppercase tracking-widest text-[#881337] dark:text-[#FB7185] flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-[#C5A059]" />
+            <div className="text-xs font-semibold uppercase tracking-widest text-[#B8934A] dark:text-[#D6B36A] flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-[#D6B36A]" />
               <span>Interactive Video Stories</span>
             </div>
-            <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl font-bold text-[#1C1917] dark:text-[#F5F0EB]">
-              Watch Atelier Craft <span className="italic text-[#881337] dark:text-[#FB7185]">& Shop Direct</span>
+            <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl font-bold text-[#111318] dark:text-[#F5F2EA]">
+              Watch Atelier Craft <span className="italic text-[#B8934A] dark:text-[#D6B36A]">& Shop Direct</span>
             </h2>
             <p className="text-xs sm:text-sm text-stone-500 mt-1">
               Real micro-engravings, glow tests, and unwrapping reviews from our studio artisans.

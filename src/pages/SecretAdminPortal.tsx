@@ -91,7 +91,7 @@ export const SecretAdminPortal: React.FC<SecretAdminPortalProps> = ({
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-[#0F0D10] text-[#F5F0EB] flex items-center justify-center p-4 sm:p-6 relative overflow-hidden">
+      <div className="min-h-screen bg-[#08090B] text-[#F5F2EA] flex items-center justify-center p-4 sm:p-6 relative overflow-hidden">
         <SEO
           title="Secret Security Access Gate"
           description="Restricted Executive Control Panel Access"
@@ -99,28 +99,28 @@ export const SecretAdminPortal: React.FC<SecretAdminPortalProps> = ({
         />
 
         {/* Ambient subtle glow */}
-        <div className="absolute top-1/4 left-1/3 w-96 h-96 bg-[#881337]/20 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-1/4 right-1/3 w-80 h-80 bg-[#C5A059]/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-1/4 left-1/3 w-96 h-96 bg-[#D6B36A]/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-1/4 right-1/3 w-80 h-80 bg-[#D6B36A]/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="max-w-md w-full relative z-10 space-y-6">
           
           {/* Back to store */}
           <button
             onClick={onReturnToStore}
-            className="inline-flex items-center gap-2 text-xs font-semibold text-stone-400 hover:text-white transition-colors"
+            className="inline-flex items-center gap-2 text-xs font-semibold text-[#A7A7A2] hover:text-[#F5F2EA] transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Return to Public Store</span>
           </button>
 
           {/* Security Gate Card */}
-          <div className="bg-[#1A161A] border border-[#2D242B] rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 text-center">
-            <div className="w-16 h-16 rounded-2xl bg-stone-900 border border-stone-800 text-[#C5A059] flex items-center justify-center mx-auto shadow-inner">
+          <div className="bg-[#17191F] border border-[#2A2B2F] rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-[#111318] border border-[#2A2B2F] text-[#D6B36A] flex items-center justify-center mx-auto shadow-inner">
               <Lock className="w-8 h-8" />
             </div>
 
             <div>
-              <div className="text-[10px] font-bold tracking-widest text-[#C5A059] uppercase mb-1 flex items-center justify-center gap-1">
+              <div className="text-[10px] font-bold tracking-widest text-[#D6B36A] uppercase mb-1 flex items-center justify-center gap-1">
                 <ShieldCheck className="w-3.5 h-3.5" />
                 <span>Executive Management Suite</span>
               </div>
@@ -143,8 +143,8 @@ export const SecretAdminPortal: React.FC<SecretAdminPortalProps> = ({
                   onClick={() => setSelectedRole('director')}
                   className={`p-2.5 rounded-xl border text-left transition-all ${
                     selectedRole === 'director'
-                      ? 'bg-[#881337] border-[#BE123C] text-white shadow-xs'
-                      : 'bg-stone-900 border-stone-800 text-stone-300 hover:border-stone-700'
+                      ? 'bg-[#D6B36A] border-[#F0D79A] text-[#08090B] shadow-xs'
+                      : 'bg-[#111318] border-[#2A2B2F] text-[#A7A7A2] hover:border-[#D6B36A]'
                   }`}
                 >
                   <div className="flex items-center gap-1.5 font-bold text-xs">
@@ -159,8 +159,8 @@ export const SecretAdminPortal: React.FC<SecretAdminPortalProps> = ({
                   onClick={() => setSelectedRole('superadmin')}
                   className={`p-2.5 rounded-xl border text-left transition-all ${
                     selectedRole === 'superadmin'
-                      ? 'bg-[#881337] border-[#BE123C] text-white shadow-xs'
-                      : 'bg-stone-900 border-stone-800 text-stone-300 hover:border-stone-700'
+                      ? 'bg-[#D6B36A] border-[#F0D79A] text-[#08090B] shadow-xs'
+                      : 'bg-[#111318] border-[#2A2B2F] text-[#A7A7A2] hover:border-[#D6B36A]'
                   }`}
                 >
                   <div className="flex items-center gap-1.5 font-bold text-xs">
@@ -227,7 +227,7 @@ export const SecretAdminPortal: React.FC<SecretAdminPortalProps> = ({
 
                 <button
                   type="submit"
-                  className="w-full py-3.5 rounded-xl bg-[#881337] hover:bg-[#700f2d] text-white text-xs font-bold uppercase tracking-widest transition-all shadow-md active:scale-98"
+                  className="w-full py-3.5 rounded-xl bg-[#D6B36A] hover:bg-[#b8934a] text-[#08090B] text-xs font-bold uppercase tracking-widest transition-all shadow-md active:scale-98"
                 >
                   Unlock Admin Studio
                 </button>
@@ -235,19 +235,19 @@ export const SecretAdminPortal: React.FC<SecretAdminPortalProps> = ({
             ) : (
               <form onSubmit={handlePasswordSubmit} className="space-y-3.5 text-left">
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-stone-300 block">
+                  <label className="text-xs font-bold text-[#A7A7A2] block">
                     Director Email
                   </label>
                   <input
                     type="email"
                     value={adminEmail}
                     onChange={(e) => setAdminEmail(e.target.value)}
-                    className="w-full bg-stone-900 border border-stone-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-stone-500 focus:ring-2 focus:ring-[#881337] focus:outline-none"
+                    className="w-full bg-[#111318] border border-[#2A2B2F] rounded-xl px-3.5 py-2.5 text-xs text-[#F5F2EA] placeholder-[#A7A7A2] focus:ring-2 focus:ring-[#D6B36A] focus:outline-none"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-stone-300 block">
+                  <label className="text-xs font-bold text-[#A7A7A2] block">
                     Password
                   </label>
                   <div className="relative">
@@ -256,7 +256,7 @@ export const SecretAdminPortal: React.FC<SecretAdminPortalProps> = ({
                       value={adminPassword}
                       onChange={(e) => setAdminPassword(e.target.value)}
                       placeholder="Enter password (admin123)"
-                      className="w-full bg-stone-900 border border-stone-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-stone-500 focus:ring-2 focus:ring-[#881337] focus:outline-none pr-10"
+                      className="w-full bg-[#111318] border border-[#2A2B2F] rounded-xl px-3.5 py-2.5 text-xs text-[#F5F2EA] placeholder-[#A7A7A2] focus:ring-2 focus:ring-[#D6B36A] focus:outline-none pr-10"
                     />
                     <button
                       type="button"
@@ -266,14 +266,14 @@ export const SecretAdminPortal: React.FC<SecretAdminPortalProps> = ({
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
-                  <p className="text-[11px] text-stone-500">
-                    Default Password: <strong className="text-[#E5C378] font-mono">admin123</strong>
+                  <p className="text-[11px] text-[#A7A7A2]">
+                    Default Password: <strong className="text-[#D6B36A] font-mono">admin123</strong>
                   </p>
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full py-3.5 rounded-xl bg-[#881337] hover:bg-[#700f2d] text-white text-xs font-bold uppercase tracking-widest transition-all shadow-md active:scale-98 mt-2"
+                  className="w-full py-3.5 rounded-xl bg-[#D6B36A] hover:bg-[#b8934a] text-[#08090B] text-xs font-bold uppercase tracking-widest transition-all shadow-md active:scale-98 mt-2"
                 >
                   Verify & Sign In
                 </button>

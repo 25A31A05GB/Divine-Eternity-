@@ -32,9 +32,9 @@ export const PhoneCaseMockup: React.FC<PhoneCaseMockupProps> = ({
         background: `radial-gradient(circle at 50% 30%, ${themeColor}50 0%, #FFF8F4 75%)`,
       }}
     >
-      {/* Ambient Gold Accents */}
-      <div className="absolute top-3 left-4 text-xs text-[#BE123C]/70 animate-pulse">✦</div>
-      <div className="absolute bottom-6 right-5 text-sm text-[#C5A059]/90 animate-pulse">✦</div>
+      {/* Ambient Accents */}
+      <Sparkles className="absolute top-3 left-4 w-3 h-3 text-[#5B8CFF]/70 animate-pulse" />
+      <Sparkles className="absolute bottom-6 right-5 w-3.5 h-3.5 text-[#22D3EE]/90 animate-pulse" />
 
       {/* 1. Personalized Name Necklace Mockup */}
       {designPattern === 'jewelry_necklace' && (
@@ -59,7 +59,7 @@ export const PhoneCaseMockup: React.FC<PhoneCaseMockupProps> = ({
               {customText && customText.trim() ? customText : 'Divine'}
             </p>
             <div className="flex items-center justify-center gap-1 text-[9px] text-amber-900 font-bold uppercase tracking-widest mt-0.5">
-              <span>✦ 18k Solid Gold ✦</span>
+              <span>18k Solid Gold Finish</span>
             </div>
           </div>
         </div>
@@ -154,7 +154,7 @@ export const PhoneCaseMockup: React.FC<PhoneCaseMockupProps> = ({
           {/* Warm LED Wooden Stand */}
           <div className="w-48 h-8 bg-amber-800 rounded-xl shadow-lg border-t-2 border-amber-600 -mt-2 flex items-center justify-center relative z-10">
             <span className="text-[9px] font-bold text-amber-200 tracking-wider">
-              ✦ WARM ILLUMINATION ✦
+              WARM ILLUMINATION
             </span>
           </div>
         </div>
@@ -206,7 +206,7 @@ export const PhoneCaseMockup: React.FC<PhoneCaseMockupProps> = ({
                 {customText && customText.trim() ? customText : 'Rohan & Ananya'}
               </p>
               <span className="text-[8px] tracking-widest uppercase text-amber-400">
-                ✦ Heirloom Keepsake Casket ✦
+                Heirloom Keepsake Casket
               </span>
             </div>
           </div>
@@ -366,8 +366,8 @@ export const PhoneCaseMockup: React.FC<PhoneCaseMockupProps> = ({
                   <p className="font-script text-lg sm:text-xl text-[#881337] leading-none drop-shadow-sm truncate">
                     {customText}
                   </p>
-                  <span className="text-[8px] tracking-wider uppercase text-slate-500 font-semibold block">
-                    ✦ Custom Inscription
+                  <span className="text-[8px] tracking-wider uppercase text-slate-400 font-semibold block">
+                    Custom Inscription
                   </span>
                 </div>
               ) : (

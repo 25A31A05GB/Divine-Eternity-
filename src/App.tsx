@@ -94,7 +94,7 @@ export function AppContent() {
   const isSecretAdminView = currentView === 'secret-admin-portal' || currentView === 'admin';
 
   return (
-    <div className="min-h-screen w-full overflow-x-hidden flex flex-col justify-between bg-[#FAF7F2] dark:bg-[#0F0D10] text-[#1C1917] dark:text-[#F5F0EB] transition-colors duration-300">
+    <div className="min-h-screen w-full overflow-x-hidden flex flex-col justify-between bg-[#08090B] text-[#F7F4EC] selection:bg-[#5B8CFF] selection:text-white transition-colors duration-300">
       
       {/* 1. Global Announcement Bar (hidden in secret admin view) */}
       {!isSecretAdminView && <AnnouncementBar />}

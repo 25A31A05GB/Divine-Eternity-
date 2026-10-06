@@ -27,12 +27,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView, 
 
   return (
     <div
-      className="group relative bg-white dark:bg-[#181519] rounded-2xl border border-[#EFE7DE] dark:border-[#2C242A] overflow-hidden shadow-xs hover:shadow-xl hover:border-[#C5A059]/40 transition-all duration-300 flex flex-col justify-between"
+      className="group relative bg-white dark:bg-[#17191F] rounded-2xl border border-[#E5DFD5] dark:border-[#2A2B2F] overflow-hidden shadow-xs hover:shadow-xl hover:border-[#D6B36A]/50 transition-all duration-300 flex flex-col justify-between"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Top Media Area with Product Mockup & Editorial Badges */}
-      <div className="relative aspect-[4/5] w-full bg-[#FAF7F2] dark:bg-black/30 overflow-hidden cursor-pointer">
+      <div className="relative aspect-[4/5] w-full bg-[#FAF8F5] dark:bg-[#111318] overflow-hidden cursor-pointer">
         {/* Visual Mockup */}
         <div
           onClick={() => (onOpenDetail ? onOpenDetail(product) : onQuickView(product))}
@@ -48,12 +48,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView, 
         {/* Editorial Text Badge */}
         <div className="absolute top-3 left-3 flex flex-col gap-1 z-20 pointer-events-none">
           {product.badge && (
-            <span className="bg-[#881337] dark:bg-[#BE123C] text-white text-[10px] font-bold px-2.5 py-0.5 rounded-md tracking-wider uppercase shadow-xs">
+            <span className="bg-[#D6B36A] text-[#08090B] text-[10px] font-bold px-2.5 py-0.5 rounded-md tracking-wider uppercase shadow-xs">
               {product.badge}
             </span>
           )}
           {product.isNew && (
-            <span className="bg-[#C5A059] text-stone-950 text-[9px] font-extrabold px-2 py-0.5 rounded-md uppercase tracking-wider w-fit">
+            <span className="bg-[#F0D79A] text-[#08090B] text-[9px] font-extrabold px-2 py-0.5 rounded-md uppercase tracking-wider w-fit">
               New Arrival
             </span>
           )}
@@ -115,9 +115,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView, 
           </h3>
 
           {/* Subtitle / Features */}
-          <p className="text-[11px] text-stone-500 dark:text-stone-400 mt-1 flex items-center gap-1">
-            <span>Bespoke Handcrafted Finish</span>
-            <span className="text-[#C5A059] text-[10px]">✦</span>
+          <p className="text-[11px] text-[#A7AFBD] mt-1 flex items-center gap-1">
+            <span>Precision Finished</span>
+            <Sparkles className="w-2.5 h-2.5 text-[#5B8CFF]" />
           </p>
         </div>
 

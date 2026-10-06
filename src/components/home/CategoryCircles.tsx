@@ -50,13 +50,13 @@ export const CategoryCircles: React.FC<CategoryCirclesProps> = ({
   };
 
   return (
-    <section className="py-10 sm:py-14 border-b border-[#EFE7DE] dark:border-[#282127]">
+    <section className="py-10 sm:py-14 border-b border-[#E5DFD5] dark:border-[#2A2B2F]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Heading */}
         <div className="text-center space-y-2 mb-8">
-          <div className="text-xs font-semibold uppercase tracking-widest text-[#881337] dark:text-[#FB7185] flex items-center justify-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-[#C5A059]" />
+          <div className="text-xs font-semibold uppercase tracking-widest text-[#B8934A] dark:text-[#D6B36A] flex items-center justify-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5 text-[#D6B36A]" />
             <span>Curated Gifting Collections</span>
           </div>
           <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl font-bold text-[#1C1917] dark:text-[#F5F0EB]">

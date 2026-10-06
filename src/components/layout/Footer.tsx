@@ -27,10 +27,10 @@ export const Footer: React.FC<FooterProps> = ({ setCurrentView }) => {
   };
 
   return (
-    <footer className="bg-[#141113] text-[#F5F0EB] pt-16 pb-12 border-t border-[#2A2228] relative overflow-hidden">
+    <footer className="bg-[#111318] text-[#F5F2EA] pt-16 pb-12 border-t border-[#2A2B2F] relative overflow-hidden">
       {/* Background soft ambient glow */}
-      <div className="absolute top-0 right-1/4 w-96 h-96 bg-[#881337]/15 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 left-10 w-80 h-80 bg-[#C5A059]/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-0 right-1/4 w-96 h-96 bg-[#D6B36A]/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-0 left-10 w-80 h-80 bg-[#D6B36A]/10 rounded-full blur-3xl pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         

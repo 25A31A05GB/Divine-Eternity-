@@ -2,32 +2,28 @@
 
 @layer base {
   :root {
-    --bg-main: #FAF7F2;
-    --text-main: #1C1917;
-    --brand-burgundy: #881337;
-    --brand-rose-gold: #9F1239;
-    --brand-gold: #C5A059;
-    --brand-gold-light: #E5C378;
-    --brand-silk: #FFFDF9;
-    --brand-card: #FFFFFF;
-    --border-subtle: #EFE7DE;
-  }
-
-  .dark {
-    --bg-main: #0F0D10;
-    --text-main: #F5F0EB;
-    --brand-burgundy: #E11D48;
-    --brand-rose-gold: #FB7185;
-    --brand-gold: #E5C378;
-    --brand-gold-light: #FCE174;
-    --brand-silk: #171417;
-    --brand-card: #1A161A;
-    --border-subtle: #282127;
+    --bg-main: #08090B;
+    --bg-navy: #0C1220;
+    --bg-surface: #151A24;
+    --bg-elevated: #1B2230;
+    --text-primary: #F7F4EC;
+    --text-secondary: #A7AFBD;
+    --text-muted: #737C8C;
+    --border-subtle: #242C3D;
+    
+    /* Accents */
+    --accent-blue: #5B8CFF;
+    --accent-violet: #8B5CF6;
+    --accent-magenta: #D946EF;
+    --accent-cyan: #22D3EE;
+    --accent-turquoise: #2DD4BF;
+    --accent-champagne: #D6B36A;
+    --accent-coral: #FB7185;
   }
 
   body {
     background-color: var(--bg-main);
-    color: var(--text-main);
+    color: var(--text-primary);
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   }
 
@@ -49,11 +45,6 @@
 @keyframes pulseGlow {
   0%, 100% { opacity: 0.85; transform: scale(1); }
   50% { opacity: 1; transform: scale(1.03); }
-}
-
-@keyframes shimmerGold {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
 }
 
 @keyframes marquee {
@@ -79,20 +70,49 @@
   animation-play-state: paused;
 }
 
-.gold-gradient-text {
-  background: linear-gradient(135deg, #996515 0%, #D4AF37 50%, #F3E5AB 100%);
+/* Cinematic Gradient Utilities */
+.gradient-blue-violet {
+  background: linear-gradient(135deg, #5B8CFF 0%, #8B5CF6 100%);
+}
+
+.gradient-violet-magenta {
+  background: linear-gradient(135deg, #8B5CF6 0%, #D946EF 100%);
+}
+
+.gradient-cyan-blue {
+  background: linear-gradient(135deg, #22D3EE 0%, #5B8CFF 100%);
+}
+
+.gradient-champagne {
+  background: linear-gradient(135deg, #D6B36A 0%, #F0D79A 100%);
+}
+
+.gradient-tri {
+  background: linear-gradient(135deg, #22D3EE 0%, #8B5CF6 50%, #D946EF 100%);
+}
+
+.text-gradient-tri {
+  background: linear-gradient(135deg, #22D3EE 0%, #8B5CF6 50%, #D946EF 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-.dark .gold-gradient-text {
-  background: linear-gradient(135deg, #E5C378 0%, #F5E0A3 50%, #FFF7D6 100%);
+.text-gradient-blue-violet {
+  background: linear-gradient(135deg, #5B8CFF 0%, #8B5CF6 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-.gold-shimmer-border {
-  border-image: linear-gradient(to right, #C5A059, #E5C378, #C5A059) 1;
+.text-gradient-cyan-blue {
+  background: linear-gradient(135deg, #22D3EE 0%, #5B8CFF 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-champagne {
+  background: linear-gradient(135deg, #D6B36A 0%, #F0D79A 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 /* Custom scrollbar for horizontal product sliders */

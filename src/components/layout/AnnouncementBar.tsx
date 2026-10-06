@@ -40,30 +40,30 @@ export const AnnouncementBar: React.FC = () => {
   };
 
   return (
-    <aside aria-label="Special Offers" className="bg-[#1C1917] text-[#FAF7F2] text-xs py-2 px-3 relative z-50 border-b border-[#2C242A] select-none">
+    <aside aria-label="Special Offers" className="bg-[#0C1220] text-[#F7F4EC] text-xs py-2 px-3 relative z-50 border-b border-[#242C3D] select-none">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
         <button
           onClick={handlePrev}
           aria-label="Previous announcement"
-          className="p-1 hover:text-[#BE123C] transition-colors rounded-full focus:outline-none"
+          className="p-1 hover:text-[#22D3EE] transition-colors rounded-full focus:outline-none text-[#A7AFBD]"
         >
           <ChevronLeft className="w-3.5 h-3.5" />
         </button>
 
         <div className="flex-1 flex items-center justify-center gap-2 text-center text-[11px] sm:text-xs font-medium tracking-wide">
-          <Sparkles className="w-3.5 h-3.5 text-[#E5C378] animate-pulse hidden sm:inline" />
+          <Sparkles className="w-3.5 h-3.5 text-[#22D3EE] animate-pulse hidden sm:inline" />
           <span>{current.text}</span>
           {current.code ? (
             <button
               onClick={() => handleCopyCode(current.code)}
-              className="inline-flex items-center gap-1 bg-[#881337] hover:bg-[#700f2d] text-white px-2.5 py-0.5 rounded-full font-bold text-[10px] tracking-wider transition-all transform active:scale-95 shadow-xs"
+              className="inline-flex items-center gap-1 bg-gradient-to-r from-[#22D3EE] to-[#5B8CFF] hover:opacity-90 text-[#08090B] px-2.5 py-0.5 rounded-full font-extrabold text-[10px] tracking-wider transition-all transform active:scale-95 shadow-xs"
               title="Click to copy and apply in cart"
             >
               {current.code}
-              {copied ? <Check className="w-2.5 h-2.5 text-white" /> : <Copy className="w-2.5 h-2.5 opacity-80" />}
+              {copied ? <Check className="w-2.5 h-2.5 text-[#08090B]" /> : <Copy className="w-2.5 h-2.5 opacity-90" />}
             </button>
           ) : (
-            <span className="text-[#E5C378] font-bold underline decoration-[#881337]">
+            <span className="text-[#22D3EE] font-bold underline decoration-[#5B8CFF]">
               {current.highlight}
             </span>
           )}
@@ -72,7 +72,7 @@ export const AnnouncementBar: React.FC = () => {
         <button
           onClick={handleNext}
           aria-label="Next announcement"
-          className="p-1 hover:text-[#BE123C] transition-colors rounded-full focus:outline-none"
+          className="p-1 hover:text-[#22D3EE] transition-colors rounded-full focus:outline-none text-[#A7AFBD]"
         >
           <ChevronRight className="w-3.5 h-3.5" />
         </button>

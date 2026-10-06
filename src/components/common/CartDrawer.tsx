@@ -59,23 +59,23 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onProceedToCheckout, onE
       <div className="absolute inset-0" onClick={closeCart} />
 
       <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
-        <div className="w-screen max-w-md bg-white dark:bg-[#1E1A1D] shadow-2xl flex flex-col justify-between border-l border-[#F3E8E2] dark:border-[#2D252A] animate-in slide-in-from-right duration-300">
+        <div className="w-screen max-w-md bg-[#FAF8F5] dark:bg-[#111318] shadow-2xl flex flex-col justify-between border-l border-[#E5DFD5] dark:border-[#2A2B2F] animate-in slide-in-from-right duration-300">
           
           {/* Drawer Header */}
-          <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-[#FFF8F4] dark:bg-black/30">
+          <div className="p-4 sm:p-5 border-b border-[#E5DFD5] dark:border-[#2A2B2F] flex items-center justify-between bg-[#F1EDE6] dark:bg-[#17191F]">
             <div className="flex items-center gap-2">
-              <ShoppingBag className="w-5 h-5 text-[#F0508C]" />
-              <h2 className="font-serif-heading text-lg sm:text-xl font-bold text-[#231F20] dark:text-white">
+              <ShoppingBag className="w-5 h-5 text-[#B8934A] dark:text-[#D6B36A]" />
+              <h2 className="font-serif-heading text-lg sm:text-xl font-bold text-[#111318] dark:text-[#F5F2EA]">
                 Your Shopping Bag
               </h2>
-              <span className="bg-[#F0508C] text-white text-xs px-2 py-0.5 rounded-full font-bold">
+              <span className="bg-[#D6B36A] text-[#08090B] text-xs px-2 py-0.5 rounded-full font-bold">
                 {totalItemsCount}
               </span>
             </div>
             <button
               onClick={closeCart}
               aria-label="Close cart"
-              className="p-1.5 rounded-full text-slate-500 hover:text-[#F0508C] hover:bg-white dark:hover:bg-slate-800 transition-colors"
+              className="p-1.5 rounded-full text-stone-500 hover:text-[#D6B36A] hover:bg-stone-200 dark:hover:bg-stone-800 transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -174,8 +174,9 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onProceedToCheckout, onE
                       </p>
 
                       {item.customText && (
-                        <p className="text-[10px] text-[#F0508C] font-semibold mt-0.5">
-                          ✦ Name: <span className="font-script text-xs">{item.customText}</span>
+                        <p className="text-[10px] text-[#22D3EE] font-semibold mt-0.5 flex items-center gap-1">
+                          <Sparkles className="w-2.5 h-2.5 text-[#22D3EE]" />
+                          <span>Custom Tag: {item.customText}</span>
                         </p>
                       )}
                     </div>
