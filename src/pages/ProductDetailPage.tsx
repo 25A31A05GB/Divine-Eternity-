@@ -232,7 +232,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-12 items-start">
           
           {/* Left Column: Gallery & Interactive Visual Customizer */}
-          <div className="lg:col-span-6 bg-white dark:bg-[#1E1A1D] p-6 sm:p-10 rounded-3xl border border-[#F5E6E8] dark:border-[#2D252A] shadow-md flex flex-col items-center justify-center relative sticky top-24">
+          <div className="lg:col-span-6 bg-white dark:bg-[#1E1A1D] p-6 sm:p-10 rounded-3xl border border-[#F5E6E8] dark:border-[#2D252A] shadow-md flex flex-col items-center justify-center relative lg:sticky lg:top-24 lg:z-10 z-0">
             <button
               onClick={() => toggleWishlist(product.id)}
               aria-label="Wishlist"

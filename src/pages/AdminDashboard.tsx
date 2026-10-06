@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { useAuth } from '../context/AuthContext';
 import { useReviews } from '../context/ReviewsContext';
 import { useMediaCMS } from '../context/MediaCMSContext';
@@ -67,6 +68,7 @@ import {
   Film,
   Image as ImageIcon,
   Sliders,
+  Menu,
 } from 'lucide-react';
 import { PhoneCaseMockup } from '../utils/productVisuals';
 import confetti from 'canvas-confetti';
@@ -103,6 +105,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   } = useMediaCMS();
 
   const [currentRole, setCurrentRole] = useState<AdminRole>(initialRole);
+  const [isAdminMobileMenuOpen, setIsAdminMobileMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<
     'overview' | 'orders' | 'products' | 'media-cms' | 'coupons' | 'reviews' | 'customers' | 'affiliates'
   >(() => (initialRole === 'director' ? 'media-cms' : 'overview'));
@@ -442,30 +445,31 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       />
 
       {/* Top Luxury Executive Bar */}
-      <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#151215]/95 backdrop-blur-md border-b border-[#EFE7DE] dark:border-[#282127] px-4 lg:px-8 py-3.5 transition-colors">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#881337] flex items-center justify-center text-white shadow-md font-serif text-lg font-bold shrink-0">
+      <header className="sticky top-0 z-50 bg-[#08090B]/95 backdrop-blur-xl border-b border-[#242C3D] px-4 lg:px-8 py-3.5 transition-colors">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-[#5B8CFF] to-[#8B5CF6] flex items-center justify-center text-white shadow-md font-serif text-lg font-bold shrink-0">
               DE
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-serif font-bold text-lg tracking-tight text-[#1C1917] dark:text-white">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-serif font-bold text-base sm:text-lg tracking-tight text-[#F7F4EC] truncate">
                   Divine's Eternity
                 </span>
-                <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold tracking-wider uppercase bg-[#881337]/10 text-[#881337] dark:text-[#FB7185] border border-[#881337]/20 flex items-center gap-1">
-                  <Activity className="w-3 h-3 animate-pulse" /> Secret Executive Suite
+                <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold tracking-wider uppercase bg-[#5B8CFF]/15 text-[#22D3EE] border border-[#5B8CFF]/30 flex items-center gap-1 shrink-0">
+                  <Activity className="w-3 h-3 animate-pulse" /> Executive Suite
                 </span>
               </div>
-              <p className="text-xs text-stone-500">
-                Authorized Session · Director: <strong className="text-stone-900 dark:text-white">{user?.name || 'Master Admin'}</strong>
+              <p className="text-[11px] sm:text-xs text-[#A7AFBD] truncate">
+                Authorized Session · Director: <strong className="text-[#F7F4EC]">{user?.name || 'Master Admin'}</strong>
               </p>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2.5">
+          {/* Desktop Controls */}
+          <div className="hidden md:flex items-center gap-2.5 shrink-0">
             {/* Active Role Switcher */}
-            <div className="flex items-center p-1 bg-stone-100 dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 text-xs">
+            <div className="flex items-center p-1 bg-[#151A24] rounded-xl border border-[#242C3D] text-xs">
               <button
                 type="button"
                 onClick={() => {
@@ -474,8 +478,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 }}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition-all ${
                   currentRole === 'director'
-                    ? 'bg-[#881337] text-white shadow-xs'
-                    : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
+                    ? 'bg-[#5B8CFF] text-white shadow-xs'
+                    : 'text-[#A7AFBD] hover:text-[#F7F4EC]'
                 }`}
               >
                 <Film className="w-3.5 h-3.5" />
@@ -490,8 +494,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 }}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition-all ${
                   currentRole === 'superadmin'
-                    ? 'bg-[#881337] text-white shadow-xs'
-                    : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
+                    ? 'bg-[#5B8CFF] text-white shadow-xs'
+                    : 'text-[#A7AFBD] hover:text-[#F7F4EC]'
                 }`}
               >
                 <BarChart3 className="w-3.5 h-3.5" />
@@ -504,10 +508,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   setCurrentRole('orders');
                   setActiveTab('orders');
                 }}
-                className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition-all ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition-all ${
                   currentRole === 'orders'
-                    ? 'bg-[#881337] text-white shadow-xs'
-                    : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
+                    ? 'bg-[#5B8CFF] text-white shadow-xs'
+                    : 'text-[#A7AFBD] hover:text-[#F7F4EC]'
                 }`}
               >
                 <ShoppingBag className="w-3.5 h-3.5" />
@@ -517,14 +521,182 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
             <button
               onClick={onReturnToStore}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 transition-colors shadow-xs"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-[#151A24] hover:bg-[#1B2230] border border-[#242C3D] text-[#F7F4EC] transition-colors shadow-xs"
             >
-              <Store className="w-3.5 h-3.5 text-[#881337] dark:text-[#FB7185]" />
+              <Store className="w-3.5 h-3.5 text-[#22D3EE]" />
               Return to Store
+            </button>
+          </div>
+
+          {/* Mobile Navigation Controls: Hamburger "Three Lines" Button */}
+          <div className="flex md:hidden items-center gap-2 shrink-0">
+            <button
+              onClick={onReturnToStore}
+              className="px-2.5 py-2 rounded-xl bg-[#151A24] border border-[#242C3D] text-[#F7F4EC] text-xs font-semibold flex items-center gap-1"
+            >
+              <Store className="w-3.5 h-3.5 text-[#22D3EE]" />
+              <span className="hidden xs:inline">Store</span>
+            </button>
+
+            <button
+              onClick={() => setIsAdminMobileMenuOpen(true)}
+              aria-label="Toggle Dashboard Menu"
+              className="p-2.5 rounded-xl bg-[#151A24] border border-[#5B8CFF]/60 text-[#F7F4EC] hover:bg-[#1B2230] active:scale-95 transition-all shadow-md flex items-center gap-1.5 cursor-pointer"
+            >
+              <Menu className="w-5 h-5 text-[#22D3EE]" />
+              <span className="text-xs font-bold text-[#F7F4EC]">Menu</span>
             </button>
           </div>
         </div>
       </header>
+
+      {/* Mobile Admin Navigation Drawer Portal */}
+      {isAdminMobileMenuOpen &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <div className="md:hidden fixed inset-0 z-[9999] w-full h-full h-[100dvh] bg-[#08090B] text-[#F7F4EC] flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right duration-300 p-5 shadow-2xl">
+            <div>
+              {/* Drawer Top Bar */}
+              <div className="flex items-center justify-between pb-4 border-b border-[#242C3D]">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-[#5B8CFF] to-[#8B5CF6] text-white font-serif font-bold text-sm flex items-center justify-center">
+                    DE
+                  </div>
+                  <div>
+                    <div className="text-sm font-bold text-[#F7F4EC]">Executive Control Studio</div>
+                    <div className="text-[10px] text-[#22D3EE]">Mobile Command Center</div>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setIsAdminMobileMenuOpen(false)}
+                  className="p-2 rounded-full bg-[#151A24] border border-[#242C3D] text-[#F7F4EC] shadow-md hover:bg-[#1B2230]"
+                  aria-label="Close admin menu"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Role Selection inside Drawer */}
+              <div className="my-4 space-y-2">
+                <div className="text-[10px] font-bold uppercase tracking-widest text-[#5B8CFF] font-mono">
+                  Executive Access Role
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    onClick={() => {
+                      setCurrentRole('director');
+                      setActiveTab('media-cms');
+                      setIsAdminMobileMenuOpen(false);
+                    }}
+                    className={`p-2.5 rounded-xl border text-center transition-all ${
+                      currentRole === 'director'
+                        ? 'bg-[#5B8CFF] border-[#5B8CFF] text-white shadow-xs'
+                        : 'bg-[#151A24] border-[#242C3D] text-[#A7AFBD]'
+                    }`}
+                  >
+                    <Film className="w-4 h-4 mx-auto mb-1 text-[#22D3EE]" />
+                    <span className="text-[11px] font-bold block">Media Director</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setCurrentRole('superadmin');
+                      setActiveTab('overview');
+                      setIsAdminMobileMenuOpen(false);
+                    }}
+                    className={`p-2.5 rounded-xl border text-center transition-all ${
+                      currentRole === 'superadmin'
+                        ? 'bg-[#5B8CFF] border-[#5B8CFF] text-white shadow-xs'
+                        : 'bg-[#151A24] border-[#242C3D] text-[#A7AFBD]'
+                    }`}
+                  >
+                    <BarChart3 className="w-4 h-4 mx-auto mb-1 text-[#D6B36A]" />
+                    <span className="text-[11px] font-bold block">Super Admin</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setCurrentRole('orders');
+                      setActiveTab('orders');
+                      setIsAdminMobileMenuOpen(false);
+                    }}
+                    className={`p-2.5 rounded-xl border text-center transition-all ${
+                      currentRole === 'orders'
+                        ? 'bg-[#5B8CFF] border-[#5B8CFF] text-white shadow-xs'
+                        : 'bg-[#151A24] border-[#242C3D] text-[#A7AFBD]'
+                    }`}
+                  >
+                    <ShoppingBag className="w-4 h-4 mx-auto mb-1 text-[#8B5CF6]" />
+                    <span className="text-[11px] font-bold block">Fulfillment</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Navigation Tabs List */}
+              <div className="my-5 space-y-2">
+                <div className="text-[10px] font-bold uppercase tracking-widest text-[#5B8CFF] font-mono">
+                  Dashboard Modules
+                </div>
+                {[
+                  { id: 'overview', label: 'Executive Overview', icon: BarChart3, count: null },
+                  { id: 'orders', label: 'Orders & Pipeline', icon: ShoppingBag, count: orders.length },
+                  { id: 'products', label: 'Catalog Studio', icon: Package, count: products.length },
+                  { id: 'media-cms', label: 'Media & Video CMS', icon: Film, count: heroSlides.length + videoReels.length },
+                  { id: 'coupons', label: 'Offers & Coupons', icon: Tag, count: coupons.length },
+                  { id: 'reviews', label: 'Reviews & Proof', icon: Star, count: allReviewsList.length },
+                  { id: 'customers', label: 'Client Directory', icon: Users, count: customersList.length },
+                  { id: 'affiliates', label: 'Creator Ambassadors', icon: Video, count: creatorApplications.length },
+                ].map((tab) => {
+                  const Icon = tab.icon;
+                  const isActive = activeTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => {
+                        setActiveTab(tab.id as any);
+                        setIsAdminMobileMenuOpen(false);
+                      }}
+                      className={`w-full text-left p-3 rounded-2xl border transition-all flex items-center justify-between group shadow-xs ${
+                        isActive
+                          ? 'bg-[#1B2230] border-[#5B8CFF] text-[#F7F4EC]'
+                          : 'bg-[#151A24] border-[#242C3D] text-[#A7AFBD] hover:border-[#5B8CFF]'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <Icon className={`w-4 h-4 ${isActive ? 'text-[#22D3EE]' : 'text-[#737C8C]'}`} />
+                        <span className="text-xs font-semibold text-[#F7F4EC]">{tab.label}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {tab.count !== null && (
+                          <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-[#0C1220] text-[#22D3EE]">
+                            {tab.count}
+                          </span>
+                        )}
+                        <ChevronRight className="w-4 h-4 text-[#737C8C]" />
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Bottom Actions inside Drawer */}
+            <div className="pt-4 mt-6 border-t border-[#242C3D] space-y-2">
+              <button
+                onClick={() => {
+                  setIsAdminMobileMenuOpen(false);
+                  onReturnToStore();
+                }}
+                className="w-full p-3 rounded-2xl bg-[#5B8CFF] hover:bg-[#4b7beb] text-white text-xs font-bold flex items-center justify-center gap-2 transition-colors shadow-md"
+              >
+                <Store className="w-4 h-4" />
+                <span>Return to Public Storefront</span>
+              </button>
+            </div>
+          </div>,
+          document.body
+        )}
 
       {/* Main Container */}
       <div className="max-w-7xl mx-auto px-4 lg:px-8 py-8">
