@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { WishlistProvider } from './context/WishlistContext';
 import { ReviewsProvider } from './context/ReviewsContext';
+import { MediaCMSProvider } from './context/MediaCMSContext';
 import { AnnouncementBar } from './components/layout/AnnouncementBar';
 import { Header } from './components/layout/Header';
 import { Footer } from './components/layout/Footer';
@@ -20,18 +21,46 @@ import { WishlistPage } from './pages/WishlistPage';
 import { ContactPage } from './pages/ContactPage';
 import { CreatorCollabPage } from './pages/CreatorCollabPage';
 import { PolicyPage } from './pages/PolicyPage';
-import { AdminDashboard } from './pages/AdminDashboard';
+import { SecretAdminPortal } from './pages/SecretAdminPortal';
 import { INITIAL_PRODUCTS } from './data/products';
 import { Product, Order } from './types';
 
 export function AppContent() {
   const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
-  const [currentView, setCurrentView] = useState<string>('home');
+  const [currentView, setCurrentView] = useState<string>(() => {
+    if (typeof window !== 'undefined' && window.location.hash === '#secret-admin-portal') {
+      return 'secret-admin-portal';
+    }
+    return 'home';
+  });
   const [viewParams, setViewParams] = useState<Record<string, string>>({});
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [completedOrder, setCompletedOrder] = useState<Order | null>(null);
+
+  // Stealth hash and keyboard shortcut listener (Ctrl + Shift + A)
+  useEffect(() => {
+    const handleHashChange = () => {
+      if (window.location.hash === '#secret-admin-portal' || window.location.hash === '#admin') {
+        setCurrentView('secret-admin-portal');
+      }
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.shiftKey && (e.key === 'A' || e.key === 'a')) {
+        e.preventDefault();
+        setCurrentView('secret-admin-portal');
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
 
   const handleNavigate = (view: string, params?: Record<string, string>) => {
     setCurrentView(view);
@@ -61,19 +90,23 @@ export function AppContent() {
     setProducts((prev) => prev.filter((p) => p.id !== productId));
   };
 
-  return (
-    <div className="min-h-screen flex flex-col justify-between bg-[#FFF8F4] dark:bg-[#141113] text-[#231F20] dark:text-[#FDF9F7] transition-colors duration-300">
-      
-      {/* 1. Global Announcement Bar */}
-      <AnnouncementBar />
+  const isSecretAdminView = currentView === 'secret-admin-portal' || currentView === 'admin';
 
-      {/* 2. Global Sticky Header with live search input */}
-      <Header
-        currentView={currentView}
-        setCurrentView={handleNavigate}
-        openSearch={() => setIsSearchOpen(true)}
-        onQuickView={handleOpenQuickView}
-      />
+  return (
+    <div className="min-h-screen flex flex-col justify-between bg-[#FAF7F2] dark:bg-[#0F0D10] text-[#1C1917] dark:text-[#F5F0EB] transition-colors duration-300">
+      
+      {/* 1. Global Announcement Bar (hidden in secret admin view) */}
+      {!isSecretAdminView && <AnnouncementBar />}
+
+      {/* 2. Global Sticky Header (hidden in secret admin view for clean isolation) */}
+      {!isSecretAdminView && (
+        <Header
+          currentView={currentView}
+          setCurrentView={handleNavigate}
+          openSearch={() => setIsSearchOpen(true)}
+          onQuickView={handleOpenQuickView}
+        />
+      )}
 
       {/* Main View Router */}
       <main className="flex-1">
@@ -151,8 +184,8 @@ export function AppContent() {
           <PolicyPage initialTab={(viewParams.tab as any) || 'refund'} />
         )}
 
-        {currentView === 'admin' && (
-          <AdminDashboard
+        {isSecretAdminView && (
+          <SecretAdminPortal
             products={products}
             onAddProduct={handleAddProduct}
             onUpdateProduct={handleUpdateProduct}
@@ -162,8 +195,8 @@ export function AppContent() {
         )}
       </main>
 
-      {/* 3. Global Luxury Footer */}
-      <Footer setCurrentView={handleNavigate} />
+      {/* 3. Global Luxury Footer (hidden in secret admin view) */}
+      {!isSecretAdminView && <Footer setCurrentView={handleNavigate} />}
 
       {/* Global Quick View Modal */}
       <QuickViewModal
@@ -198,9 +231,11 @@ export default function App() {
       <AuthProvider>
         <WishlistProvider>
           <ReviewsProvider>
-            <CartProvider>
-              <AppContent />
-            </CartProvider>
+            <MediaCMSProvider>
+              <CartProvider>
+                <AppContent />
+              </CartProvider>
+            </MediaCMSProvider>
           </ReviewsProvider>
         </WishlistProvider>
       </AuthProvider>

@@ -1,5 +1,5 @@
-import React from 'react';
-import { Sparkles, Heart, ShieldCheck, Truck, RefreshCw, Mail, Phone, MapPin } from 'lucide-react';
+import React, { useState } from 'react';
+import { Sparkles, Heart, ShieldCheck, Truck, RefreshCw, Mail, Phone, MapPin, Award, Gift, Lock } from 'lucide-react';
 import { CATEGORIES } from '../../data/products';
 
 interface FooterProps {
@@ -7,58 +7,72 @@ interface FooterProps {
 }
 
 export const Footer: React.FC<FooterProps> = ({ setCurrentView }) => {
+  const [clickCount, setClickCount] = useState(0);
+
   const navigateTo = (view: string, params?: Record<string, string>) => {
     setCurrentView(view, params);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // Stealth Access trigger: Triple tap on the brand copyright line opens the secret admin portal
+  const handleStealthAccess = () => {
+    const nextCount = clickCount + 1;
+    if (nextCount >= 3) {
+      setClickCount(0);
+      navigateTo('secret-admin-portal');
+    } else {
+      setClickCount(nextCount);
+      setTimeout(() => setClickCount(0), 1200);
+    }
+  };
+
   return (
-    <footer className="bg-[#1A1819] text-[#FFF8F4] pt-16 pb-12 border-t border-slate-800 relative overflow-hidden">
+    <footer className="bg-[#141113] text-[#F5F0EB] pt-16 pb-12 border-t border-[#2A2228] relative overflow-hidden">
       {/* Background soft ambient glow */}
-      <div className="absolute top-0 right-1/4 w-96 h-96 bg-[#F0508C]/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 left-10 w-80 h-80 bg-[#FFD94A]/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-0 right-1/4 w-96 h-96 bg-[#881337]/15 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-0 left-10 w-80 h-80 bg-[#C5A059]/10 rounded-full blur-3xl pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
         {/* Four Trust Columns in Pre-Footer */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 pb-12 border-b border-white/10 mb-12">
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-full bg-pink-950/60 border border-pink-500/30 flex items-center justify-center text-[#F0508C] shrink-0">
-              <Sparkles className="w-5 h-5 text-[#FFD94A]" />
+            <div className="w-10 h-10 rounded-xl bg-stone-900 border border-stone-800 flex items-center justify-center text-[#C5A059] shrink-0">
+              <Award className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="text-sm font-bold text-white">Thoughtfully Packed</h4>
-              <p className="text-xs text-slate-400 mt-0.5">Gift-ready premium boxes with cute aesthetic stickers</p>
+              <h4 className="text-sm font-bold text-white font-serif">Haute Atelier Craft</h4>
+              <p className="text-xs text-stone-400 mt-0.5">18k gold vermeil and laser calligraphy precision</p>
             </div>
           </div>
 
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-full bg-pink-950/60 border border-pink-500/30 flex items-center justify-center text-[#F0508C] shrink-0">
-              <RefreshCw className="w-5 h-5 text-[#F0508C]" />
+            <div className="w-10 h-10 rounded-xl bg-stone-900 border border-stone-800 flex items-center justify-center text-[#881337] dark:text-[#FB7185] shrink-0">
+              <RefreshCw className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="text-sm font-bold text-white">7-Day Replacements</h4>
-              <p className="text-xs text-slate-400 mt-0.5">Zero hassle replacements if sizing or fit isn't 100% perfect</p>
+              <h4 className="text-sm font-bold text-white font-serif">7-Day Replacement</h4>
+              <p className="text-xs text-stone-400 mt-0.5">Zero-hassle exchange if sizing or fit needs adjustment</p>
             </div>
           </div>
 
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-full bg-pink-950/60 border border-pink-500/30 flex items-center justify-center text-[#F0508C] shrink-0">
-              <Truck className="w-5 h-5 text-emerald-400" />
+            <div className="w-10 h-10 rounded-xl bg-stone-900 border border-stone-800 flex items-center justify-center text-emerald-400 shrink-0">
+              <Truck className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="text-sm font-bold text-white">Free Express Shipping</h4>
-              <p className="text-xs text-slate-400 mt-0.5">Speedy insured delivery on all orders above ₹499</p>
+              <h4 className="text-sm font-bold text-white font-serif">Insured Express Dispatch</h4>
+              <p className="text-xs text-stone-400 mt-0.5">Speedy courier delivery with live SMS updates</p>
             </div>
           </div>
 
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-full bg-pink-950/60 border border-pink-500/30 flex items-center justify-center text-[#F0508C] shrink-0">
-              <ShieldCheck className="w-5 h-5 text-[#FFD94A]" />
+            <div className="w-10 h-10 rounded-xl bg-stone-900 border border-stone-800 flex items-center justify-center text-[#C5A059] shrink-0">
+              <ShieldCheck className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="text-sm font-bold text-white">100% Secure Checkout</h4>
-              <p className="text-xs text-slate-400 mt-0.5">UPI, Cards, NetBanking & Cash on Delivery available</p>
+              <h4 className="text-sm font-bold text-white font-serif">256-Bit Encrypted</h4>
+              <p className="text-xs text-stone-400 mt-0.5">Instant UPI, Cards, NetBanking, and COD</p>
             </div>
           </div>
         </div>
@@ -69,36 +83,35 @@ export const Footer: React.FC<FooterProps> = ({ setCurrentView }) => {
           {/* Brand Blurb (2 cols wide on desktop) */}
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center gap-2">
-              <span className="font-serif-heading text-2xl sm:text-3xl font-bold tracking-tight text-white">
+              <span className="font-serif text-2xl sm:text-3xl font-bold tracking-tight text-white">
                 Divine's Eternity
               </span>
-              <span className="text-[#F0508C] text-base">✦</span>
             </div>
-            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-sm">
-              Gifts that stay in hearts. Handcrafted phone cases, pearl wristlet jewelry, mirror cases, and personalized custom keepsakes designed to bring pure joy to your everyday life.
+            <p className="text-xs sm:text-sm text-stone-300 leading-relaxed max-w-sm">
+              Gifts that stay in hearts. Handcrafted personalized jewelry, preserved eternal roses, acrylic song plaques, and custom keepsakes designed for timeless memories.
             </p>
-            <div className="pt-2 text-xs text-slate-400 space-y-1.5 font-sans">
+            <div className="pt-2 text-xs text-stone-400 space-y-1.5 font-sans">
               <p className="flex items-center gap-2">
-                <Mail className="w-3.5 h-3.5 text-[#F0508C]" />
-                <span>support@divineseternity.com</span>
+                <Mail className="w-3.5 h-3.5 text-[#C5A059]" />
+                <span>concierge@divineseternity.com</span>
               </p>
               <p className="flex items-center gap-2">
-                <Phone className="w-3.5 h-3.5 text-[#FFD94A]" />
+                <Phone className="w-3.5 h-3.5 text-[#C5A059]" />
                 <span>+91 98765 43210 (Mon - Sat, 10am - 7pm IST)</span>
               </p>
               <p className="flex items-center gap-2">
-                <MapPin className="w-3.5 h-3.5 text-pink-400" />
-                <span>Divine Studio, Bandra West, Mumbai, Maharashtra 400050</span>
+                <MapPin className="w-3.5 h-3.5 text-[#881337]" />
+                <span>Divine Atelier Studio, Bandra West, Mumbai 400050</span>
               </p>
             </div>
           </div>
 
           {/* Shop Column */}
           <div>
-            <h5 className="text-xs font-bold tracking-widest text-[#F0508C] uppercase mb-4">
-              Shop Collections
+            <h5 className="text-xs font-bold tracking-widest text-[#C5A059] uppercase mb-4 font-serif">
+              Collections
             </h5>
-            <ul className="space-y-2.5 text-xs text-slate-300">
+            <ul className="space-y-2.5 text-xs text-stone-300">
               {CATEGORIES.slice(0, 5).map((cat) => (
                 <li key={cat.slug}>
                   <button
@@ -112,9 +125,9 @@ export const Footer: React.FC<FooterProps> = ({ setCurrentView }) => {
               <li>
                 <button
                   onClick={() => navigateTo('collections', { category: 'all' })}
-                  className="text-[#FFD94A] font-semibold hover:underline"
+                  className="text-[#C5A059] font-semibold hover:underline"
                 >
-                  View All Cases →
+                  View All Keepsakes →
                 </button>
               </li>
             </ul>
@@ -122,17 +135,17 @@ export const Footer: React.FC<FooterProps> = ({ setCurrentView }) => {
 
           {/* Help Column */}
           <div>
-            <h5 className="text-xs font-bold tracking-widest text-[#F0508C] uppercase mb-4">
-              Customer Help
+            <h5 className="text-xs font-bold tracking-widest text-[#C5A059] uppercase mb-4 font-serif">
+              Client Care
             </h5>
-            <ul className="space-y-2.5 text-xs text-slate-300">
+            <ul className="space-y-2.5 text-xs text-stone-300">
               <li>
                 <button
                   onClick={() => navigateTo('track-order')}
                   className="hover:text-white hover:translate-x-1 transition-all flex items-center gap-1.5"
                 >
                   <span>Track Your Order</span>
-                  <span className="text-[10px] bg-pink-500/20 text-pink-400 px-1.5 py-0.5 rounded font-mono">Live</span>
+                  <span className="text-[10px] bg-emerald-950 text-emerald-300 px-1.5 py-0.5 rounded font-mono">Live</span>
                 </button>
               </li>
               <li>
@@ -148,7 +161,7 @@ export const Footer: React.FC<FooterProps> = ({ setCurrentView }) => {
                   onClick={() => navigateTo('policy', { tab: 'shipping' })}
                   className="hover:text-white hover:translate-x-1 transition-all"
                 >
-                  Shipping & Delivery Info
+                  Shipping & Dispatch Timelines
                 </button>
               </li>
               <li>
@@ -156,7 +169,7 @@ export const Footer: React.FC<FooterProps> = ({ setCurrentView }) => {
                   onClick={() => navigateTo('contact')}
                   className="hover:text-white hover:translate-x-1 transition-all"
                 >
-                  Contact & WhatsApp Support
+                  Contact & Concierge Support
                 </button>
               </li>
               <li>
@@ -180,66 +193,61 @@ export const Footer: React.FC<FooterProps> = ({ setCurrentView }) => {
 
           {/* Explore & Brand Column */}
           <div>
-            <h5 className="text-xs font-bold tracking-widest text-[#F0508C] uppercase mb-4">
-              Divine Club
+            <h5 className="text-xs font-bold tracking-widest text-[#C5A059] uppercase mb-4 font-serif">
+              Creator Collective
             </h5>
-            <p className="text-xs text-slate-400 leading-relaxed mb-3">
-              Join 45,000+ girls who treat their phone like a luxury aesthetic accessory.
+            <p className="text-xs text-stone-400 leading-relaxed mb-3">
+              Join 250+ ambassador creators earning 15% recurring commissions with complimentary PR gift boxes.
             </p>
             <div className="bg-white/5 p-3 rounded-xl border border-white/10 space-y-2 mb-3">
-              <div className="flex items-center gap-1 text-[11px] text-[#FFD94A] font-semibold">
+              <div className="flex items-center gap-1 text-[11px] text-[#C5A059] font-semibold">
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>Special Promo Offer</span>
+                <span>Atelier Promotion</span>
               </div>
-              <p className="text-[11px] text-slate-300">
-                Use code <span className="text-[#F0508C] font-bold font-mono">FLAT849</span> to get any 2 luxury cases for ₹849!
+              <p className="text-[11px] text-stone-300">
+                Use code <span className="text-[#E5C378] font-bold font-mono">LOVE100</span> for ₹100 off your first bespoke order.
               </p>
             </div>
 
             <button
               onClick={() => navigateTo('creator-club')}
-              className="w-full text-center py-2 px-3 rounded-xl bg-gradient-to-r from-[#F0508C] to-[#E11D48] text-white font-bold text-xs hover:opacity-90 transition-opacity flex items-center justify-center gap-1.5"
+              className="w-full text-center py-2.5 px-3 rounded-xl bg-[#881337] hover:bg-[#700f2d] text-white font-bold text-xs transition-colors flex items-center justify-center gap-1.5"
             >
-              <span>Join Creator & Affiliate Club →</span>
+              <span>Join Creator Club →</span>
             </button>
           </div>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
-          <p className="flex items-center gap-1">
-            <span>© {new Date().getFullYear()} Divine's Eternity. Crafted with</span>
-            <Heart className="w-3 h-3 text-[#F0508C] fill-current" />
-            <span>for happy phones.</span>
+        {/* Bottom Bar with Stealth Secret Admin Trigger */}
+        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-stone-400">
+          <p
+            onClick={handleStealthAccess}
+            className="cursor-default select-none transition-opacity hover:opacity-90"
+            title="Divine's Eternity Studio"
+          >
+            © {new Date().getFullYear()} Divine's Eternity. Handcrafted for hearts that love deeply.
           </p>
 
           <div className="flex items-center gap-4 text-[11px]">
             <button
               onClick={() => navigateTo('policy', { tab: 'privacy' })}
-              className="hover:text-white"
+              className="hover:text-white transition-colors"
             >
-              Privacy
+              Privacy Policy
             </button>
             <span>·</span>
             <button
               onClick={() => navigateTo('policy', { tab: 'refund' })}
-              className="hover:text-white"
+              className="hover:text-white transition-colors"
             >
               Replacements
             </button>
             <span>·</span>
             <button
               onClick={() => navigateTo('policy', { tab: 'shipping' })}
-              className="hover:text-white"
+              className="hover:text-white transition-colors"
             >
               Shipping
-            </button>
-            <span>·</span>
-            <button
-              onClick={() => navigateTo('admin')}
-              className="text-purple-400 hover:text-purple-300 font-semibold"
-            >
-              Admin Portal
             </button>
           </div>
         </div>

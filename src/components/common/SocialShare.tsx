@@ -17,7 +17,7 @@ export const SocialShare: React.FC<SocialShareProps> = ({
 
   // Generate share URL and descriptions
   const currentUrl = typeof window !== 'undefined' ? window.location.href : 'https://divineseternity.com';
-  const shareTitle = encodeURIComponent(`Check out the ${product.name} on Divine's Eternity! ✨`);
+  const shareTitle = encodeURIComponent(`Check out the ${product.name} on Divine's Eternity!`);
   const shareUrl = encodeURIComponent(currentUrl);
   const shareText = encodeURIComponent(
     `I'm obsessed with this ${product.name} from Divine's Eternity! Handcrafted luxury phone case with custom calligraphy engraving. ₹${product.price} (Buy 3 Pay 2 available)`

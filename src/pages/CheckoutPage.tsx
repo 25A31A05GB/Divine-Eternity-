@@ -386,11 +386,12 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onBackToCart, onOrde
                     rows={3}
                     value={giftNote}
                     onChange={(e) => setGiftNote(e.target.value)}
-                    placeholder="Write your heartfelt gift message here (e.g., Happy 2nd Anniversary love! Every day with you is pure magic 💖)..."
+                    placeholder="Write your heartfelt gift message here (e.g., Happy 2nd Anniversary! Every day with you is pure magic)..."
                     className="w-full text-xs p-3 rounded-2xl bg-[#FFF9F5] dark:bg-slate-900 border border-pink-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#E11D48] resize-none"
                   />
-                  <p className="text-[10px] text-slate-400">
-                    ✍️ Hand-inscribed on our luxury pearlescent gold-foil stationery card.
+                  <p className="text-[10px] text-slate-400 flex items-center gap-1">
+                    <Sparkles className="w-3 h-3 text-[#E11D48]" />
+                    <span>Hand-inscribed on our luxury pearlescent gold-foil stationery card.</span>
                   </p>
                 </div>
               )}
@@ -635,7 +636,9 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onBackToCart, onOrde
                 className="w-full p-3 rounded-xl bg-slate-50 hover:bg-emerald-50 border border-slate-200 text-left font-bold text-slate-800 flex items-center justify-between transition-colors"
               >
                 <span>Authorize Payment & Verify Signature</span>
-                <span className="text-emerald-600 font-bold">✓ Pay ₹{totalAmount}</span>
+                <span className="text-emerald-600 font-bold flex items-center gap-1">
+                  <Check className="w-3.5 h-3.5" /> Pay ₹{totalAmount}
+                </span>
               </button>
             </div>
 

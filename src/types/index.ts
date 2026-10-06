@@ -252,3 +252,62 @@ export interface Campaign {
   requirements: string[];
 }
 
+export interface HeroSlideCMS {
+  id: string;
+  eyebrow: string;
+  title: string;
+  tagline: string;
+  coupon: string;
+  highlightBadge: string;
+  ctaText: string;
+  ctaCategory: string;
+  bgGradient: string;
+  featuredProductId?: string;
+  secondaryProductId?: string;
+  customImageUrl?: string;
+  customVideoUrl?: string;
+  isActive: boolean;
+}
+
+export interface VideoReelCMS {
+  id: string;
+  title: string;
+  tagline: string;
+  videoUrl: string;
+  posterImage: string;
+  linkedProductId: string;
+  viewsCount: string;
+  durationSeconds: number;
+  isActive: boolean;
+}
+
+export interface CategoryCMS {
+  id: string;
+  name: string;
+  slug: string;
+  subtitle: string;
+  bannerImage?: string;
+  iconName: string;
+  featuredProductId?: string;
+}
+
+export interface AnnouncementCMS {
+  id: string;
+  text: string;
+  code: string;
+  highlight: string;
+  isActive: boolean;
+}
+
+export interface BrandStoryCMS {
+  title: string;
+  subtitle: string;
+  description: string;
+  mediaType: 'image' | 'video';
+  mediaUrl: string;
+  posterUrl: string;
+}
+
+export type AdminRole = 'director' | 'superadmin' | 'orders' | 'catalog';
+
+

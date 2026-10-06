@@ -475,7 +475,10 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                 const pct = totalReviews > 0 ? Math.round((count / totalReviews) * 100) : 0;
                 return (
                   <div key={s} className="flex items-center gap-2">
-                    <span className="w-6 text-[11px] font-mono text-slate-600 dark:text-slate-400">{s} ★</span>
+                    <span className="w-8 text-[11px] font-mono text-slate-600 dark:text-slate-400 flex items-center gap-0.5">
+                      <span>{s}</span>
+                      <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-400" />
+                    </span>
                     <div className="flex-1 h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
                       <div
                         className="h-full bg-gradient-to-r from-[#E11D48] to-[#FFD94A] rounded-full transition-all duration-500"
@@ -636,8 +639,8 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
         </div>
 
         {/* You May Also Like Row */}
-        <div className="pt-12 border-t border-[#F5E6E8] dark:border-[#2D252A] space-y-6">
-          <h3 className="font-serif-heading text-2xl font-bold text-slate-900 dark:text-white">
+        <div className="pt-12 border-t border-[#EFE7DE] dark:border-[#282127] space-y-6">
+          <h3 className="font-serif text-2xl font-bold text-stone-900 dark:text-white">
             You May Also Like
           </h3>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
@@ -654,6 +657,41 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
             ))}
           </div>
         </div>
+      </div>
+
+      {/* Mobile Sticky Floating Purchase Bar */}
+      <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 dark:bg-[#141113]/95 backdrop-blur-md border-t border-[#EFE7DE] dark:border-[#282127] p-3.5 px-4 shadow-2xl flex items-center justify-between gap-3 animate-in slide-in-from-bottom duration-200">
+        <div className="min-w-0">
+          <div className="text-[10px] text-stone-400 font-medium truncate">
+            {product.category}
+          </div>
+          <div className="flex items-baseline gap-1.5">
+            <span className="font-serif font-bold text-base text-[#1C1917] dark:text-white tabular-nums">
+              ₹{product.price}
+            </span>
+            <span className="text-xs text-stone-400 line-through tabular-nums">
+              ₹{product.mrp}
+            </span>
+          </div>
+        </div>
+
+        <button
+          onClick={handleAddToCart}
+          className={`flex-1 py-3 px-4 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-md active:scale-98 ${
+            addedSuccess
+              ? 'bg-emerald-700 text-white'
+              : 'bg-[#881337] hover:bg-[#700f2d] text-white'
+          }`}
+        >
+          {addedSuccess ? (
+            <>
+              <Check className="w-4 h-4" />
+              <span>Added to Bag</span>
+            </>
+          ) : (
+            <span>Personalize & Add</span>
+          )}
+        </button>
       </div>
     </div>
   );

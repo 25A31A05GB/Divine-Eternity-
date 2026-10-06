@@ -54,7 +54,7 @@ export const NewsletterSection: React.FC = () => {
               <Check className="w-6 h-6" />
             </div>
             <h3 className="font-serif-heading text-lg font-bold text-slate-900">
-              Welcome to the family! 🎉
+              Welcome to the Divine Atelier
             </h3>
             <p className="text-xs text-slate-600">
               Here is your instant ₹100 discount coupon code:

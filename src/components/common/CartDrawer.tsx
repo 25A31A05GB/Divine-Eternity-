@@ -108,8 +108,8 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onProceedToCheckout, onE
           <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
             {cart.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-4">
-                <div className="w-16 h-16 rounded-full bg-pink-50 dark:bg-pink-950/40 flex items-center justify-center text-[#F0508C] text-2xl">
-                  🛍️
+                <div className="w-16 h-16 rounded-full bg-rose-50 dark:bg-rose-950/40 border border-rose-100 dark:border-rose-900/50 flex items-center justify-center text-[#881337] dark:text-[#FB7185]">
+                  <ShoppingBag className="w-7 h-7" />
                 </div>
                 <div>
                   <h3 className="font-serif-heading text-lg font-bold text-slate-800 dark:text-slate-200">
@@ -260,7 +260,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onProceedToCheckout, onE
                       rows={2}
                       value={giftNote}
                       onChange={(e) => setGiftNote(e.target.value)}
-                      placeholder="Write your heartfelt note here (e.g., Happy Birthday Anya! Love you always 💖)..."
+                      placeholder="Write your heartfelt note here (e.g., Happy Birthday Anya! Love you always, Rohan)..."
                       className="w-full text-xs p-2 rounded-xl bg-[#FFF9F5] dark:bg-slate-900 border border-pink-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#F0508C] resize-none"
                     />
                   </div>

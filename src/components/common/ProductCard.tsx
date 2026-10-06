@@ -27,34 +27,33 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView, 
 
   return (
     <div
-      className="group relative bg-white dark:bg-[#1E1A1D] rounded-[14px] border border-[#F3E8E2] dark:border-[#2D252A] overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
+      className="group relative bg-white dark:bg-[#181519] rounded-2xl border border-[#EFE7DE] dark:border-[#2C242A] overflow-hidden shadow-xs hover:shadow-xl hover:border-[#C5A059]/40 transition-all duration-300 flex flex-col justify-between"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Top Media Area with Product Mockup & Badges */}
-      <div className="relative aspect-[4/5] w-full bg-[#FFF8F4] dark:bg-black/20 overflow-hidden cursor-pointer">
+      {/* Top Media Area with Product Mockup & Editorial Badges */}
+      <div className="relative aspect-[4/5] w-full bg-[#FAF7F2] dark:bg-black/30 overflow-hidden cursor-pointer">
         {/* Visual Mockup */}
         <div
-          onClick={() => onOpenDetail ? onOpenDetail(product) : onQuickView(product)}
+          onClick={() => (onOpenDetail ? onOpenDetail(product) : onQuickView(product))}
           className="w-full h-full"
         >
           <PhoneCaseMockup
             product={product}
             isHovered={isHovered}
-            className="w-full h-full transform transition-transform duration-500"
+            className="w-full h-full transform transition-transform duration-500 group-hover:scale-105"
           />
         </div>
 
-        {/* Promo Badge: Buy 3 Pay For 2 */}
-        <div className="absolute top-2.5 left-2.5 flex flex-col gap-1 z-20 pointer-events-none">
+        {/* Editorial Text Badge */}
+        <div className="absolute top-3 left-3 flex flex-col gap-1 z-20 pointer-events-none">
           {product.badge && (
-            <span className="bg-[#F0508C] text-white text-[10px] sm:text-[11px] font-extrabold px-2.5 py-0.5 rounded-full shadow-md tracking-wider uppercase inline-flex items-center gap-1">
-              <Sparkles className="w-2.5 h-2.5" />
+            <span className="bg-[#881337] dark:bg-[#BE123C] text-white text-[10px] font-bold px-2.5 py-0.5 rounded-md tracking-wider uppercase shadow-xs">
               {product.badge}
             </span>
           )}
           {product.isNew && (
-            <span className="bg-[#FFD94A] text-[#231F20] text-[9px] font-bold px-2 py-0.5 rounded-full shadow-xs uppercase tracking-wider w-fit">
+            <span className="bg-[#C5A059] text-stone-950 text-[9px] font-extrabold px-2 py-0.5 rounded-md uppercase tracking-wider w-fit">
               New Arrival
             </span>
           )}
@@ -67,10 +66,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView, 
             toggleWishlist(product.id);
           }}
           aria-label={wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
-          className={`absolute top-2.5 right-2.5 z-20 w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-md transition-all duration-200 shadow-sm ${
+          className={`absolute top-3 right-3 z-20 w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-md transition-all duration-200 shadow-sm ${
             wishlisted
-              ? 'bg-[#F0508C] text-white'
-              : 'bg-white/80 dark:bg-black/60 text-slate-700 dark:text-slate-200 hover:bg-white dark:hover:bg-black hover:text-[#F0508C]'
+              ? 'bg-[#881337] text-white'
+              : 'bg-white/85 dark:bg-stone-900/80 text-stone-700 dark:text-stone-200 hover:bg-white dark:hover:bg-stone-900 hover:text-[#881337]'
           }`}
         >
           <Heart className={`w-4 h-4 ${wishlisted ? 'fill-current' : ''}`} />
@@ -83,52 +82,52 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView, 
               e.stopPropagation();
               onQuickView(product);
             }}
-            className="w-full bg-[#231F20]/90 hover:bg-[#F0508C] text-white py-2.5 px-3 rounded-full text-xs font-bold tracking-wider uppercase backdrop-blur-xs flex items-center justify-center gap-2 shadow-lg transition-colors"
+            className="w-full bg-[#1C1917]/95 dark:bg-white/95 hover:bg-[#881337] dark:hover:bg-[#BE123C] text-white dark:text-[#1C1917] hover:text-white dark:hover:text-white py-2.5 px-3 rounded-xl text-xs font-bold tracking-wider uppercase backdrop-blur-xs flex items-center justify-center gap-2 shadow-lg transition-all"
           >
             <Eye className="w-3.5 h-3.5" />
-            <span>Quick Customize</span>
+            <span>Quick View & Engrave</span>
           </button>
         </div>
       </div>
 
       {/* Card Info Area */}
-      <div className="p-3.5 sm:p-4 flex flex-col flex-1 justify-between">
+      <div className="p-4 flex flex-col flex-1 justify-between">
         <div>
-          {/* Eyebrow Category & Dynamic Star Rating */}
-          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 mb-1">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#F0508C] truncate max-w-[65%]">
+          {/* Unboxed Metadata with Typographic Separator */}
+          <div className="flex items-center justify-between text-xs text-stone-500 dark:text-stone-400 mb-1.5">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#881337] dark:text-[#FB7185] truncate max-w-[65%]">
               {product.category}
             </span>
-            <div className="flex items-center gap-1 text-[11px] font-medium text-slate-700 dark:text-slate-300">
-              <Star className="w-3 h-3 text-[#FFD94A] fill-[#FFD94A]" />
+            <div className="flex items-center gap-1 text-[11px] font-medium text-stone-700 dark:text-stone-300">
+              <Star className="w-3 h-3 text-[#C5A059] fill-[#C5A059]" />
               <span className="tabular-nums font-bold">{averageRating}</span>
-              <span className="text-slate-400">({totalReviews})</span>
+              <span className="text-stone-400">({totalReviews})</span>
             </div>
           </div>
 
           {/* Product Title */}
           <h3
-            onClick={() => onOpenDetail ? onOpenDetail(product) : onQuickView(product)}
-            className="font-serif-heading text-sm sm:text-base font-bold text-[#231F20] dark:text-[#FDF9F7] line-clamp-1 hover:text-[#F0508C] cursor-pointer transition-colors"
+            onClick={() => (onOpenDetail ? onOpenDetail(product) : onQuickView(product))}
+            className="font-serif text-sm sm:text-base font-bold text-[#1C1917] dark:text-[#F5F0EB] line-clamp-1 hover:text-[#881337] dark:hover:text-[#FB7185] cursor-pointer transition-colors"
             title={product.name}
           >
             {product.name}
           </h3>
 
-          {/* Choose Variant Label */}
-          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1">
-            <span>Choose Phone Model & Variant</span>
-            <span className="text-[#F0508C] text-[10px]">✦</span>
+          {/* Subtitle / Features */}
+          <p className="text-[11px] text-stone-500 dark:text-stone-400 mt-1 flex items-center gap-1">
+            <span>Bespoke Handcrafted Finish</span>
+            <span className="text-[#C5A059] text-[10px]">✦</span>
           </p>
         </div>
 
         {/* Pricing & Mobile Quick View */}
-        <div className="pt-3 mt-2 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-base sm:text-lg font-extrabold text-[#231F20] dark:text-white tabular-nums">
+        <div className="pt-3 mt-3 border-t border-[#EFE7DE] dark:border-[#282127] flex items-center justify-between">
+          <div className="flex items-baseline gap-2">
+            <span className="text-base sm:text-lg font-bold text-[#1C1917] dark:text-white tabular-nums font-serif">
               ₹{product.price}
             </span>
-            <span className="text-xs text-slate-400 line-through tabular-nums">
+            <span className="text-xs text-stone-400 line-through tabular-nums">
               ₹{product.mrp}
             </span>
             <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
@@ -138,7 +137,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView, 
 
           <button
             onClick={() => onQuickView(product)}
-            className="sm:hidden bg-[#F0508C] text-white p-2 rounded-full shadow-xs"
+            className="sm:hidden bg-[#881337] text-white p-2 rounded-xl shadow-xs"
             aria-label="Customize"
           >
             <Eye className="w-3.5 h-3.5" />

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Product } from '../types';
-import { Music, Play, Heart, Sparkles } from 'lucide-react';
+import { Music, Play, Heart, Sparkles, Camera, Lock, Flame, Users, Sparkle } from 'lucide-react';
 
 interface PhoneCaseMockupProps {
   product: Pick<Product, 'designPattern' | 'themeColor' | 'secondaryColor' | 'name' | 'category'>;
@@ -32,9 +32,9 @@ export const PhoneCaseMockup: React.FC<PhoneCaseMockupProps> = ({
         background: `radial-gradient(circle at 50% 30%, ${themeColor}50 0%, #FFF8F4 75%)`,
       }}
     >
-      {/* Ambient Sparkles */}
-      <div className="absolute top-3 left-4 text-xs text-[#E11D48]/70 animate-pulse-glow">✦</div>
-      <div className="absolute bottom-6 right-5 text-sm text-[#FFD94A]/90 animate-pulse-glow">✦</div>
+      {/* Ambient Gold Accents */}
+      <div className="absolute top-3 left-4 text-xs text-[#BE123C]/70 animate-pulse">✦</div>
+      <div className="absolute bottom-6 right-5 text-sm text-[#C5A059]/90 animate-pulse">✦</div>
 
       {/* 1. Personalized Name Necklace Mockup */}
       {designPattern === 'jewelry_necklace' && (
@@ -69,25 +69,27 @@ export const PhoneCaseMockup: React.FC<PhoneCaseMockupProps> = ({
       {designPattern === 'eternal_rose_dome' && (
         <div className="relative w-56 h-72 flex flex-col items-center justify-end pb-4">
           {/* Glass Cloche Dome */}
-          <div className="relative w-44 h-60 rounded-t-full border-4 border-white/80 bg-gradient-to-b from-white/40 via-pink-50/20 to-black/10 backdrop-blur-xs shadow-2xl flex flex-col items-center justify-between p-4 overflow-hidden">
+          <div className="relative w-44 h-60 rounded-t-full border-4 border-white/80 bg-gradient-to-b from-white/40 via-rose-50/20 to-black/10 backdrop-blur-xs shadow-2xl flex flex-col items-center justify-between p-4 overflow-hidden">
             {/* Fairy Lights Twinkle */}
-            <div className="absolute inset-0 bg-[radial-gradient(#FFD94A_1.5px,transparent_1.5px)] [background-size:16px_16px] opacity-70 animate-pulse-glow" />
+            <div className="absolute inset-0 bg-[radial-gradient(#E5C378_1.5px,transparent_1.5px)] [background-size:16px_16px] opacity-70 animate-pulse" />
             
             <div className="w-4 h-4 rounded-full bg-white/60 mx-auto -mt-2 shadow-xs" />
 
-            {/* Glowing Red Rose */}
+            {/* Glowing Rose Art Center */}
             <div className="relative my-auto flex flex-col items-center">
-              <div className="text-6xl drop-shadow-[0_10px_20px_rgba(225,29,72,0.6)] animate-float">
-                🌹
+              <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-rose-900 via-rose-600 to-red-500 flex items-center justify-center shadow-lg shadow-rose-900/40 border border-rose-300/40">
+                <Heart className="w-10 h-10 text-rose-100 fill-rose-100/90" />
               </div>
-              <div className="text-xs text-amber-300 font-bold animate-pulse">✨ ✨ ✨</div>
+              <div className="text-[10px] text-amber-300 font-semibold tracking-widest uppercase mt-2">
+                Preserved Flora
+              </div>
             </div>
 
             {/* Fallen Petals at base */}
-            <div className="flex gap-2 text-sm opacity-90">
-              <span>🥀</span>
-              <span className="text-[10px] text-amber-400">✨</span>
-              <span>🥀</span>
+            <div className="flex gap-2 text-xs text-rose-400 opacity-90 items-center">
+              <span className="w-2 h-2 rounded-full bg-rose-700 inline-block" />
+              <Sparkles className="w-3 h-3 text-amber-300" />
+              <span className="w-2.5 h-2.5 rounded-full bg-rose-600 inline-block" />
             </div>
           </div>
 
@@ -112,13 +114,13 @@ export const PhoneCaseMockup: React.FC<PhoneCaseMockupProps> = ({
               {customPhoto ? (
                 <img
                   src={customPhoto}
-                  alt="Custom Couple Photo"
+                  alt="Custom Couple Portrait"
                   className="w-full h-full object-cover"
                 />
               ) : (
                 <div className="w-full h-full bg-gradient-to-tr from-pink-300 via-rose-200 to-amber-100 flex flex-col items-center justify-center p-2 text-center">
-                  <div className="text-3xl mb-1">💑</div>
-                  <span className="text-[9px] font-bold text-rose-800">Your Photo Here</span>
+                  <Users className="w-8 h-8 text-rose-800 mb-1" />
+                  <span className="text-[9px] font-bold text-rose-900 uppercase tracking-wide">Couple Photo</span>
                 </div>
               )}
             </div>
@@ -126,10 +128,10 @@ export const PhoneCaseMockup: React.FC<PhoneCaseMockupProps> = ({
             {/* Song Title & Artist */}
             <div className="pt-1 text-left">
               <p className="text-[11px] font-bold text-slate-900 dark:text-white truncate">
-                {customSong && customSong.trim() ? customSong : 'Our Favorite Song'}
+                {customSong && customSong.trim() ? customSong : 'Our Memorable Song'}
               </p>
               <p className="text-[9px] text-slate-500 truncate">
-                {customArtist && customArtist.trim() ? customArtist : 'Divine Music Artist'}
+                {customArtist && customArtist.trim() ? customArtist : 'Divine Sound Studio'}
               </p>
             </div>
 
@@ -163,14 +165,14 @@ export const PhoneCaseMockup: React.FC<PhoneCaseMockupProps> = ({
         <div className="relative w-56 h-64 flex flex-col items-center justify-center">
           {/* Glass Crystal Cube with Optical Refraction */}
           <div className="w-40 h-44 rounded-2xl bg-gradient-to-tr from-cyan-100/60 via-white/80 to-blue-200/50 backdrop-blur-md border-4 border-white/90 shadow-2xl flex flex-col items-center justify-center p-3 relative overflow-hidden">
-            <div className="absolute top-2 left-2 text-[10px] text-cyan-500 font-bold">✨</div>
-            <div className="absolute bottom-2 right-2 text-[10px] text-blue-500 font-bold">✨</div>
+            <Sparkles className="absolute top-2 left-2 w-3.5 h-3.5 text-cyan-500" />
+            <Sparkles className="absolute bottom-2 right-2 w-3.5 h-3.5 text-blue-500" />
             
             {/* 3D Holographic Laser Portrait */}
-            <div className="w-28 h-28 rounded-full bg-cyan-900/10 border border-cyan-400/40 flex flex-col items-center justify-center text-center p-2 animate-pulse-glow">
-              <div className="text-4xl">📸</div>
-              <span className="text-[8px] font-bold text-cyan-900 uppercase mt-1">
-                3D Volumetric Laser
+            <div className="w-28 h-28 rounded-full bg-cyan-900/10 border border-cyan-400/40 flex flex-col items-center justify-center text-center p-2 animate-pulse">
+              <Camera className="w-8 h-8 text-cyan-700 mb-1" />
+              <span className="text-[8px] font-bold text-cyan-950 uppercase tracking-widest">
+                3D Laser Crystal
               </span>
             </div>
 
@@ -194,8 +196,8 @@ export const PhoneCaseMockup: React.FC<PhoneCaseMockupProps> = ({
             <div className="absolute inset-0 bg-[linear-gradient(45deg,rgba(0,0,0,0.1)_25%,transparent_25%,transparent_50%,rgba(0,0,0,0.1)_50%)] [background-size:20px_20px] opacity-40" />
 
             {/* Brass Latch */}
-            <div className="w-8 h-8 rounded-full bg-amber-400 border-2 border-amber-600 mx-auto shadow-md flex items-center justify-center text-amber-950 font-bold text-xs">
-              🔒
+            <div className="w-8 h-8 rounded-full bg-amber-400 border-2 border-amber-600 mx-auto shadow-md flex items-center justify-center text-amber-950">
+              <Lock className="w-3.5 h-3.5" />
             </div>
 
             {/* Custom Engraved Lid Text */}
@@ -204,7 +206,7 @@ export const PhoneCaseMockup: React.FC<PhoneCaseMockupProps> = ({
                 {customText && customText.trim() ? customText : 'Rohan & Ananya'}
               </p>
               <span className="text-[8px] tracking-widest uppercase text-amber-400">
-                ✦ Heirloom Keepsake Box ✦
+                ✦ Heirloom Keepsake Casket ✦
               </span>
             </div>
           </div>
@@ -218,21 +220,21 @@ export const PhoneCaseMockup: React.FC<PhoneCaseMockupProps> = ({
             <div className="flex items-center justify-around pt-2">
               {/* Candle 1 */}
               <div className="flex flex-col items-center">
-                <span className="text-xs text-amber-400 animate-bounce">🔥</span>
+                <Flame className="w-4 h-4 text-amber-500 animate-pulse" />
                 <div className="w-12 h-14 bg-rose-200 rounded-xl border border-rose-300 shadow-inner flex items-center justify-center text-[8px] font-bold text-rose-900 text-center">
                   Rose Oud
                 </div>
               </div>
               {/* Candle 2 */}
               <div className="flex flex-col items-center">
-                <span className="text-xs text-amber-400 animate-bounce">🔥</span>
+                <Flame className="w-4 h-4 text-amber-500 animate-pulse" />
                 <div className="w-12 h-14 bg-amber-100 rounded-xl border border-amber-300 shadow-inner flex items-center justify-center text-[8px] font-bold text-amber-900 text-center">
                   Vanilla
                 </div>
               </div>
             </div>
             {/* Satin Eye Mask */}
-            <div className="bg-pink-500 text-white text-center py-1 rounded-xl text-[9px] font-bold shadow-xs">
+            <div className="bg-[#881337] text-white text-center py-1 rounded-xl text-[9px] font-bold shadow-xs">
               Mulberry Silk Mask Included
             </div>
           </div>
@@ -327,14 +329,14 @@ export const PhoneCaseMockup: React.FC<PhoneCaseMockupProps> = ({
                       </g>
                     ))}
                   </svg>
-                  <span className="text-[11px] font-medium text-[#E11D48] tracking-wide mt-1 bg-white/80 px-2 py-0.5 rounded-full shadow-xs">
+                  <span className="text-[11px] font-medium text-[#881337] tracking-wide mt-1 bg-white/80 px-2 py-0.5 rounded-full shadow-xs">
                     Freshwater Pearls
                   </span>
                 </div>
               )}
 
               {designPattern === 'zipper_wallet' && (
-                <div className="relative w-full max-w-[150px] bg-white/90 rounded-2xl p-2.5 shadow-md border border-[#E11D48]/30 flex flex-col gap-1.5">
+                <div className="relative w-full max-w-[150px] bg-white/90 rounded-2xl p-2.5 shadow-md border border-[#881337]/30 flex flex-col gap-1.5">
                   <div className="flex items-center justify-between border-b border-dashed border-slate-300 pb-1.5">
                     <span className="text-[9px] font-semibold text-slate-700">Zipper Wallet</span>
                     <div className="w-3.5 h-3.5 bg-amber-400 rounded-sm flex items-center justify-center text-[7px] text-white font-bold">
@@ -342,14 +344,14 @@ export const PhoneCaseMockup: React.FC<PhoneCaseMockupProps> = ({
                     </div>
                   </div>
                   <div className="h-16 rounded-lg bg-pink-50/80 border border-pink-200/60 flex items-center justify-center">
-                    <span className="text-[9px] text-pink-700 font-medium">Holds 4 Cards & Cash</span>
+                    <span className="text-[9px] text-pink-900 font-medium">Holds 4 Cards & Cash</span>
                   </div>
                 </div>
               )}
 
               {designPattern === 'chrome_mirror' && (
                 <div className="relative w-28 h-28 rounded-full bg-gradient-to-tr from-slate-300 via-white to-slate-200 border-4 border-slate-100 shadow-lg flex flex-col items-center justify-center overflow-hidden">
-                  <div className="text-rose-500 font-serif text-lg">✦</div>
+                  <Sparkles className="w-5 h-5 text-rose-500 mb-1" />
                   <span className="text-[9px] font-bold text-slate-800 tracking-wider uppercase">
                     Vanity Mirror
                   </span>
@@ -361,11 +363,11 @@ export const PhoneCaseMockup: React.FC<PhoneCaseMockupProps> = ({
             <div className="relative z-10 pb-4 pt-1 px-3 text-center">
               {customText && customText.trim().length > 0 ? (
                 <div className="bg-white/80 dark:bg-black/60 backdrop-blur-xs rounded-xl py-1 px-2 border border-white/50 shadow-xs inline-block max-w-full">
-                  <p className="font-script text-lg sm:text-xl text-[#E11D48] leading-none drop-shadow-sm truncate">
+                  <p className="font-script text-lg sm:text-xl text-[#881337] leading-none drop-shadow-sm truncate">
                     {customText}
                   </p>
                   <span className="text-[8px] tracking-wider uppercase text-slate-500 font-semibold block">
-                    ✦ Custom Name
+                    ✦ Custom Inscription
                   </span>
                 </div>
               ) : (
@@ -373,7 +375,7 @@ export const PhoneCaseMockup: React.FC<PhoneCaseMockupProps> = ({
                   <p className="font-serif italic text-xs text-slate-700 dark:text-slate-200 truncate">
                     {name.split(' ').slice(0, 3).join(' ')}
                   </p>
-                  <p className="text-[8px] tracking-widest uppercase text-slate-500">Divine's Eternity</p>
+                  <p className="text-[8px] tracking-widest uppercase text-slate-500">Divine Atelier</p>
                 </div>
               )}
             </div>

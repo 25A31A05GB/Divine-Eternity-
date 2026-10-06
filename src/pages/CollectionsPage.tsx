@@ -4,7 +4,7 @@ import { ProductCard } from '../components/common/ProductCard';
 import { CATEGORIES } from '../data/products';
 import { PHONE_BRANDS } from '../data/phoneModels';
 import { SEO } from '../components/common/SEO';
-import { Filter, SlidersHorizontal, Sparkles, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { Filter, SlidersHorizontal, Sparkles, ChevronLeft, ChevronRight, X, Search } from 'lucide-react';
 
 interface CollectionsPageProps {
   initialCategory?: string;
@@ -151,7 +151,7 @@ export const CollectionsPage: React.FC<CollectionsPageProps> = ({
                   <option value="popularity">Sort: Most Popular</option>
                   <option value="price-low">Price: Low to High</option>
                   <option value="price-high">Price: High to Low</option>
-                  <option value="rating">Highest Rated (★)</option>
+                  <option value="rating">Highest Rated Reviews</option>
                   <option value="newest">Newest Arrivals</option>
                 </select>
               </div>
@@ -275,8 +275,8 @@ export const CollectionsPage: React.FC<CollectionsPageProps> = ({
           <div className="lg:col-span-9 space-y-8">
             {paginatedProducts.length === 0 ? (
               <div className="bg-white dark:bg-[#1E1A1D] rounded-3xl p-12 text-center border border-[#F3E8E2] dark:border-[#2D252A] space-y-4">
-                <div className="w-16 h-16 rounded-full bg-pink-50 dark:bg-pink-950/40 text-3xl flex items-center justify-center mx-auto">
-                  🔍
+                <div className="w-16 h-16 rounded-full bg-rose-50 dark:bg-rose-950/40 border border-rose-100 dark:border-rose-900/50 flex items-center justify-center mx-auto text-[#BE123C]">
+                  <Search className="w-7 h-7" />
                 </div>
                 <h3 className="font-serif-heading text-lg font-bold text-slate-900 dark:text-white">
                   No cases match your filters

@@ -47,8 +47,8 @@ export const WishlistPage: React.FC<WishlistPageProps> = ({
 
         {wishlistedProducts.length === 0 ? (
           <div className="bg-white dark:bg-[#1E1A1D] rounded-3xl p-12 text-center border border-[#F3E8E2] dark:border-[#2D252A] shadow-xs max-w-lg mx-auto space-y-4">
-            <div className="w-16 h-16 rounded-full bg-pink-50 dark:bg-pink-950/40 text-3xl flex items-center justify-center mx-auto text-[#F0508C]">
-              💖
+            <div className="w-16 h-16 rounded-full bg-rose-50 dark:bg-rose-950/40 border border-rose-100 dark:border-rose-900/40 flex items-center justify-center mx-auto text-[#BE123C]">
+              <Heart className="w-7 h-7" />
             </div>
             <h3 className="font-serif-heading text-lg font-bold text-slate-900 dark:text-white">
               Your wishlist is empty

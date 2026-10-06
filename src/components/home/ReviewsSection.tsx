@@ -9,7 +9,7 @@ export const ReviewsSection: React.FC = () => {
     { label: 'Orders Handcrafted & Delivered', value: '45,000+' },
     { label: 'Would Recommend to a Bestie', value: '99.4%' },
     { label: 'Hassle-Free Replacement Policy', value: '7 Days' },
-    { label: 'Average Customer Rating', value: '4.9 ★' },
+    { label: 'Average Customer Rating', value: '4.9 / 5.0' },
   ];
 
   const handlePrev = () => {

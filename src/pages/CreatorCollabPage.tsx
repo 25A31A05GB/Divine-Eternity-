@@ -206,10 +206,10 @@ export const CreatorCollabPage: React.FC<CreatorCollabPageProps> = ({
         {/* ============================================================ */}
         <div className="flex items-center justify-center sm:justify-start gap-2 overflow-x-auto pb-4 mb-8 border-b border-[#EFE2DC] dark:border-[#262024] scrollbar-none">
           {[
-            { id: 'campaigns', label: '🔥 Upcoming Brand Campaigns', icon: Video },
-            { id: 'register', label: '📝 Creator Club Registration', icon: Users },
-            { id: 'calculator', label: '💰 Commission Calculator', icon: DollarSign },
-            { id: 'portal', label: '🚀 Affiliate Dashboard Preview', icon: Briefcase },
+            { id: 'campaigns', label: 'Upcoming Brand Campaigns', icon: Video },
+            { id: 'register', label: 'Creator Club Registration', icon: Users },
+            { id: 'calculator', label: 'Commission Calculator', icon: DollarSign },
+            { id: 'portal', label: 'Affiliate Dashboard Preview', icon: Briefcase },
           ].map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -330,9 +330,9 @@ export const CreatorCollabPage: React.FC<CreatorCollabPageProps> = ({
                         {camp.freePrProducts.map((prod, i) => (
                           <span
                             key={i}
-                            className="px-2 py-0.5 rounded-lg text-[10px] font-semibold bg-[#FAF2EE] dark:bg-[#201A1E] text-[#231F20] dark:text-white border border-[#EDE2DB] dark:border-[#2C242A]"
+                            className="px-2 py-0.5 rounded-lg text-[10px] font-semibold bg-[#FAF2EE] dark:bg-[#201A1E] text-[#231F20] dark:text-white border border-[#EDE2DB] dark:border-[#2C242A] flex items-center gap-1"
                           >
-                            ✨ {prod}
+                            <Sparkles className="w-2.5 h-2.5 text-[#F0508C]" /> {prod}
                           </span>
                         ))}
                       </div>
@@ -370,7 +370,7 @@ export const CreatorCollabPage: React.FC<CreatorCollabPageProps> = ({
                     <CheckCircle2 className="w-10 h-10" />
                   </div>
                   <h3 className="font-serif text-2xl sm:text-3xl font-bold text-[#231F20] dark:text-white">
-                    Application Received! 🎉
+                    Application Received
                   </h3>
                   <p className="text-sm text-[#7A7276] dark:text-[#A8A0A5] max-w-md mx-auto">
                     Welcome to the <strong>Divine’s Eternity Creator Family</strong>, {fullName}! Our influencer relations team will review your channels and email you within <strong>24 to 48 hours</strong> with your PR shipment tracking and custom follower promo code: <strong className="text-[#F0508C]">{proposedCode}</strong>.
@@ -571,8 +571,9 @@ export const CreatorCollabPage: React.FC<CreatorCollabPageProps> = ({
                     </div>
 
                     <div className="pt-4 border-t border-[#EDE2DB] dark:border-[#2A2328] flex items-center justify-between">
-                      <div className="text-xs text-[#7A7276]">
-                        🔒 Your contact & shipping details are 100% private.
+                      <div className="text-xs text-[#7A7276] flex items-center gap-1.5">
+                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>Your contact & shipping details are 100% private.</span>
                       </div>
                       <button
                         type="submit"

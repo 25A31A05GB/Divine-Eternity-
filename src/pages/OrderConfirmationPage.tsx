@@ -1,6 +1,6 @@
 import React from 'react';
 import { Order } from '../types';
-import { CheckCircle2, PackageCheck, Truck, Sparkles, ArrowRight, Home } from 'lucide-react';
+import { CheckCircle2, PackageCheck, Truck, Sparkles, ArrowRight, Home, Gift } from 'lucide-react';
 import { PhoneCaseMockup } from '../utils/productVisuals';
 import { SEO } from '../components/common/SEO';
 
@@ -127,8 +127,9 @@ export const OrderConfirmationPage: React.FC<OrderConfirmationPageProps> = ({
           {/* Gift Packaging & Note Card if selected */}
           {order.isGiftWrapped && (
             <div className="p-4 rounded-2xl bg-pink-50/70 dark:bg-pink-950/30 border border-pink-200 dark:border-pink-900/50 space-y-1.5 text-xs">
-              <div className="flex items-center gap-2 font-bold text-[#F0508C]">
-                <span>🎁 Luxury Gift Packaging & Card Included (+₹99)</span>
+              <div className="flex items-center gap-2 font-bold text-[#881337] dark:text-[#FB7185]">
+                <Gift className="w-4 h-4 text-[#881337] dark:text-[#FB7185]" />
+                <span>Luxury Gift Packaging & Stationery Card Included (+₹99)</span>
               </div>
               {order.giftNote && (
                 <div className="text-slate-700 dark:text-slate-300 italic pl-6">

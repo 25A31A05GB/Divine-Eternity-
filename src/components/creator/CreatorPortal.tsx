@@ -240,11 +240,11 @@ export const CreatorPortal: React.FC<CreatorPortalProps> = ({ onExploreProducts 
         {/* Portal Navigation Tabs */}
         <div className="flex items-center gap-2 overflow-x-auto pt-6 mt-6 border-t border-[#F0E0E6] dark:border-[#2C2228] scrollbar-none">
           {[
-            { id: 'dashboard', label: '📊 Commission Analytics', icon: BarChart3 },
-            { id: 'campaigns', label: '🔥 Brand Campaigns & Briefs', icon: Video },
-            { id: 'signup', label: '📝 Program Registration', icon: Users },
-            { id: 'assets', label: '🎨 Promo Kit & Media Assets', icon: Download },
-            { id: 'payouts', label: '💳 Payouts & Banking', icon: Wallet },
+            { id: 'dashboard', label: 'Commission Analytics', icon: BarChart3 },
+            { id: 'campaigns', label: 'Brand Campaigns & Briefs', icon: Video },
+            { id: 'signup', label: 'Program Registration', icon: Users },
+            { id: 'assets', label: 'Promo Kit & Media Assets', icon: Download },
+            { id: 'payouts', label: 'Payouts & Banking', icon: Wallet },
           ].map((tab) => {
             const Icon = tab.icon;
             const isActive = portalTab === tab.id;
@@ -279,8 +279,8 @@ export const CreatorPortal: React.FC<CreatorPortalProps> = ({ onExploreProducts 
                 <span className="text-xs font-bold uppercase tracking-wider text-[#7A7276] flex items-center gap-1.5">
                   <Tag className="w-3.5 h-3.5 text-[#F0508C]" /> Your 15% Follower Promo Code
                 </span>
-                <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
-                  Active & Synced ✓
+                <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800 flex items-center gap-1">
+                  <Check className="w-3 h-3" /> Active & Synced
                 </span>
               </div>
 
@@ -389,7 +389,7 @@ export const CreatorPortal: React.FC<CreatorPortalProps> = ({ onExploreProducts 
                 <Sparkles className="w-4 h-4 text-[#FFD94A]" />
               </div>
               <div className="text-sm font-bold text-[#231F20] dark:text-white mt-1">
-                Valentine Drops Box 📦
+                Valentine Drops Box
               </div>
               <div className="inline-flex items-center gap-1 text-[11px] text-sky-600 dark:text-sky-400 font-bold bg-sky-50 dark:bg-sky-950/50 px-2 py-0.5 rounded-full mt-2 border border-sky-200 dark:border-sky-800">
                 <Clock className="w-3 h-3" /> Shipped via BlueDart
@@ -600,7 +600,7 @@ export const CreatorPortal: React.FC<CreatorPortalProps> = ({ onExploreProducts 
 
                     {isApplied ? (
                       <span className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
-                        <Check className="w-3.5 h-3.5" /> Applied ✓
+                        <Check className="w-3.5 h-3.5" /> Applied
                       </span>
                     ) : (
                       <button
@@ -629,7 +629,7 @@ export const CreatorPortal: React.FC<CreatorPortalProps> = ({ onExploreProducts 
                 <CheckCircle2 className="w-10 h-10" />
               </div>
               <h3 className="font-serif text-2xl font-bold text-[#231F20] dark:text-white">
-                Welcome to Divine Creator Club! 🎉
+                Welcome to Divine Creator Club
               </h3>
               <p className="text-xs text-[#7A7276] max-w-sm mx-auto">
                 Your affiliate account is ready with promo code <strong className="text-[#F0508C]">{signUpCode}</strong>. Redirecting to your personal dashboard...

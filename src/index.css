@@ -2,27 +2,27 @@
 
 @layer base {
   :root {
-    --bg-main: #FFF9F5;
-    --text-main: #231F20;
-    --brand-pink: #E11D48;
-    --brand-rose-gold: #BE123C;
-    --brand-gold: #D4AF37;
-    --brand-yellow: #FFD94A;
-    --brand-sky: #EDF2FB;
+    --bg-main: #FAF7F2;
+    --text-main: #1C1917;
+    --brand-burgundy: #881337;
+    --brand-rose-gold: #9F1239;
+    --brand-gold: #C5A059;
+    --brand-gold-light: #E5C378;
+    --brand-silk: #FFFDF9;
     --brand-card: #FFFFFF;
-    --border-subtle: #F5E6E8;
+    --border-subtle: #EFE7DE;
   }
 
   .dark {
-    --bg-main: #141113;
-    --text-main: #FDF9F7;
-    --brand-pink: #FB7185;
-    --brand-rose-gold: #F43F5E;
-    --brand-gold: #FCD34D;
-    --brand-yellow: #FCE174;
-    --brand-sky: #1E293B;
-    --brand-card: #1E1A1D;
-    --border-subtle: #2D252A;
+    --bg-main: #0F0D10;
+    --text-main: #F5F0EB;
+    --brand-burgundy: #E11D48;
+    --brand-rose-gold: #FB7185;
+    --brand-gold: #E5C378;
+    --brand-gold-light: #FCE174;
+    --brand-silk: #171417;
+    --brand-card: #1A161A;
+    --border-subtle: #282127;
   }
 
   body {
@@ -33,6 +33,7 @@
 
   h1, h2, h3, .font-serif-heading {
     font-family: 'Playfair Display', Georgia, serif;
+    letter-spacing: -0.02em;
   }
 
   .font-script {
@@ -42,12 +43,17 @@
 
 @keyframes floatSlow {
   0%, 100% { transform: translateY(0px) rotate(0deg); }
-  50% { transform: translateY(-8px) rotate(2deg); }
+  50% { transform: translateY(-6px) rotate(1.5deg); }
 }
 
 @keyframes pulseGlow {
-  0%, 100% { opacity: 0.8; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.05); }
+  0%, 100% { opacity: 0.85; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.03); }
+}
+
+@keyframes shimmerGold {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
 @keyframes marquee {
@@ -66,11 +72,27 @@
 .animate-marquee {
   display: flex;
   width: 200%;
-  animation: marquee 25s linear infinite;
+  animation: marquee 28s linear infinite;
 }
 
 .animate-marquee:hover {
   animation-play-state: paused;
+}
+
+.gold-gradient-text {
+  background: linear-gradient(135deg, #996515 0%, #D4AF37 50%, #F3E5AB 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.dark .gold-gradient-text {
+  background: linear-gradient(135deg, #E5C378 0%, #F5E0A3 50%, #FFF7D6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gold-shimmer-border {
+  border-image: linear-gradient(to right, #C5A059, #E5C378, #C5A059) 1;
 }
 
 /* Custom scrollbar for horizontal product sliders */
