@@ -958,15 +958,45 @@ export const MediaStudioCMS: React.FC<MediaStudioCMSProps> = ({ products }) => {
 
               <div className="space-y-1">
                 <label className="text-xs font-bold text-stone-700 dark:text-stone-300 block">
-                  Custom Image URL (Optional)
+                  Custom Image File or URL (Optional)
                 </label>
-                <input
-                  type="url"
-                  value={slideImageUrl}
-                  onChange={(e) => setSlideImageUrl(e.target.value)}
-                  placeholder="https://images.unsplash.com/..."
-                  className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 text-xs font-mono text-stone-900 dark:text-white"
-                />
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                  <input
+                    type="text"
+                    value={slideImageUrl}
+                    onChange={(e) => setSlideImageUrl(e.target.value)}
+                    placeholder="Paste image URL or choose file from device..."
+                    className="flex-1 bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 text-xs font-mono text-stone-900 dark:text-white"
+                  />
+                  <label className="px-3 py-2 rounded-xl bg-[#211D1C] hover:bg-black text-white text-xs font-bold shrink-0 cursor-pointer text-center flex items-center justify-center gap-1.5 shadow-xs transition-colors">
+                    <span>📁 Upload Photo</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onload = (evt) => {
+                            if (evt.target?.result) {
+                              setSlideImageUrl(evt.target.result as string);
+                            }
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                    />
+                  </label>
+                </div>
+                {slideImageUrl && (
+                  <div className="mt-2 flex items-center gap-2">
+                    <div className="w-16 h-16 rounded-xl overflow-hidden border border-[#EFE7DE] bg-stone-100 shrink-0">
+                      <img src={slideImageUrl} alt="Preview" className="w-full h-full object-cover" />
+                    </div>
+                    <span className="text-[10px] text-emerald-600 font-bold">✓ Image Loaded Ready to Display</span>
+                  </div>
+                )}
               </div>
 
               <div className="space-y-1">
@@ -974,10 +1004,10 @@ export const MediaStudioCMS: React.FC<MediaStudioCMSProps> = ({ products }) => {
                   Background Video MP4 URL (Optional)
                 </label>
                 <input
-                  type="url"
+                  type="text"
                   value={slideVideoUrl}
                   onChange={(e) => setSlideVideoUrl(e.target.value)}
-                  placeholder="https://assets.mixkit.co/videos/preview/..."
+                  placeholder="https://assets.mixkit.co/videos/preview/... or video link"
                   className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 text-xs font-mono text-stone-900 dark:text-white"
                 />
               </div>
@@ -1061,7 +1091,7 @@ export const MediaStudioCMS: React.FC<MediaStudioCMSProps> = ({ products }) => {
                   Video MP4 Link
                 </label>
                 <input
-                  type="url"
+                  type="text"
                   required
                   value={reelVideoUrl}
                   onChange={(e) => setReelVideoUrl(e.target.value)}
@@ -1072,15 +1102,45 @@ export const MediaStudioCMS: React.FC<MediaStudioCMSProps> = ({ products }) => {
 
               <div className="space-y-1">
                 <label className="text-xs font-bold text-stone-700 dark:text-stone-300 block">
-                  Video Poster Image Thumbnail
+                  Video Poster Image Thumbnail File or URL
                 </label>
-                <input
-                  type="url"
-                  value={reelPosterImage}
-                  onChange={(e) => setReelPosterImage(e.target.value)}
-                  placeholder="https://images.unsplash.com/..."
-                  className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3.5 py-2.5 text-xs font-mono text-stone-900 dark:text-white"
-                />
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                  <input
+                    type="text"
+                    value={reelPosterImage}
+                    onChange={(e) => setReelPosterImage(e.target.value)}
+                    placeholder="https://images.unsplash.com/... or upload photo"
+                    className="flex-1 bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3.5 py-2.5 text-xs font-mono text-stone-900 dark:text-white"
+                  />
+                  <label className="px-3 py-2 rounded-xl bg-[#211D1C] hover:bg-black text-white text-xs font-bold shrink-0 cursor-pointer text-center flex items-center justify-center gap-1.5 shadow-xs transition-colors">
+                    <span>📁 Upload Poster</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onload = (evt) => {
+                            if (evt.target?.result) {
+                              setReelPosterImage(evt.target.result as string);
+                            }
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                    />
+                  </label>
+                </div>
+                {reelPosterImage && (
+                  <div className="mt-2 flex items-center gap-2">
+                    <div className="w-12 h-16 rounded-xl overflow-hidden border border-[#EFE7DE] bg-stone-100 shrink-0">
+                      <img src={reelPosterImage} alt="Preview" className="w-full h-full object-cover" />
+                    </div>
+                    <span className="text-[10px] text-emerald-600 font-bold">✓ Poster Thumbnail Loaded</span>
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-3">

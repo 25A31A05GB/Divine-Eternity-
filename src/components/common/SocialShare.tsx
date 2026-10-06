@@ -16,11 +16,11 @@ export const SocialShare: React.FC<SocialShareProps> = ({
   const [copied, setCopied] = useState(false);
 
   // Generate share URL and descriptions
-  const currentUrl = typeof window !== 'undefined' ? window.location.href : 'https://divineseternity.com';
-  const shareTitle = encodeURIComponent(`Check out the ${product.name} on Divine's Eternity!`);
+  const currentUrl = typeof window !== 'undefined' ? window.location.href : 'https://gadgetsdestiny.com';
+  const shareTitle = encodeURIComponent(`Check out the ${product.name} on Gadgets Destiny!`);
   const shareUrl = encodeURIComponent(currentUrl);
   const shareText = encodeURIComponent(
-    `I'm obsessed with this ${product.name} from Divine's Eternity! Handcrafted luxury phone case with custom calligraphy engraving. ₹${product.price} (Buy 3 Pay 2 available)`
+    `I'm obsessed with this ${product.name} from Gadgets Destiny! Cute designer phone case. ₹${product.price} (Buy 2 for ₹849 available)`
   );
 
   const handleCopyLink = () => {
@@ -38,7 +38,7 @@ export const SocialShare: React.FC<SocialShareProps> = ({
         url = `https://api.whatsapp.com/send?text=${shareText}%20${shareUrl}`;
         break;
       case 'twitter':
-        url = `https://twitter.com/intent/tweet?url=${shareUrl}&text=${shareTitle}&hashtags=PhoneAesthetic,Gifts,DivinesEternity`;
+        url = `https://twitter.com/intent/tweet?url=${shareUrl}&text=${shareTitle}&hashtags=CuteCovers,PhoneCases,GadgetsDestiny`;
         break;
       case 'facebook':
         url = `https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`;

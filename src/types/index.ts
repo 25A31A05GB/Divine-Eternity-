@@ -1,4 +1,12 @@
 export type GiftCategory =
+  | 'Names on Gifts'
+  | 'Personalized Jewellery'
+  | 'Customize Your Caricature or Miniature'
+  | 'Personalize Your Bouquets'
+  | 'Special Hampers'
+  | 'Hair Accessories'
+  | 'Paradise of Jewels'
+  // Backward compatibility aliases
   | 'Personalized Name Jewelry'
   | 'Preserved Eternal Roses & Dome Displays'
   | 'Custom Acrylic Song Plaques & Photo Frames'
@@ -104,9 +112,14 @@ export interface Product {
     | 'acrylic_song_plaque'
     | 'crystal_photo_cube'
     | 'wooden_keepsake_box'
-    | 'scented_candle_hamper';
+    | 'scented_candle_hamper'
+    | 'names_on_gifts'
+    | 'caricature_miniature'
+    | 'custom_bouquet'
+    | 'hair_accessories'
+    | 'paradise_jewels';
   supportedBrands?: PhoneBrand[];
-  variantsStock?: { [key in CaseType]?: boolean };
+  variantsStock?: { [key: string]: boolean | undefined };
   allowsPersonalization: boolean;
   personalizationConfig?: PersonalizationConfig;
 }
@@ -309,5 +322,59 @@ export interface BrandStoryCMS {
 }
 
 export type AdminRole = 'director' | 'superadmin' | 'orders' | 'catalog';
+
+export interface PodcastEpisode {
+  id: string;
+  title: string;
+  episodeNumber: number;
+  duration: string;
+  guest: string;
+  guestRole: string;
+  category: 'Creativity' | 'Entrepreneurship' | 'Content Creation' | 'Real-Life Journeys';
+  summary: string;
+  keyTakeaways: string[];
+  audioUrl: string;
+  coverImage: string;
+  publishedDate: string;
+  spotifyUrl?: string;
+  youtubeUrl?: string;
+}
+
+export interface PersonalizationRequest {
+  id?: string;
+  category: string;
+  productName?: string;
+  preferredColor: string;
+  preferredDesign: string;
+  preferredTheme: string;
+  customText?: string;
+  customRequirements?: string;
+  customerName: string;
+  customerPhone: string;
+  createdAt?: string;
+}
+
+export interface CollaborationProposal {
+  id?: string;
+  fullName: string;
+  brandOrHandle: string;
+  email: string;
+  phone: string;
+  collaborationType: 'Product Promotions' | 'UGC Content' | 'Paid Collaboration' | 'Creative Campaign';
+  platform: 'Instagram' | 'YouTube' | 'TikTok' | 'Brand Partnership';
+  followerCount: string;
+  pitch: string;
+  portfolioUrl?: string;
+  createdAt?: string;
+}
+
+export type MainCollectionId =
+  | 'products'
+  | 'personalization'
+  | 'collaboration'
+  | 'upcoming-campaigns'
+  | 'creator-club'
+  | 'affiliate-marketing'
+  | 'podcast';
 
 

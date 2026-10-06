@@ -11,17 +11,17 @@ export interface SEOProps {
   structuredData?: Record<string, unknown> | Array<Record<string, unknown>>;
 }
 
-const DEFAULT_TITLE = "Divine's Eternity - Luxury Phone Cases & Personalized Gifts";
+const DEFAULT_TITLE = "Divine’s Eternity - Luxury Gifts & Personalized Keepsakes";
 const DEFAULT_DESCRIPTION =
-  'Gifts that stay in hearts. Handcrafted luxury phone cases, bracelet cases, mirror cases, and custom personalized accessories.';
+  'Discover the world of Divine’s Eternity, where every gift is created to make your special moments more memorable.';
 const DEFAULT_IMAGE =
-  'https://images.unsplash.com/photo-1586105251261-72a756497a11?auto=format&fit=crop&w=1200&q=80';
-const SITE_NAME = "Divine's Eternity";
+  'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&w=1200&q=80';
+const SITE_NAME = "Divine’s Eternity";
 
 export const SEO: React.FC<SEOProps> = ({
   title,
   description = DEFAULT_DESCRIPTION,
-  keywords = 'luxury phone cases, personalized jewelry, custom acrylic song plaques, preserved eternal roses, memory photo lamps, divine eternity gifts',
+  keywords = 'divines eternity, personalized gifts, names on gifts, personalized jewellery, caricature miniature, personalized bouquets, special hampers, hair accessories, paradise of jewels',
   image = DEFAULT_IMAGE,
   url,
   type = 'website',
@@ -29,7 +29,7 @@ export const SEO: React.FC<SEOProps> = ({
   structuredData,
 }) => {
   const fullTitle = title
-    ? `${title} | Divine's Eternity`
+    ? `${title} | Divine’s Eternity`
     : DEFAULT_TITLE;
 
   useEffect(() => {

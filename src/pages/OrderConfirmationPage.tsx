@@ -15,7 +15,7 @@ export const OrderConfirmationPage: React.FC<OrderConfirmationPageProps> = ({
   onTrackOrder,
   onContinueShopping,
 }) => {
-  const confirmationUrl = typeof window !== 'undefined' ? window.location.href : 'https://divineseternity.com/#order-confirmation';
+  const confirmationUrl = typeof window !== 'undefined' ? window.location.href : 'https://gadgetsdestiny.com/#order-confirmation';
 
   return (
     <div className="py-12 sm:py-16">

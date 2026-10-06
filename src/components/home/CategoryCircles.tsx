@@ -1,53 +1,77 @@
 import React from 'react';
-import { Smartphone } from 'lucide-react';
+import {
+  Gift,
+  Palette,
+  Users,
+  Calendar,
+  Award,
+  TrendingUp,
+  Headphones,
+  Sparkles,
+} from 'lucide-react';
+import { STRICT_COLLECTIONS } from '../../data/collectionsData';
 
 interface CategoryCirclesProps {
   onSelectCategory: (categoryName: string) => void;
   activeCategory: string;
 }
 
-const GADGETS_CATEGORIES = [
+const COLLECTION_VISUALS = [
   {
-    name: 'Zipper Wallet Case',
-    slug: 'zipper-wallet-case',
-    image: 'https://images.unsplash.com/photo-1586105251261-72a756497a11?auto=format&fit=crop&w=400&q=80',
-    color: '#FFB5D5',
+    id: 'products',
+    name: 'Products',
+    subtitle: '7 Gift Categories',
+    image: 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=400&q=80',
+    icon: Gift,
+    badge: 'Explore All',
   },
   {
-    name: 'Bracelet Phone Case',
-    slug: 'bracelet-phone-case',
-    image: 'https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?auto=format&fit=crop&w=400&q=80',
-    color: '#D8B4F8',
+    id: 'personalization',
+    name: 'Personalization',
+    subtitle: 'WhatsApp Confirmed',
+    image: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=400&q=80',
+    icon: Palette,
+    badge: 'WhatsApp Verified',
   },
   {
-    name: 'Gripper Phone Case',
-    slug: 'gripper-phone-case',
-    image: 'https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?auto=format&fit=crop&w=400&q=80',
-    color: '#FF9EAA',
+    id: 'collaboration',
+    name: 'Collaboration',
+    subtitle: 'UGC & Creators',
+    image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+    icon: Users,
+    badge: 'Open for Creators',
   },
   {
-    name: 'Mirror Phone Case',
-    slug: 'mirror-phone-case',
-    image: 'https://images.unsplash.com/photo-1541807084-5c52b6b3adef?auto=format&fit=crop&w=400&q=80',
-    color: '#FFEAA7',
+    id: 'upcoming-campaigns',
+    name: 'Upcoming Campaigns',
+    subtitle: '@divineseternity',
+    image: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=400&q=80',
+    icon: Calendar,
+    badge: 'Follow & Win',
   },
   {
-    name: 'Toy Cases',
-    slug: 'toy-cases',
-    image: 'https://images.unsplash.com/photo-1574944985070-8f3ebc6b79d2?auto=format&fit=crop&w=400&q=80',
-    color: '#A8E6CF',
+    id: 'creator-club',
+    name: 'Creator Club',
+    subtitle: 'Earn up to ₹7k',
+    image: 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&w=400&q=80',
+    icon: Award,
+    badge: 'Earn up to ₹7k',
   },
   {
-    name: 'Clear Designer Case',
-    slug: 'clear-designer-case',
-    image: 'https://images.unsplash.com/photo-1580910051074-3eb694886505?auto=format&fit=crop&w=400&q=80',
-    color: '#FFD3B6',
+    id: 'affiliate-marketing',
+    name: 'Affiliate Marketing',
+    subtitle: '15-20% Comm.',
+    image: 'https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&w=400&q=80',
+    icon: TrendingUp,
+    badge: 'Share & Earn',
   },
   {
-    name: 'Designer Case',
-    slug: 'designer-case',
-    image: 'https://images.unsplash.com/photo-1533228896861-735eea76a755?auto=format&fit=crop&w=400&q=80',
-    color: '#FFAAA5',
+    id: 'podcast',
+    name: 'Podcast',
+    subtitle: 'Inspiring Stories',
+    image: 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?auto=format&fit=crop&w=400&q=80',
+    icon: Headphones,
+    badge: 'Listen Now',
   },
 ];
 
@@ -59,51 +83,53 @@ export const CategoryCircles: React.FC<CategoryCirclesProps> = ({
     <section className="py-10 sm:py-14 bg-[#FFFDF8]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Section Heading matching Screenshot 2 */}
+        {/* Section Heading */}
         <div className="mb-8">
-          <div className="text-[11px] font-extrabold uppercase tracking-widest text-[#E05A47] flex items-center gap-1.5 mb-1">
-            <span className="text-[#E05A47]">✦</span>
-            <span>PICK YOUR VIBE</span>
+          <div className="text-[11px] font-extrabold uppercase tracking-widest text-[#FF2E93] flex items-center gap-1.5 mb-1">
+            <Sparkles className="w-3.5 h-3.5 text-[#FFD94A]" />
+            <span>DIVINE’S ETERNITY COLLECTIONS</span>
           </div>
           <h2 className="font-serif-heading text-3xl sm:text-4xl lg:text-5xl font-bold text-[#211D1C]">
-            Shop by <span className="font-serif italic text-[#FF2E93] font-normal">collection</span>
+            Explore Our <span className="font-serif italic text-[#FF2E93] font-normal">7 Collections</span>
           </h2>
           <p className="text-xs sm:text-sm text-stone-500 mt-1">
-            Find the style that matches your mood.
+            Products, personalization, creator opportunities, podcasts, and meaningful collaborations.
           </p>
         </div>
 
-        {/* Categories Row matching Screenshot 2 */}
+        {/* Collections Row */}
         <div className="flex items-center gap-4 sm:gap-6 overflow-x-auto no-scrollbar pb-3 pt-2 justify-start lg:justify-between px-1">
-          {GADGETS_CATEGORIES.map((cat) => {
-            const isSelected = activeCategory === cat.name;
+          {COLLECTION_VISUALS.map((col, index) => {
+            const isSelected = activeCategory.toLowerCase() === col.id.toLowerCase();
+            const Icon = col.icon;
 
             return (
               <button
-                key={cat.slug}
-                onClick={() => onSelectCategory(cat.name)}
+                key={col.id}
+                onClick={() => onSelectCategory(col.id)}
                 className="group flex flex-col items-center shrink-0 text-center focus:outline-none cursor-pointer"
               >
                 {/* Circular Image Container with Pink Ring & Gold Badge */}
                 <div className="relative mb-3">
                   <div className="w-22 h-22 sm:w-24 sm:h-24 rounded-full p-1 border-2 border-[#FF2E93] transition-transform duration-300 group-hover:scale-105 shadow-xs">
-                    <div className="w-full h-full rounded-full overflow-hidden bg-[#FFF0F3] flex items-center justify-center">
+                    <div className="w-full h-full rounded-full overflow-hidden bg-[#FFF0F5] relative flex items-center justify-center">
                       <img
-                        src={cat.image}
-                        alt={cat.name}
+                        src={col.image}
+                        alt={col.name}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                         onError={(e) => {
-                          // Fallback icon if image fails
                           (e.currentTarget as HTMLElement).style.display = 'none';
                         }}
                       />
-                      <Smartphone className="w-8 h-8 text-[#FF2E93] opacity-60" />
+                      <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                        <Icon className="w-6 h-6 text-white drop-shadow-md" />
+                      </div>
                     </div>
                   </div>
 
-                  {/* Gold Star Badge on bottom-right */}
-                  <div className="w-5 h-5 bg-[#FFD94A] rounded-full flex items-center justify-center text-[10px] text-[#211D1C] border border-white shadow-xs absolute bottom-0 right-1">
-                    ✦
+                  {/* Number Badge on bottom-right */}
+                  <div className="w-5 h-5 bg-[#FFD94A] rounded-full flex items-center justify-center text-[10px] text-[#211D1C] font-extrabold border border-white shadow-xs absolute bottom-0 right-1">
+                    {index + 1}
                   </div>
                 </div>
 
@@ -115,8 +141,11 @@ export const CategoryCircles: React.FC<CategoryCirclesProps> = ({
                       : 'border-[#E7E2DA] text-[#211D1C] group-hover:border-[#FF2E93] group-hover:text-[#FF2E93]'
                   }`}
                 >
-                  {cat.name}
+                  {col.name}
                 </div>
+                <span className="text-[10px] text-stone-500 mt-0.5">
+                  {col.subtitle}
+                </span>
               </button>
             );
           })}

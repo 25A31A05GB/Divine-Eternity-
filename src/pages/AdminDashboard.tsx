@@ -192,6 +192,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [newProductSecondary, setNewProductSecondary] = useState('#881337');
   const [newProductDesc, setNewProductDesc] = useState('');
   const [newProductBadge, setNewProductBadge] = useState('Atelier Special');
+  const [newProductCustomImage, setNewProductCustomImage] = useState<string>('');
 
   // Coupon state with persistent store synchronization
   const [coupons, setCoupons] = useState<Coupon[]>(() => {
@@ -295,7 +296,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       reviewCount: 1,
       description: newProductDesc || 'Handcrafted bespoke gift made with fine craftsmanship and custom engraving.',
       features: ['18k Vermeil Laser Plating', 'Custom Engraving Included', 'Archival Box Packaging'],
-      images: ['case_front', 'case_angle'],
+      images: newProductCustomImage ? [newProductCustomImage, 'case_front'] : ['case_front', 'case_angle'],
       badge: newProductBadge || 'New Arrival',
       isBestSeller: true,
       isNew: true,
@@ -1728,6 +1729,47 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 </div>
               </div>
 
+              <div className="space-y-1">
+                <label className="font-bold text-stone-700 dark:text-stone-300">Product Image File or URL (optional)</label>
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                  <input
+                    type="text"
+                    value={newProductCustomImage}
+                    onChange={(e) => setNewProductCustomImage(e.target.value)}
+                    placeholder="Paste image URL or choose photo from device..."
+                    className="flex-1 bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 text-stone-900 dark:text-white"
+                  />
+                  <label className="px-3 py-2 rounded-xl bg-[#211D1C] hover:bg-black text-white text-xs font-bold shrink-0 cursor-pointer text-center flex items-center justify-center gap-1.5 shadow-xs transition-colors">
+                    <span>📁 Upload Image</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onload = (evt) => {
+                            if (evt.target?.result) {
+                              setNewProductCustomImage(evt.target.result as string);
+                            }
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                    />
+                  </label>
+                </div>
+                {newProductCustomImage && (
+                  <div className="mt-1 flex items-center gap-2">
+                    <div className="w-12 h-12 rounded-lg overflow-hidden border border-[#EFE7DE] bg-stone-100 shrink-0">
+                      <img src={newProductCustomImage} alt="Preview" className="w-full h-full object-cover" />
+                    </div>
+                    <span className="text-[10px] text-emerald-600 font-bold">✓ Product Image Uploaded</span>
+                  </div>
+                )}
+              </div>
+
               <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#EFE7DE] dark:border-[#282127]">
                 <button
                   type="button"
@@ -1856,8 +1898,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             <div className="space-y-4 text-xs text-stone-800 dark:text-stone-200">
               <div className="flex justify-between items-start">
                 <div>
-                  <h4 className="font-serif text-xl font-bold text-[#881337] dark:text-[#FB7185]">Divine's Eternity</h4>
-                  <p className="text-stone-500">Luxury Personalized Keepsakes</p>
+                  <h4 className="font-sans text-xl font-extrabold text-[#FF2E93]">Gadgets Destiny</h4>
+                  <p className="text-stone-500 font-bold text-[10px] uppercase tracking-wider">Cute Covers Club</p>
                 </div>
                 <div className="text-right">
                   <p className="font-mono text-stone-500">{new Date(selectedOrderForInvoice.createdAt).toLocaleDateString()}</p>

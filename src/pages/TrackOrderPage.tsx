@@ -56,9 +56,9 @@ export const TrackOrderPage: React.FC<TrackOrderPageProps> = ({ initialOrderId =
   return (
     <div className="py-10 sm:py-16">
       <SEO
-        title={searchedOrder ? `Tracking Order #${searchedOrder.id} (${searchedOrder.status}) — Gadgets Destiny` : 'Track Your Order & Live Delivery Status — Gadgets Destiny'}
-        description={searchedOrder ? `Order #${searchedOrder.id} status: ${searchedOrder.status}. Courier tracking: ${searchedOrder.trackingNumber}. Estimated delivery in 3-5 business days.` : "Check real-time live shipping updates, dispatch status, courier partner details, and expected delivery timeline for your Gadgets Destiny cute phone case order."}
-        keywords="track order, shipment status, courier tracking, phone cover dispatch, gadgets destiny"
+        title={searchedOrder ? `Tracking Order #${searchedOrder.id} (${searchedOrder.status}) — Divine’s Eternity` : 'Track Your Order — Divine’s Eternity'}
+        description={searchedOrder ? `Order #${searchedOrder.id} status: ${searchedOrder.status}. Tracking ID: ${searchedOrder.trackingNumber || searchedOrder.id}. Dispatch timeline 5-7 days.` : "Track your Divine’s Eternity order status. Enter your Tracking ID to view real-time live shipping updates."}
+        keywords="track order, shipment status, courier tracking, divines eternity dispatch, tracking id"
         url={trackUrl}
       />
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">

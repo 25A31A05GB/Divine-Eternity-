@@ -14,7 +14,7 @@ export const INITIAL_CAMPAIGNS: Campaign[] = [
     deliverables: [
       '1x 4K Aesthetic Unboxing Reel with Trending Sound',
       '2x Instagram Stories with Swipe-up / Sticker Link',
-      'High-res UGC photo for Divine Eternity website feature',
+      'High-res UGC photo for Gadgets Destiny website feature',
     ],
     slotsAvailable: 25,
     slotsFilled: 18,
@@ -23,7 +23,7 @@ export const INITIAL_CAMPAIGNS: Campaign[] = [
     requirements: [
       'Minimum 2,000+ followers on Instagram or TikTok with high organic engagement',
       'Clean, dreamy aesthetic lighting & crisp audio',
-      'Tag @divines.eternity and use unique follower promo discount code in bio/caption',
+      'Tag @gadgetsdestiny and use unique follower promo discount code in bio/caption',
     ],
   },
   {

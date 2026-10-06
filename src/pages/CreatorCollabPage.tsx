@@ -376,7 +376,7 @@ export const CreatorCollabPage: React.FC<CreatorCollabPageProps> = ({
                     Application Received
                   </h3>
                   <p className="text-sm text-[#7A7276] dark:text-[#A8A0A5] max-w-md mx-auto">
-                    Welcome to the <strong>Divine’s Eternity Creator Family</strong>, {fullName}! Our influencer relations team will review your channels and email you within <strong>24 to 48 hours</strong> with your PR shipment tracking and custom follower promo code: <strong className="text-[#F0508C]">{proposedCode}</strong>.
+                    Welcome to the <strong>Gadgets Destiny Creator Family</strong>, {fullName}! Our influencer relations team will review your channels and email you within <strong>24 to 48 hours</strong> with your PR shipment tracking and custom follower promo code: <strong className="text-[#FF2E93]">{proposedCode}</strong>.
                   </p>
                   <div className="pt-4 flex justify-center gap-3">
                     <button
@@ -384,7 +384,7 @@ export const CreatorCollabPage: React.FC<CreatorCollabPageProps> = ({
                         setIsSubmitted(false);
                         setActiveTab('portal');
                       }}
-                      className="px-6 py-2.5 rounded-full text-xs font-bold bg-[#F0508C] text-white hover:bg-[#D93D78] shadow-md transition-all"
+                      className="px-6 py-2.5 rounded-full text-xs font-bold bg-[#FF2E93] text-white hover:bg-[#E02680] shadow-md transition-all"
                     >
                       View Creator Portal Preview
                     </button>
@@ -402,11 +402,11 @@ export const CreatorCollabPage: React.FC<CreatorCollabPageProps> = ({
               ) : (
                 <>
                   <div className="mb-8 pb-6 border-b border-[#EDE2DB] dark:border-[#2A2328]">
-                    <div className="flex items-center gap-2 text-xs font-bold text-[#F0508C] uppercase tracking-wider mb-1">
+                    <div className="flex items-center gap-2 text-xs font-bold text-[#FF2E93] uppercase tracking-wider mb-1">
                       <Sparkles className="w-4 h-4 text-[#FFD94A]" /> Creator & Affiliate Application
                     </div>
-                    <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#231F20] dark:text-white">
-                      Join Divine’s Eternity Club
+                    <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#211D1C] dark:text-white">
+                      Join Cute Covers Creator Club
                     </h2>
                     <p className="text-xs sm:text-sm text-[#7A7276] dark:text-[#A8A0A5] mt-1">
                       {selectedCampaignForApply
@@ -566,7 +566,7 @@ export const CreatorCollabPage: React.FC<CreatorCollabPageProps> = ({
                       </label>
                       <textarea
                         rows={3}
-                        placeholder="Share your ideas, video concepts, or favorite Divine's Eternity product..."
+                        placeholder="Share your ideas, video concepts, or favorite Gadgets Destiny phone case..."
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
                         className="w-full px-4 py-2.5 rounded-xl bg-[#FAF2EE] dark:bg-[#201A1E] border border-[#EDE2DB] dark:border-[#2A2328] outline-none focus:border-[#F0508C] text-[#231F20] dark:text-white text-xs"

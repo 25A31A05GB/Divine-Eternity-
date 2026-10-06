@@ -23,6 +23,41 @@ export const PhoneCaseMockup: React.FC<PhoneCaseMockupProps> = ({
 }) => {
   const { designPattern, themeColor, secondaryColor, name } = product;
 
+  // Check if product has a real custom image file or URL
+  const prodImage = customPhoto || (product as any).images?.[0];
+  const isRealImage =
+    prodImage &&
+    typeof prodImage === 'string' &&
+    (prodImage.startsWith('http') ||
+      prodImage.startsWith('data:image/') ||
+      prodImage.startsWith('/images/') ||
+      prodImage.startsWith('blob:') ||
+      prodImage.includes('.jpg') ||
+      prodImage.includes('.png') ||
+      prodImage.includes('.webp'));
+
+  if (isRealImage) {
+    return (
+      <div
+        className={`relative flex items-center justify-center select-none overflow-hidden ${className} transition-transform duration-500 ${
+          isHovered ? 'scale-105' : ''
+        }`}
+      >
+        <div className="relative w-full h-full rounded-2xl overflow-hidden shadow-md border border-[#F3E8E2] bg-stone-100 flex items-center justify-center">
+          <img
+            src={prodImage}
+            alt={name || 'Product Image'}
+            className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+            onError={(e) => {
+              (e.currentTarget as HTMLImageElement).src =
+                'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=600&q=80';
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className={`relative flex items-center justify-center select-none overflow-hidden ${className} transition-transform duration-500 ${
@@ -56,7 +91,7 @@ export const PhoneCaseMockup: React.FC<PhoneCaseMockupProps> = ({
           {/* Nameplate Pendant */}
           <div className="-mt-10 bg-gradient-to-r from-[#D4AF37] via-[#FFDF73] to-[#B8860B] px-6 py-2 rounded-2xl shadow-xl border border-amber-300 text-center transform hover:scale-110 transition-transform">
             <p className="font-script text-2xl sm:text-3xl text-amber-950 font-bold drop-shadow-xs tracking-wider">
-              {customText && customText.trim() ? customText : 'Divine'}
+              {customText && customText.trim() ? customText : 'Destiny'}
             </p>
             <div className="flex items-center justify-center gap-1 text-[9px] text-amber-900 font-bold uppercase tracking-widest mt-0.5">
               <span>18k Solid Gold Finish</span>
@@ -131,7 +166,7 @@ export const PhoneCaseMockup: React.FC<PhoneCaseMockupProps> = ({
                 {customSong && customSong.trim() ? customSong : 'Our Memorable Song'}
               </p>
               <p className="text-[9px] text-slate-500 truncate">
-                {customArtist && customArtist.trim() ? customArtist : 'Divine Sound Studio'}
+                {customArtist && customArtist.trim() ? customArtist : 'Destiny Sound Studio'}
               </p>
             </div>
 
@@ -241,7 +276,222 @@ export const PhoneCaseMockup: React.FC<PhoneCaseMockupProps> = ({
         </div>
       )}
 
-      {/* 7. Phone Case Variations (Pearl Bracelet, Zipper Wallet, Mirror, etc.) */}
+      {/* 7. Names on Gifts (Custom Embossed Keepsake Journal / Plaque) */}
+      {designPattern === 'names_on_gifts' && (
+        <div className="relative w-56 h-64 flex flex-col items-center justify-center">
+          <div className="w-44 h-56 rounded-2xl bg-gradient-to-br from-[#2D1B2D] via-[#4A154B] to-[#1A0B2E] p-4 shadow-2xl border border-amber-300/40 flex flex-col justify-between relative overflow-hidden">
+            {/* Gold foil border frame */}
+            <div className="absolute inset-2 border border-amber-300/30 rounded-xl pointer-events-none" />
+            
+            <div className="flex justify-between items-center relative z-10">
+              <Sparkles className="w-4 h-4 text-amber-300" />
+              <span className="text-[8px] font-bold tracking-widest uppercase text-amber-200/80">
+                Bespoke Keepsake
+              </span>
+              <Sparkles className="w-4 h-4 text-amber-300" />
+            </div>
+
+            {/* Central Calligraphy Foil */}
+            <div className="text-center my-auto relative z-10 px-2">
+              <div className="w-12 h-12 rounded-full bg-amber-400/20 border border-amber-300/50 mx-auto mb-2 flex items-center justify-center">
+                <Heart className="w-6 h-6 text-amber-300 fill-amber-300/40" />
+              </div>
+              <p className="font-script text-2xl sm:text-3xl text-amber-200 font-bold drop-shadow-md truncate">
+                {customText && customText.trim() ? customText : 'Divine Moments'}
+              </p>
+              <p className="text-[9px] text-amber-300/70 uppercase tracking-widest mt-1">
+                Custom Name & Message
+              </p>
+            </div>
+
+            {/* Gold Seal at bottom */}
+            <div className="flex items-center justify-center gap-1.5 relative z-10 text-[9px] font-bold text-amber-300 bg-black/40 px-3 py-1 rounded-full border border-amber-300/30">
+              <span>✦</span>
+              <span>18K GOLD FOIL EMBOSSED</span>
+              <span>✦</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 8. Customize Your Caricature or Miniature */}
+      {designPattern === 'caricature_miniature' && (
+        <div className="relative w-56 h-68 flex flex-col items-center justify-end pb-3">
+          {/* Acrylic Cutout Figure Stand */}
+          <div className="relative w-44 h-52 flex flex-col items-center justify-between p-3 bg-gradient-to-t from-white/90 via-rose-50/70 to-pink-100/50 rounded-2xl border-2 border-white shadow-xl backdrop-blur-xs">
+            <div className="w-full flex justify-between items-center text-rose-400">
+              <Heart className="w-3.5 h-3.5 fill-rose-300" />
+              <span className="text-[8px] font-extrabold uppercase tracking-wider text-rose-700 bg-white/80 px-2 py-0.5 rounded-full shadow-2xs">
+                Hand-Drawn Caricature
+              </span>
+              <Heart className="w-3.5 h-3.5 fill-rose-300" />
+            </div>
+
+            {/* Cutout Portrait Artwork */}
+            <div className="relative my-auto flex flex-col items-center">
+              <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-rose-300 via-amber-200 to-pink-300 p-1 shadow-md">
+                <div className="w-full h-full rounded-full overflow-hidden bg-white flex items-center justify-center">
+                  {customPhoto ? (
+                    <img src={customPhoto} alt="Caricature Avatar" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center text-center p-1">
+                      <span className="text-2xl">👩‍❤️‍👨</span>
+                      <span className="text-[8px] font-bold text-stone-700">Cute Couple Art</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Handcrafted Stand Caption */}
+              <div className="mt-2 bg-white/95 px-3 py-0.5 rounded-full border border-pink-200 shadow-2xs">
+                <p className="font-serif italic text-xs font-bold text-[#881337] truncate max-w-[120px]">
+                  {customText && customText.trim() ? customText : 'Rahul & Sneha'}
+                </p>
+              </div>
+            </div>
+
+            <div className="w-full text-center">
+              <span className="text-[8px] font-bold text-stone-500 uppercase tracking-wider">
+                Precision Cut Optical Acrylic
+              </span>
+            </div>
+          </div>
+
+          {/* Solid Hardwood Pedestal */}
+          <div className="w-48 h-7 bg-amber-900 rounded-xl shadow-lg border-t-2 border-amber-700 -mt-2 flex items-center justify-center relative z-10">
+            <span className="text-[8px] font-bold text-amber-200 tracking-wider">
+              SOLID BEECHWOOD STAND
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* 9. Personalize Your Bouquets */}
+      {designPattern === 'custom_bouquet' && (
+        <div className="relative w-56 h-64 flex flex-col items-center justify-center">
+          {/* Bouquet Presentation */}
+          <div className="w-48 h-56 rounded-3xl bg-gradient-to-br from-[#FFF5F7] to-[#FFE0E6] p-4 shadow-xl border border-rose-200/60 flex flex-col justify-between relative overflow-hidden">
+            {/* Ribbon tie top */}
+            <div className="flex justify-center -mt-1">
+              <div className="bg-[#FF2E93] text-white text-[8px] font-bold px-3 py-0.5 rounded-full shadow-xs">
+                Eternal Silk & Preserved Flora
+              </div>
+            </div>
+
+            {/* Floral Cluster */}
+            <div className="my-auto flex flex-col items-center relative">
+              <div className="flex items-center justify-center -space-x-3 mb-1">
+                <span className="text-3xl drop-shadow-sm transform -rotate-12">🌹</span>
+                <span className="text-4xl drop-shadow-md transform scale-110 z-10">🌸</span>
+                <span className="text-3xl drop-shadow-sm transform rotate-12">🌺</span>
+              </div>
+              <div className="flex items-center justify-center -space-x-2">
+                <span className="text-2xl drop-shadow-xs">🌷</span>
+                <span className="text-2xl drop-shadow-xs">✨</span>
+                <span className="text-2xl drop-shadow-xs">💐</span>
+              </div>
+
+              {/* Personalized Message Card attached to bouquet */}
+              <div className="mt-2 bg-white px-3 py-1.5 rounded-xl shadow-md border border-rose-200 text-center max-w-[150px]">
+                <p className="font-script text-xs sm:text-sm font-bold text-[#FF2E93] leading-tight truncate">
+                  {customText && customText.trim() ? customText : 'With Endless Love'}
+                </p>
+                <span className="text-[7px] text-stone-400 font-bold uppercase tracking-wider block mt-0.5">
+                  Custom Ribbon Card
+                </span>
+              </div>
+            </div>
+
+            {/* Satin Wrapper Bottom Wrap */}
+            <div className="bg-gradient-to-r from-rose-400 to-[#FF2E93] text-white text-center py-1 rounded-xl text-[8px] font-bold shadow-xs">
+              Hand-Tied Satin Ribbon
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 10. Hair Accessories */}
+      {designPattern === 'hair_accessories' && (
+        <div className="relative w-56 h-60 flex flex-col items-center justify-center">
+          <div className="w-48 h-52 rounded-3xl bg-gradient-to-tr from-[#FAF8F5] via-[#FFF5F8] to-[#FDF0ED] border border-[#F0DCD5] p-3 shadow-xl flex flex-col justify-between">
+            {/* Box Header */}
+            <div className="flex items-center justify-between border-b border-stone-200/60 pb-1.5 px-1">
+              <span className="text-[8px] font-bold text-[#881337] tracking-wider uppercase">
+                Divine Coiffure
+              </span>
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+            </div>
+
+            {/* Accessories Showcase */}
+            <div className="my-auto flex flex-col items-center gap-2">
+              {/* Pearl Hairband Arc */}
+              <div className="relative w-36 h-18 border-t-4 border-amber-300 rounded-t-full flex items-center justify-center shadow-xs">
+                <div className="flex items-center gap-1 -mt-2">
+                  {[...Array(6)].map((_, i) => (
+                    <span key={i} className="w-2.5 h-2.5 rounded-full bg-white border border-stone-200 shadow-2xs" />
+                  ))}
+                </div>
+              </div>
+
+              {/* French Bow / Butterfly Clip */}
+              <div className="bg-[#FF2E93] text-white px-4 py-1 rounded-full text-xs font-bold shadow-md flex items-center gap-1.5">
+                <span>🎀</span>
+                <span className="text-[9px]">Velvet Pearl Barrette</span>
+              </div>
+            </div>
+
+            {/* Luxury Box Tag */}
+            <div className="bg-white/80 py-1 rounded-xl text-center text-[8px] font-semibold text-stone-600 border border-stone-200/40">
+              {customText && customText.trim() ? customText : 'Handmade Designer Collection'}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 11. Paradise of Jewels (Opulent Jewellery Suite) */}
+      {designPattern === 'paradise_jewels' && (
+        <div className="relative w-56 h-64 flex flex-col items-center justify-center">
+          <div className="w-48 h-56 rounded-3xl bg-gradient-to-br from-[#1A1A24] via-[#2A1D2D] to-[#121217] p-3 shadow-2xl border border-amber-400/40 flex flex-col justify-between relative overflow-hidden">
+            {/* Glow shimmer */}
+            <div className="absolute top-0 right-0 w-24 h-24 bg-amber-400/10 rounded-full blur-xl pointer-events-none" />
+
+            <div className="flex justify-between items-center relative z-10 px-1">
+              <span className="text-[8px] font-bold uppercase tracking-widest text-amber-300">
+                Paradise Of Jewels
+              </span>
+              <Sparkle className="w-3.5 h-3.5 text-amber-300 fill-amber-300/40" />
+            </div>
+
+            {/* Regal Polki & Emerald Pendant Suite */}
+            <div className="my-auto flex flex-col items-center relative z-10">
+              {/* Gold Filigree Motif */}
+              <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-amber-400 via-yellow-200 to-amber-500 p-1 shadow-lg transform rotate-45 flex items-center justify-center">
+                <div className="w-14 h-14 bg-emerald-950 rounded-xl border border-emerald-400 flex items-center justify-center shadow-inner">
+                  <div className="w-8 h-8 rounded-full bg-emerald-500/80 border border-emerald-200 flex items-center justify-center">
+                    <Sparkles className="w-4 h-4 text-emerald-100" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Pendant drops */}
+              <div className="flex gap-1.5 mt-4">
+                <span className="w-2 h-3 rounded-full bg-amber-300 border border-amber-500 shadow-2xs" />
+                <span className="w-2.5 h-4 rounded-full bg-emerald-400 border border-emerald-600 shadow-2xs" />
+                <span className="w-2 h-3 rounded-full bg-amber-300 border border-amber-500 shadow-2xs" />
+              </div>
+            </div>
+
+            {/* Bottom Hallmarked Plaque */}
+            <div className="bg-amber-400/20 border border-amber-300/40 rounded-xl py-1 px-2 text-center relative z-10">
+              <p className="font-serif text-[9px] font-bold text-amber-200 uppercase tracking-widest truncate">
+                {customText && customText.trim() ? customText : 'Royal Heritage Collection'}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 12. Phone Case Variations (Pearl Bracelet, Zipper Wallet, Mirror, etc.) */}
       {[
         'pearl_bracelet',
         'zipper_wallet',
@@ -303,7 +553,7 @@ export const PhoneCaseMockup: React.FC<PhoneCaseMockupProps> = ({
               </div>
 
               <div className="pt-1 pr-1 text-[8px] font-bold tracking-widest text-[#231F20]/40 uppercase">
-                DIVINE'S
+                DESTINY
               </div>
             </div>
 
@@ -375,7 +625,7 @@ export const PhoneCaseMockup: React.FC<PhoneCaseMockupProps> = ({
                   <p className="font-serif italic text-xs text-slate-700 dark:text-slate-200 truncate">
                     {name.split(' ').slice(0, 3).join(' ')}
                   </p>
-                  <p className="text-[8px] tracking-widest uppercase text-slate-500">Divine Atelier</p>
+                  <p className="text-[8px] tracking-widest uppercase text-slate-500">Destiny Atelier</p>
                 </div>
               )}
             </div>

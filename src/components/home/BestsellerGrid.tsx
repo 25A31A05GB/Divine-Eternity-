@@ -11,12 +11,14 @@ interface BestsellerGridProps {
 }
 
 const FILTER_TABS = [
-  'All Cases',
-  'Bracelet Phone Case',
-  'Zipper Wallet Case',
-  'Mirror Phone Case',
-  'Clear Designer Case',
-  'Designer Case',
+  'All Gifts',
+  'Personalized Jewellery',
+  'Names on Gifts',
+  'Customize Your Caricature or Miniature',
+  'Personalize Your Bouquets',
+  'Special Hampers',
+  'Hair Accessories',
+  'Paradise of Jewels',
 ];
 
 export const BestsellerGrid: React.FC<BestsellerGridProps> = ({
@@ -25,10 +27,10 @@ export const BestsellerGrid: React.FC<BestsellerGridProps> = ({
   onOpenDetail,
   onViewAll,
 }) => {
-  const [selectedFilter, setSelectedFilter] = useState('All Cases');
+  const [selectedFilter, setSelectedFilter] = useState('All Gifts');
 
   const filteredProducts = useMemo(() => {
-    if (selectedFilter === 'All Cases') {
+    if (selectedFilter === 'All Gifts') {
       return products.filter((p) => p.isBestSeller || p.rating >= 4.8);
     }
     return products.filter((p) => p.category === selectedFilter);

@@ -70,7 +70,7 @@ const INITIAL_DEMO_ORDERS: Order[] = [
       {
         status: 'Packed',
         timestamp: '2026-10-05 10:15',
-        location: 'Divine Fulfillment Hub',
+        location: 'Destiny Fulfillment Hub',
         description: 'Quality checked, engraved & gift boxed',
       },
       {
@@ -158,8 +158,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loginAsAdmin = () => {
     setUser({
       id: 'admin-1',
-      name: 'Divine Store Admin',
-      email: 'admin@divineseternity.com',
+      name: 'Gadgets Destiny Store Admin',
+      email: 'admin@gadgetsdestiny.com',
       phone: '9900112233',
       isAdmin: true,
       addresses: [],
@@ -192,7 +192,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           {
             status,
             timestamp: new Date().toISOString().replace('T', ' ').slice(0, 16),
-            location: 'Divine Fulfillment Hub',
+            location: 'Destiny Fulfillment Hub',
             description: `Status updated to ${status}`,
           },
         ];

@@ -183,13 +183,13 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onBackToCart, onOrde
     }
   };
 
-  const checkoutUrl = typeof window !== 'undefined' ? window.location.href : 'https://divineseternity.com/#checkout';
+  const checkoutUrl = typeof window !== 'undefined' ? window.location.href : 'https://gadgetsdestiny.com/#checkout';
 
   return (
     <div className="py-8 sm:py-12">
       <SEO
-        title="Express Secure Checkout — Divine's Eternity"
-        description="Complete your personalized gift order securely with UPI, Credit Cards, or Cash on Delivery. 256-bit encrypted checkout with insured delivery."
+        title="Express Secure Checkout — Gadgets Destiny"
+        description="Complete your cute phone cover order securely with UPI, Credit Cards, or Cash on Delivery. 256-bit encrypted checkout with insured delivery."
         url={checkoutUrl}
         noindex={true}
       />
@@ -627,7 +627,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onBackToCart, onOrde
             </div>
 
             <p className="text-xs text-slate-600">
-              Divine's Eternity · Order Verification ID: <strong>DE-{Math.floor(100000 + Math.random() * 900000)}</strong>
+              Gadgets Destiny · Order Verification ID: <strong>GD-{Math.floor(100000 + Math.random() * 900000)}</strong>
             </p>
 
             <div className="space-y-2 text-xs">

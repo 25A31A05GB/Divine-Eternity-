@@ -44,6 +44,14 @@ export const GIFT_WRAPPING_SURCHARGE = 99;
 
 export const AVAILABLE_COUPONS: Coupon[] = [
   {
+    code: 'DS1102',
+    description: 'First Order Special: Flat 60% OFF storewide (Gadgets Destiny)',
+    type: 'percentage',
+    value: 60,
+    minOrderValue: 499,
+    isActive: true,
+  },
+  {
     code: 'BUY3PAY2',
     description: 'Buy 3 Cases, Get 1 FREE (Cheapest unit is 100% free)',
     type: 'buy3pay2',

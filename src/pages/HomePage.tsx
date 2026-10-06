@@ -5,6 +5,7 @@ import { BestsellerGrid } from '../components/home/BestsellerGrid';
 import { VideoShoppingRow } from '../components/home/VideoShoppingRow';
 import { CuratedCollectionRow } from '../components/home/CuratedCollectionRow';
 import { ChoiceSelector } from '../components/home/ChoiceSelector';
+import { FounderNoteSection } from '../components/home/FounderNoteSection';
 import { ReviewsSection } from '../components/home/ReviewsSection';
 import { MarqueeStrip } from '../components/layout/MarqueeStrip';
 import { ValueProps } from '../components/home/ValueProps';
@@ -29,10 +30,10 @@ export const HomePage: React.FC<HomePageProps> = ({
   const homeStructuredData = {
     '@context': 'https://schema.org',
     '@type': 'WebPage',
-    name: "Gadgets Destiny - Cute Covers Club | Trendy Designer Phone Cases",
+    name: "Divine’s Eternity - Luxury Gifts & Personalized Keepsakes",
     description:
-      'Explore cute phone covers, bracelet phone cases, zipper wallet cases, and makeup mirror covers at Gadgets Destiny.',
-    url: typeof window !== 'undefined' ? window.location.origin : 'https://gadgetsdestiny.com',
+      'Discover the world of Divine’s Eternity, where every gift is created to make your special moments more memorable.',
+    url: typeof window !== 'undefined' ? window.location.origin : 'https://divineseternity.com',
     mainEntity: {
       '@type': 'ItemList',
       itemListElement: products.slice(0, 8).map((p, idx) => ({
@@ -40,20 +41,20 @@ export const HomePage: React.FC<HomePageProps> = ({
         position: idx + 1,
         name: p.name,
         image: p.images[0] || '',
-        url: `${typeof window !== 'undefined' ? window.location.origin : 'https://gadgetsdestiny.com'}#product-${p.id}`,
+        url: `${typeof window !== 'undefined' ? window.location.origin : 'https://divineseternity.com'}#product-${p.id}`,
       })),
     },
   };
 
-  const homeUrl = typeof window !== 'undefined' ? window.location.origin : 'https://gadgetsdestiny.com';
+  const homeUrl = typeof window !== 'undefined' ? window.location.origin : 'https://divineseternity.com';
   const heroImage = products[0]?.images[0] || undefined;
 
   return (
     <div className="space-y-0">
       <SEO
-        title="Cute Covers Club — Trendy Designer Phone Cases"
-        description="Phone covers for people who refuse to carry boring things. Designed with personality, built for everyday life. Buy 3 Pay For 2 at Gadgets Destiny."
-        keywords="cute phone cases, bracelet cases, mirror cases, zipper wallet cases, trendy phone covers, gadgets destiny"
+        title="Divine’s Eternity - Luxury Gifts & Personalized Keepsakes"
+        description="Discover the world of Divine’s Eternity, where every gift is created to make your special moments more memorable. Personalized jewellery, hampers, bouquets, and bespoke creations."
+        keywords="divines eternity, personalized gifts, names on gifts, personalized jewellery, caricature miniature, hampers"
         url={homeUrl}
         image={heroImage}
         structuredData={homeStructuredData}
@@ -62,7 +63,7 @@ export const HomePage: React.FC<HomePageProps> = ({
       {/* 1. Hero Banner Carousel */}
       <HeroCarousel
         featuredProducts={products}
-        onShopNow={(cat) => onNavigateToCollection(cat || 'all')}
+        onShopNow={(cat) => onNavigateToCollection(cat || 'products')}
         onQuickView={onQuickView}
       />
 
@@ -77,7 +78,7 @@ export const HomePage: React.FC<HomePageProps> = ({
         products={products}
         onQuickView={onQuickView}
         onOpenDetail={onOpenDetail}
-        onViewAll={() => onNavigateToCollection('all')}
+        onViewAll={() => onNavigateToCollection('products')}
       />
 
       {/* 4. Watch It And Buy It (Reel Cards) */}
@@ -86,37 +87,43 @@ export const HomePage: React.FC<HomePageProps> = ({
         onQuickView={onQuickView}
       />
 
-      {/* 5. Spotlight: Bracelet Phone Cases */}
+      {/* 5. A Note From Founder — Sonu Column */}
+      <FounderNoteSection
+        onExploreProducts={() => onNavigateToCollection('products')}
+        onJoinCreatorClub={() => onNavigateToCollection('creator-club')}
+      />
+
+      {/* 6. Spotlight: Curated Gifts */}
       <CuratedCollectionRow
-        title="Check the Bracelet Phone Cases"
-        subtitle="Cute pearl charms and aesthetic beaded wristlets crafted for everyday cute style."
-        category="Bracelet Phone Case"
+        title="Personalized Name Jewellery"
+        subtitle="18k thick gold vermeil handwriting pendants & Roman numeral engraved bar bracelets."
+        category="Personalized Jewellery"
         products={products}
         onQuickView={onQuickView}
         onOpenDetail={onOpenDetail}
         onViewAll={onNavigateToCollection}
       />
 
-      {/* 6. Shop By Your Choice (01-04 Numbered Showcase) */}
+      {/* 7. Shop By Your Choice */}
       <ChoiceSelector
         products={products}
         onSelectCategory={onNavigateToCollection}
         onQuickView={onQuickView}
       />
 
-      {/* 7. Reviews: Happy phones. Happier people. */}
+      {/* 8. Reviews */}
       <ReviewsSection />
 
-      {/* 8. Yellow Marquee Strip */}
+      {/* 9. Marquee Strip */}
       <MarqueeStrip />
 
-      {/* 9. Four Feature Blocks */}
+      {/* 10. Value Props */}
       <ValueProps />
 
-      {/* 10. Newsletter Signup Section */}
+      {/* 11. Newsletter */}
       <NewsletterSection />
 
-      {/* 11. Scroll to top button */}
+      {/* 12. Scroll to top button */}
       <ScrollToTop />
     </div>
   );

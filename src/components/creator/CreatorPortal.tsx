@@ -317,12 +317,12 @@ export const CreatorPortal: React.FC<CreatorPortalProps> = ({ onExploreProducts 
 
               <div className="flex items-center justify-between bg-white dark:bg-[#1E191D] p-3 rounded-xl border border-[#E8D8D0] dark:border-[#382F34] mt-2">
                 <div className="font-mono text-xs text-[#231F20] dark:text-white truncate max-w-[240px]">
-                  https://divineseternity.com/?ref={activeCreator?.proposedCode?.toLowerCase() || 'natasha15'}
+                  https://gadgetsdestiny.com/?ref={activeCreator?.proposedCode?.toLowerCase() || 'natasha15'}
                 </div>
                 <button
                   onClick={() =>
                     handleCopy(
-                      `https://divineseternity.com/?ref=${activeCreator?.proposedCode?.toLowerCase() || 'natasha15'}`,
+                      `https://gadgetsdestiny.com/?ref=${activeCreator?.proposedCode?.toLowerCase() || 'natasha15'}`,
                       'link'
                     )
                   }
@@ -629,10 +629,10 @@ export const CreatorPortal: React.FC<CreatorPortalProps> = ({ onExploreProducts 
                 <CheckCircle2 className="w-10 h-10" />
               </div>
               <h3 className="font-serif text-2xl font-bold text-[#231F20] dark:text-white">
-                Welcome to Divine Creator Club
+                Welcome to Gadgets Destiny Creator Club
               </h3>
               <p className="text-xs text-[#7A7276] max-w-sm mx-auto">
-                Your affiliate account is ready with promo code <strong className="text-[#F0508C]">{signUpCode}</strong>. Redirecting to your personal dashboard...
+                Your affiliate account is ready with promo code <strong className="text-[#FF2E93]">{signUpCode}</strong>. Redirecting to your personal dashboard...
               </p>
             </div>
           ) : (
@@ -800,7 +800,7 @@ export const CreatorPortal: React.FC<CreatorPortalProps> = ({ onExploreProducts 
               },
               {
                 title: 'Official Vector Logos & Sparkles',
-                desc: 'Divine’s Eternity golden emblems and sparkle micro-assets in SVG format.',
+                desc: 'Gadgets Destiny hot pink & sunny yellow emblems and sparkle micro-assets in SVG format.',
                 size: '4.1 MB',
               },
             ].map((asset, i) => (

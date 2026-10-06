@@ -84,37 +84,81 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, ope
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const CASE_CATEGORIES = [
-    { name: 'Zipper Wallet Case', slug: 'zipper-wallet-case' },
-    { name: 'Bracelet Phone Case', slug: 'bracelet-phone-case' },
-    { name: 'Gripper Phone Case', slug: 'gripper-phone-case' },
-    { name: 'Mirror Phone Case', slug: 'mirror-phone-case' },
-    { name: 'Toy Cases', slug: 'toy-cases' },
-    { name: 'Clear Designer Case', slug: 'clear-designer-case' },
-    { name: 'Designer Case', slug: 'designer-case' },
+  const STRICT_HEADER_COLLECTIONS = [
+    {
+      id: 'products',
+      name: 'Products',
+      tagline: 'Discover the world of Divine’s Eternity',
+      badge: 'All Gifts',
+      subcategories: [
+        'Names on Gifts',
+        'Personalized Jewellery',
+        'Customize Your Caricature or Miniature',
+        'Personalize Your Bouquets',
+        'Special Hampers',
+        'Hair Accessories',
+        'Paradise of Jewels',
+      ],
+    },
+    {
+      id: 'personalization',
+      name: 'Personalization',
+      tagline: 'WhatsApp confirmed bespoke gifts',
+      badge: 'WhatsApp Verified',
+    },
+    {
+      id: 'collaboration',
+      name: 'Collaboration',
+      tagline: 'UGC, paid collabs & brand deals',
+      badge: 'Creators & Brands',
+    },
+    {
+      id: 'upcoming-campaigns',
+      name: 'Upcoming Campaigns',
+      tagline: 'Follow @divineseternity & join rewards',
+      badge: '@divineseternity',
+    },
+    {
+      id: 'creator-club',
+      name: 'Creator Club',
+      tagline: 'Learn, collaborate & earn up to 7k',
+      badge: 'Earn up to ₹7k',
+    },
+    {
+      id: 'affiliate-marketing',
+      name: 'Affiliate Marketing',
+      tagline: 'Share products & earn 15-20% commission',
+      badge: '15-20% Comm.',
+    },
+    {
+      id: 'podcast',
+      name: 'Podcast',
+      tagline: 'Creativity, entrepreneurship & journeys',
+      badge: 'Episodes',
+    },
   ];
 
   return (
     <header className="sticky top-0 z-50 w-full bg-[#FFFDF8]/95 backdrop-blur-md border-b border-[#F3E8E2] transition-all duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 sm:h-20 flex items-center justify-between gap-4">
         
-        {/* Zone 1: Exact Gadgets Destiny Brand Wordmark */}
+        {/* Zone 1: Divine's Eternity Brand Wordmark */}
         <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={() => navigateTo('home')}
-            className="flex flex-col text-left group focus:outline-none"
+            className="flex flex-col text-left group focus:outline-none cursor-pointer"
           >
             <div className="flex items-baseline">
               <span className="font-extrabold text-2xl sm:text-3xl tracking-tight text-[#FF2E93]">
-                Gadgets
+                Divine’s
               </span>
               <span className="font-extrabold text-2xl sm:text-3xl tracking-tight text-[#211D1C]">
-                Destiny
+                Eternity
               </span>
               <span className="text-[#FBBF24] text-lg sm:text-xl font-bold ml-0.5">✦</span>
             </div>
             <span className="text-[9px] font-extrabold tracking-widest text-[#FF2E93] uppercase -mt-0.5">
-              CUTE COVERS CLUB
+              GIFTS THAT STAY IN HEARTS
             </span>
           </button>
         </div>
@@ -137,31 +181,74 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, ope
               onMouseLeave={handleMouseLeave}
             >
               <button
-                onClick={() => navigateTo('collections', { category: 'all' })}
+                onClick={() => navigateTo('collections', { category: 'products' })}
                 className={`flex items-center gap-1 transition-colors hover:text-[#FF2E93] cursor-pointer ${
                   currentView === 'collections' ? 'text-[#FF2E93]' : 'text-[#211D1C]'
                 }`}
               >
                 <span>Collections</span>
+                <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-[#FFF0F5] text-[#FF2E93] border border-[#FF2E93]/20">
+                  7
+                </span>
               </button>
 
-              {/* Exact Floating Dropdown Menu */}
+              {/* Exact Floating Dropdown Menu: Strictly the 7 Collections */}
               {isCollectionsHovered && (
-                <div className="absolute top-full left-0 mt-3 w-56 bg-white rounded-2xl shadow-xl border border-[#F3E8E2] p-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
-                  <div className="space-y-0.5">
-                    {CASE_CATEGORIES.map((cat) => (
-                      <button
-                        key={cat.slug}
-                        onClick={() => navigateTo('collections', { category: cat.name })}
-                        className="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold text-[#211D1C] hover:bg-[#FFF0F3] hover:text-[#FF2E93] transition-colors"
-                      >
-                        {cat.name}
-                      </button>
-                    ))}
+                <div className="absolute top-full left-0 mt-3 w-80 bg-white rounded-3xl shadow-xl border border-[#F3E8E2] p-3 z-50 animate-in fade-in slide-in-from-top-2 duration-150 space-y-1">
+                  <div className="px-3 py-1.5 border-b border-stone-100 mb-1 flex items-center justify-between">
+                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#FF2E93]">
+                      7 STRICT COLLECTIONS
+                    </span>
+                    <span className="text-[10px] text-stone-400">
+                      Divine’s Eternity
+                    </span>
                   </div>
+
+                  {STRICT_HEADER_COLLECTIONS.map((col, idx) => (
+                    <button
+                      key={col.id}
+                      onClick={() => navigateTo('collections', { category: col.id })}
+                      className="w-full text-left p-2.5 rounded-2xl hover:bg-[#FFF0F5] group transition-all cursor-pointer flex items-start justify-between gap-2"
+                    >
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] text-stone-400 font-mono">
+                            {idx + 1}.
+                          </span>
+                          <span className="text-xs font-bold text-[#211D1C] group-hover:text-[#FF2E93] transition-colors">
+                            {col.name}
+                          </span>
+                        </div>
+                        <p className="text-[10px] text-stone-500 mt-0.5 truncate pl-4">
+                          {col.tagline}
+                        </p>
+                      </div>
+
+                      {col.badge && (
+                        <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-[#FFF9EB] text-[#211D1C] border border-[#F5E6CE] group-hover:border-[#FF2E93]/30 shrink-0">
+                          {col.badge}
+                        </span>
+                      )}
+                    </button>
+                  ))}
                 </div>
               )}
             </div>
+
+            <button
+              onClick={() => navigateTo('collections', { category: 'personalization' })}
+              className="transition-colors hover:text-[#FF2E93] cursor-pointer"
+            >
+              Personalization
+            </button>
+
+            <button
+              onClick={() => navigateTo('collections', { category: 'creator-club' })}
+              className="transition-colors hover:text-[#FF2E93] cursor-pointer flex items-center gap-1"
+            >
+              <span>Creator Club</span>
+              <span className="text-[9px] px-1 py-0.2 rounded-full bg-[#FF2E93] text-white">₹7k</span>
+            </button>
 
             <button
               onClick={() => navigateTo('track-order')}
@@ -242,9 +329,15 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, ope
               <div className="flex items-center justify-between pb-4 border-b border-[#242C3D]">
                 <button
                   onClick={() => navigateTo('home')}
-                  className="font-serif text-xl font-bold text-[#F7F4EC]"
+                  className="flex items-baseline text-left group focus:outline-none"
                 >
-                  Divine's Eternity
+                  <span className="font-extrabold text-xl tracking-tight text-[#FF2E93]">
+                    Gadgets
+                  </span>
+                  <span className="font-extrabold text-xl tracking-tight text-[#F7F4EC]">
+                    Destiny
+                  </span>
+                  <span className="text-[#FFD94A] text-sm font-bold ml-1">✦</span>
                 </button>
 
                 <div className="flex items-center gap-2">
@@ -350,28 +443,31 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, ope
 
               {/* Navigation Section */}
               <div className="space-y-2">
-                <div className="text-[10px] font-bold uppercase tracking-widest text-[#5B8CFF] mb-2 font-mono">
-                  Explore Atelier Collections
+                <div className="text-[10px] font-bold uppercase tracking-widest text-[#FF2E93] mb-2 font-mono">
+                  7 Collections
                 </div>
 
                 {[
                   { label: 'Home Page', view: 'home' },
-                  { label: 'All Collections & Keepsakes', view: 'collections', params: { category: 'all' } },
-                  { label: 'Personalized Name Jewelry', view: 'collections', params: { category: 'Personalized Name Jewelry' } },
-                  { label: 'Preserved Eternal Roses', view: 'collections', params: { category: 'Preserved Eternal Roses & Dome Displays' } },
-                  { label: 'Scannable Acrylic Song Plaques', view: 'collections', params: { category: 'Custom Acrylic Song Plaques & Photo Frames' } },
-                  { label: 'Creator Ambassador Club', view: 'creator-club' },
-                  { label: 'Concierge & Client Care', view: 'contact' },
+                  { label: '1. Products (All Gift Categories)', view: 'collections', params: { category: 'products' } },
+                  { label: '2. Personalization (WhatsApp Confirmed)', view: 'collections', params: { category: 'personalization' } },
+                  { label: '3. Collaboration (UGC & Creators)', view: 'collections', params: { category: 'collaboration' } },
+                  { label: '4. Upcoming Campaigns (@divineseternity)', view: 'collections', params: { category: 'upcoming-campaigns' } },
+                  { label: '5. Creator Club (Earn up to ₹7k)', view: 'collections', params: { category: 'creator-club' } },
+                  { label: '6. Affiliate Marketing (15-20% Comm.)', view: 'collections', params: { category: 'affiliate-marketing' } },
+                  { label: '7. Podcast (Inspiring Stories)', view: 'collections', params: { category: 'podcast' } },
+                  { label: 'Track Order', view: 'track-order' },
+                  { label: 'Contact & Concierge', view: 'contact' },
                 ].map((item, idx) => (
                   <button
                     key={idx}
                     onClick={() => navigateTo(item.view, item.params)}
-                    className="w-full text-left p-3 rounded-2xl bg-[#151A24] border border-[#242C3D] hover:border-[#5B8CFF] hover:bg-[#1B2230] transition-all flex items-center justify-between group shadow-2xs"
+                    className="w-full text-left p-3 rounded-2xl bg-[#151A24] border border-[#242C3D] hover:border-[#FF2E93] hover:bg-[#1B2230] transition-all flex items-center justify-between group shadow-2xs cursor-pointer"
                   >
-                    <span className="text-xs font-semibold text-[#F7F4EC] group-hover:text-[#22D3EE] transition-colors">
+                    <span className="text-xs font-semibold text-[#F7F4EC] group-hover:text-[#FF2E93] transition-colors">
                       {item.label}
                     </span>
-                    <ArrowRight className="w-3.5 h-3.5 text-[#737C8C] group-hover:text-[#5B8CFF] group-hover:translate-x-1 transition-all" />
+                    <ArrowRight className="w-3.5 h-3.5 text-[#737C8C] group-hover:text-[#FF2E93] group-hover:translate-x-1 transition-all" />
                   </button>
                 ))}
               </div>

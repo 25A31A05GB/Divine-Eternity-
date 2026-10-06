@@ -154,10 +154,10 @@ export const GiftPersonalizer: React.FC<GiftPersonalizerProps> = ({
       )}
 
       {/* 2. Photo Upload */}
-      {config?.allowsPhoto && setCustomPhoto && (
+      {setCustomPhoto && (
         <div className="space-y-2 pt-2 border-t border-[#F3E8E2]">
           <label className="text-xs font-bold text-[#211D1C] flex items-center justify-between">
-            <span>{config.photoLabel || 'Upload High-Resolution Photo'}</span>
+            <span>{config?.photoLabel || 'Upload High-Resolution Photo'}</span>
             {customPhoto && (
               <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-0.5">
                 <Check className="w-3 h-3" /> Photo Attached

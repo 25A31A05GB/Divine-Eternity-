@@ -151,7 +151,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
     .filter((p) => p.id !== product.id && (p.category === product.category || p.isBestSeller))
     .slice(0, 4);
 
-  const productUrl = typeof window !== 'undefined' ? window.location.href : `https://divineseternity.com/#product-${product.id}`;
+  const productUrl = typeof window !== 'undefined' ? window.location.href : `https://gadgetsdestiny.com/#product-${product.id}`;
 
   const productSchema = {
     '@context': 'https://schema.org',
@@ -162,7 +162,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
     sku: product.slug || product.id,
     brand: {
       '@type': 'Brand',
-      name: "Divine's Eternity",
+      name: "Gadgets Destiny",
     },
     category: product.category,
     offers: {
@@ -175,7 +175,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
       availability: 'https://schema.org/InStock',
       seller: {
         '@type': 'Organization',
-        name: "Divine's Eternity",
+        name: "Gadgets Destiny",
       },
     },
     aggregateRating: {
@@ -204,16 +204,16 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
   return (
     <div className="py-8 sm:py-12">
       <SEO
-        title={`${product.name} — Handcrafted ${product.category}`}
+        title={`${product.name} — Gadgets Destiny`}
         description={
           product.description
             ? `${product.name}: ${product.description.slice(0, 140)}`
-            : `Buy ${product.name} for ₹${product.price} at Divine's Eternity. Custom laser engraving, 18k vermeil plating, and express gift packaging.`
+            : `Buy ${product.name} for ₹${product.price} at Gadgets Destiny. Cute phone covers with shockproof protection and express delivery.`
         }
         image={product.images[0]}
         url={productUrl}
         type="product"
-        keywords={`${product.name}, ${product.category}, ${product.supportedBrands?.join(', ') || ''}, personalized gift, luxury gift, divines eternity`}
+        keywords={`${product.name}, ${product.category}, ${product.supportedBrands?.join(', ') || ''}, cute phone case, gadgets destiny`}
         structuredData={productSchema}
       />
 

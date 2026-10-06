@@ -30,77 +30,143 @@ export const Footer: React.FC<FooterProps> = ({ setCurrentView }) => {
     <footer className="bg-[#211D1C] text-white pt-16 pb-12 relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Main Footer Grid matching Screenshot 8 */}
+        {/* Main Footer Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-stone-800">
           
           {/* Brand Column (2 cols wide on desktop) */}
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-baseline">
               <span className="font-extrabold text-2xl sm:text-3xl tracking-tight text-[#FF2E93]">
-                Gadgets
+                Divine’s
               </span>
               <span className="font-extrabold text-2xl sm:text-3xl tracking-tight text-white">
-                Destiny
+                Eternity
               </span>
               <span className="text-[#FFD94A] text-xl font-bold ml-1">✦</span>
             </div>
             
             <p className="text-xs sm:text-sm text-stone-300 leading-relaxed max-w-sm">
-              Phone covers for people who refuse to carry boring things. Designed with personality, built for everyday life.
+              Discover the world of Divine’s Eternity, where every gift is created to make your special moments more memorable. Handcrafted keepsakes, custom jewellery, and creative collaborations.
             </p>
           </div>
 
-          {/* Shop Column matching Screenshot 8 */}
-          <div>
-            <h5 className="text-sm font-bold text-white mb-4">
-              Shop
+          {/* Strictly Defined 7 Collections Column */}
+          <div className="lg:col-span-1">
+            <h5 className="text-sm font-bold text-white mb-4 flex items-center gap-1.5">
+              <span className="text-[#FF2E93]">✦</span>
+              <span>7 Collections</span>
             </h5>
-            <ul className="space-y-3 text-xs text-stone-300">
+            <ul className="space-y-2.5 text-xs text-stone-300">
               <li>
                 <button
-                  onClick={() => navigateTo('track-order')}
-                  className="hover:text-[#FF2E93] transition-colors"
+                  onClick={() => navigateTo('collections', { category: 'products' })}
+                  className="hover:text-[#FF2E93] transition-colors cursor-pointer text-left"
                 >
-                  Orders
+                  1. Products
                 </button>
               </li>
               <li>
                 <button
-                  onClick={() => navigateTo('wishlist')}
-                  className="hover:text-[#FF2E93] transition-colors"
+                  onClick={() => navigateTo('collections', { category: 'personalization' })}
+                  className="hover:text-[#FF2E93] transition-colors cursor-pointer text-left"
                 >
-                  Profile
+                  2. Personalization
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => navigateTo('collections', { category: 'collaboration' })}
+                  className="hover:text-[#FF2E93] transition-colors cursor-pointer text-left"
+                >
+                  3. Collaboration
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => navigateTo('collections', { category: 'upcoming-campaigns' })}
+                  className="hover:text-[#FF2E93] transition-colors cursor-pointer text-left"
+                >
+                  4. Upcoming Campaigns
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => navigateTo('collections', { category: 'creator-club' })}
+                  className="hover:text-[#FF2E93] transition-colors cursor-pointer text-left"
+                >
+                  5. Creator Club (₹7k)
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => navigateTo('collections', { category: 'affiliate-marketing' })}
+                  className="hover:text-[#FF2E93] transition-colors cursor-pointer text-left"
+                >
+                  6. Affiliate Marketing
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => navigateTo('collections', { category: 'podcast' })}
+                  className="hover:text-[#FF2E93] transition-colors cursor-pointer text-left"
+                >
+                  7. Podcast
                 </button>
               </li>
             </ul>
           </div>
 
-          {/* Help Column matching Screenshot 8 */}
+          {/* Quick Links Column */}
           <div>
             <h5 className="text-sm font-bold text-white mb-4">
-              Help
+              Explore & Shop
             </h5>
             <ul className="space-y-3 text-xs text-stone-300">
               <li>
                 <button
-                  onClick={() => navigateTo('collections', { category: 'all' })}
-                  className="hover:text-[#FF2E93] transition-colors"
+                  onClick={() => navigateTo('track-order')}
+                  className="hover:text-[#FF2E93] transition-colors cursor-pointer"
                 >
-                  Search
+                  Track Your Order
                 </button>
               </li>
               <li>
                 <button
-                  onClick={() => navigateTo('contact')}
-                  className="hover:text-[#FF2E93] transition-colors"
+                  onClick={() => navigateTo('wishlist')}
+                  className="hover:text-[#FF2E93] transition-colors cursor-pointer"
                 >
-                  Contact
+                  Saved Wishlist
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => navigateTo('collections', { category: 'products' })}
+                  className="hover:text-[#FF2E93] transition-colors cursor-pointer"
+                >
+                  All Gift Categories
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          {/* Help & Policies Column */}
+          <div>
+            <h5 className="text-sm font-bold text-white mb-4">
+              Help & Support
+            </h5>
+            <ul className="space-y-3 text-xs text-stone-300">
+              <li>
+                <button
+                  onClick={() => navigateTo('contact')}
+                  className="hover:text-[#FF2E93] transition-colors cursor-pointer"
+                >
+                  Contact & WhatsApp
                 </button>
               </li>
               <li>
                 <button
                   onClick={() => navigateTo('policy', { tab: 'privacy' })}
-                  className="hover:text-[#FF2E93] transition-colors"
+                  className="hover:text-[#FF2E93] transition-colors cursor-pointer"
                 >
                   Privacy Policy
                 </button>
@@ -108,50 +174,9 @@ export const Footer: React.FC<FooterProps> = ({ setCurrentView }) => {
               <li>
                 <button
                   onClick={() => navigateTo('policy', { tab: 'refund' })}
-                  className="hover:text-[#FF2E93] transition-colors"
+                  className="hover:text-[#FF2E93] transition-colors cursor-pointer"
                 >
-                  Refund Policy
-                </button>
-              </li>
-            </ul>
-          </div>
-
-          {/* Gadget Destinys Column matching Screenshot 8 */}
-          <div>
-            <h5 className="text-sm font-bold text-white mb-4">
-              Gadget Destinys
-            </h5>
-            <ul className="space-y-3 text-xs text-stone-300">
-              <li>
-                <button
-                  onClick={() => navigateTo('home')}
-                  className="hover:text-[#FF2E93] transition-colors"
-                >
-                  Home
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => navigateTo('collections', { category: 'all' })}
-                  className="hover:text-[#FF2E93] transition-colors"
-                >
-                  Collections
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => navigateTo('track-order')}
-                  className="hover:text-[#FF2E93] transition-colors"
-                >
-                  Track Your Order
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => navigateTo('contact')}
-                  className="hover:text-[#FF2E93] transition-colors"
-                >
-                  Contact
+                  Refund & Cancellation
                 </button>
               </li>
             </ul>
@@ -163,9 +188,9 @@ export const Footer: React.FC<FooterProps> = ({ setCurrentView }) => {
           <p
             onClick={handleStealthAccess}
             className="cursor-pointer select-none transition-opacity hover:opacity-90"
-            title="Gadgets Destiny"
+            title="Divine’s Eternity"
           >
-            © {new Date().getFullYear()} Gadgets Destiny. Cute Covers Club.
+            © {new Date().getFullYear()} Divine’s Eternity. Gifts that stay in hearts.
           </p>
 
           <div className="flex items-center gap-3 text-[11px]">

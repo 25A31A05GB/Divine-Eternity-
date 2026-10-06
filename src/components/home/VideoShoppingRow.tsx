@@ -29,9 +29,9 @@ export const VideoShoppingRow: React.FC<VideoShoppingRowProps> = ({
           </h2>
         </div>
 
-        {/* 4 Shoppable Video Cards Grid matching Screenshot 4 */}
+        {/* Shoppable Video Cards Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-          {activeReels.slice(0, 4).map((reel, idx) => {
+          {activeReels.map((reel, idx) => {
             const linkedProduct = products.find((p) => p.id === reel.linkedProductId) || products[idx % products.length];
             if (!linkedProduct) return null;
             const isPlaying = playingIndex === idx;
