@@ -108,41 +108,41 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, isOpen,
   };
 
   return (
-    <div className="fixed inset-0 z-[100] overflow-y-auto flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[100] overflow-y-auto flex items-center justify-center p-2 sm:p-4 bg-[#08090B]/80 backdrop-blur-md animate-in fade-in duration-200">
       <div
-        className="relative w-full max-w-4xl bg-white dark:bg-[#1E1A1D] rounded-3xl shadow-2xl border border-[#F5E6E8] dark:border-[#2D252A] overflow-hidden flex flex-col md:flex-row my-auto max-h-[92vh]"
+        className="relative w-full max-w-4xl bg-[#151A24] text-[#F7F4EC] rounded-3xl shadow-2xl border border-[#242C3D] overflow-y-auto md:overflow-hidden flex flex-col md:flex-row my-auto max-h-[92vh] text-left"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
         <button
           onClick={onClose}
           aria-label="Close modal"
-          className="absolute top-4 right-4 z-30 p-2 rounded-full bg-white/80 dark:bg-black/60 text-slate-700 dark:text-slate-200 hover:bg-white dark:hover:bg-black hover:text-[#E11D48] shadow-md transition-all"
+          className="absolute top-3 right-3 z-30 p-2 rounded-full bg-[#0C1220]/90 border border-[#242C3D] text-[#A7AFBD] hover:text-[#F7F4EC] hover:bg-[#1B2230] shadow-md transition-all cursor-pointer"
         >
           <X className="w-5 h-5" />
         </button>
 
-        {/* Left Column: Live Customizer Mockup */}
-        <div className="w-full md:w-1/2 bg-[#FFF9F5] dark:bg-black/30 p-6 flex flex-col items-center justify-between border-b md:border-b-0 md:border-r border-[#F5E6E8] dark:border-[#2D252A] relative">
+        {/* Left Column: Live Customizer Mockup Preview */}
+        <div className="w-full md:w-1/2 bg-[#0C1220] p-4 sm:p-6 flex flex-col items-center justify-between border-b md:border-b-0 md:border-r border-[#242C3D] relative shrink-0">
           <button
             onClick={() => toggleWishlist(product.id)}
             className={`absolute top-4 left-4 z-20 w-9 h-9 rounded-full flex items-center justify-center backdrop-blur-md transition-all ${
               wishlisted
-                ? 'bg-[#E11D48] text-white'
-                : 'bg-white/80 dark:bg-black/60 text-slate-700 dark:text-slate-200 hover:text-[#E11D48]'
+                ? 'bg-[#5B8CFF] text-white'
+                : 'bg-[#151A24]/80 border border-[#242C3D] text-[#A7AFBD] hover:text-[#F7F4EC]'
             }`}
           >
             <Heart className={`w-4 h-4 ${wishlisted ? 'fill-current' : ''}`} />
           </button>
 
-          <div className="text-center pt-2">
-            <span className="bg-[#FFD94A] text-[#231F20] text-xs font-bold px-3 py-1 rounded-full shadow-xs uppercase tracking-wider inline-flex items-center gap-1">
-              <Sparkles className="w-3 h-3 text-[#E11D48]" />
-              {product.badge || 'Bespoke Personalized Gift'}
+          <div className="text-center pt-1">
+            <span className="bg-[#151A24] border border-[#242C3D] text-[#5B8CFF] text-[11px] font-bold px-3 py-1 rounded-full shadow-xs uppercase tracking-wider inline-flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-[#22D3EE]" />
+              <span>{product.badge || 'Bespoke Personalized Gift'}</span>
             </span>
           </div>
 
-          <div className="my-4 w-full flex items-center justify-center">
+          <div className="my-3 sm:my-4 w-full flex items-center justify-center">
             <PhoneCaseMockup
               product={product}
               customText={customText}
@@ -150,16 +150,16 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, isOpen,
               customSong={customSong}
               customArtist={customArtist}
               isHovered={false}
-              className="w-full max-w-[260px] h-[360px] sm:h-[400px] rounded-3xl"
+              className="w-full max-w-[200px] sm:max-w-[250px] h-[220px] sm:h-[320px] md:h-[380px] rounded-3xl"
             />
           </div>
 
-          <div className="w-full bg-white/80 dark:bg-[#141113]/80 rounded-2xl p-3 text-center border border-pink-100 dark:border-pink-950/40 shadow-xs">
-            <p className="text-xs text-slate-600 dark:text-slate-300">
-              Live Bespoke Preview · <strong>{product.name}</strong>
+          <div className="w-full bg-[#151A24] rounded-2xl p-2.5 text-center border border-[#242C3D] shadow-xs">
+            <p className="text-xs text-[#A7AFBD]">
+              Live Bespoke Preview · <strong className="text-[#F7F4EC]">{product.name}</strong>
             </p>
             {customText.trim() && (
-              <p className="text-xs text-[#E11D48] font-semibold mt-0.5 font-script text-base">
+              <p className="text-xs text-[#22D3EE] font-semibold mt-0.5 font-script text-base">
                 Engraving: "{customText}"
               </p>
             )}
@@ -167,32 +167,32 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, isOpen,
         </div>
 
         {/* Right Column: Customization Controls & Add to Cart */}
-        <div className="w-full md:w-1/2 p-6 sm:p-8 overflow-y-auto max-h-[85vh] md:max-h-[92vh] space-y-5">
+        <div className="w-full md:w-1/2 p-5 sm:p-8 md:overflow-y-auto md:max-h-[92vh] space-y-5 bg-[#151A24] text-[#F7F4EC]">
           <div>
             <div className="flex items-center gap-2 mb-1.5">
-              <span className="text-xs font-bold uppercase tracking-widest text-[#E11D48]">
+              <span className="text-xs font-bold uppercase tracking-widest text-[#5B8CFF]">
                 {product.category}
               </span>
-              <span>·</span>
-              <div className="flex items-center gap-1 text-xs font-medium text-slate-700 dark:text-slate-300">
-                <Star className="w-3.5 h-3.5 text-[#FFD94A] fill-[#FFD94A]" />
-                <span className="font-bold">{averageRating}</span>
-                <span className="text-slate-400">({totalReviews} reviews)</span>
+              <span className="text-[#737C8C]">•</span>
+              <div className="flex items-center gap-1 text-xs font-medium text-[#A7AFBD]">
+                <Star className="w-3.5 h-3.5 text-[#22D3EE] fill-[#22D3EE]" />
+                <span className="font-bold text-[#F7F4EC]">{averageRating}</span>
+                <span className="text-[#737C8C]">({totalReviews} reviews)</span>
               </div>
             </div>
 
-            <h2 className="font-serif-heading text-xl sm:text-2xl font-bold text-[#231F20] dark:text-[#FDF9F7]">
+            <h2 className="text-xl sm:text-2xl font-bold text-[#F7F4EC]">
               {product.name}
             </h2>
 
             <div className="flex items-baseline gap-3 mt-2">
-              <span className="text-2xl font-extrabold text-[#231F20] dark:text-white tabular-nums">
+              <span className="text-2xl font-extrabold text-[#F7F4EC] tabular-nums font-mono">
                 ₹{product.price}
               </span>
-              <span className="text-sm text-slate-400 line-through tabular-nums">
+              <span className="text-sm text-[#737C8C] line-through tabular-nums">
                 MRP ₹{product.mrp}
               </span>
-              <span className="text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md">
+              <span className="text-xs font-bold text-[#2DD4BF] bg-[#2DD4BF]/10 px-2 py-0.5 rounded-md border border-[#2DD4BF]/30">
                 Save {discountPercent}%
               </span>
             </div>
@@ -202,7 +202,7 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, isOpen,
           {isPhoneCase && (
             <div className="space-y-3">
               <div className="space-y-1">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 block">
+                <label className="text-xs font-bold uppercase tracking-wider text-[#A7AFBD] block">
                   Select Phone Brand *
                 </label>
                 <select
@@ -212,7 +212,7 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, isOpen,
                     setSelectedBrand(b);
                     setSelectedModel(PHONE_MODELS_MAP[b]?.[0] || '');
                   }}
-                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-xs text-slate-900 dark:text-white"
+                  className="w-full bg-[#0C1220] border border-[#242C3D] rounded-xl p-2.5 text-xs text-[#F7F4EC] focus:ring-2 focus:ring-[#5B8CFF] focus:outline-none"
                 >
                   {PHONE_BRANDS.map((b) => (
                     <option key={b} value={b}>{b}</option>
@@ -221,13 +221,13 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, isOpen,
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 block">
+                <label className="text-xs font-bold uppercase tracking-wider text-[#A7AFBD] block">
                   Select Phone Model *
                 </label>
                 <select
                   value={selectedModel}
                   onChange={(e) => setSelectedModel(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-xs text-slate-900 dark:text-white"
+                  className="w-full bg-[#0C1220] border border-[#242C3D] rounded-xl p-2.5 text-xs text-[#F7F4EC] focus:ring-2 focus:ring-[#5B8CFF] focus:outline-none"
                 >
                   {(PHONE_MODELS_MAP[selectedBrand as PhoneBrand] || []).map((m) => (
                     <option key={m} value={m}>{m}</option>
@@ -254,24 +254,24 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, isOpen,
 
           {/* Quantity Stepper */}
           <div className="flex items-center justify-between pt-1">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#A7AFBD]">
               Quantity
             </span>
-            <div className="flex items-center border border-slate-200 dark:border-slate-800 rounded-full bg-slate-50 dark:bg-slate-900 p-1">
+            <div className="flex items-center border border-[#242C3D] rounded-full bg-[#0C1220] p-1">
               <button
                 type="button"
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                className="w-7 h-7 rounded-full bg-white dark:bg-slate-800 flex items-center justify-center text-xs font-bold hover:text-[#E11D48] shadow-xs"
+                className="w-7 h-7 rounded-full bg-[#151A24] border border-[#242C3D] flex items-center justify-center text-xs font-bold hover:text-[#5B8CFF] shadow-xs cursor-pointer"
               >
                 -
               </button>
-              <span className="w-9 text-center text-xs font-bold tabular-nums">
+              <span className="w-9 text-center text-xs font-bold tabular-nums font-mono text-[#F7F4EC]">
                 {quantity}
               </span>
               <button
                 type="button"
                 onClick={() => setQuantity(quantity + 1)}
-                className="w-7 h-7 rounded-full bg-white dark:bg-slate-800 flex items-center justify-center text-xs font-bold hover:text-[#E11D48] shadow-xs"
+                className="w-7 h-7 rounded-full bg-[#151A24] border border-[#242C3D] flex items-center justify-center text-xs font-bold hover:text-[#5B8CFF] shadow-xs cursor-pointer"
               >
                 +
               </button>
@@ -279,7 +279,7 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, isOpen,
           </div>
 
           {validationError && (
-            <div className="flex items-center gap-2 text-xs text-rose-600 bg-rose-50 dark:bg-rose-950/40 p-2.5 rounded-xl border border-rose-200">
+            <div className="flex items-center gap-2 text-xs text-rose-400 bg-rose-950/40 p-2.5 rounded-xl border border-rose-800">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{validationError}</span>
             </div>
@@ -289,10 +289,10 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, isOpen,
           <div className="pt-2 space-y-4">
             <button
               onClick={handleAddToCart}
-              className={`w-full py-3.5 px-6 rounded-full font-bold text-xs sm:text-sm tracking-widest uppercase transition-all transform active:scale-98 flex items-center justify-center gap-2 shadow-lg ${
+              className={`w-full py-3.5 px-6 rounded-xl font-bold text-xs sm:text-sm tracking-widest uppercase transition-all transform active:scale-98 flex items-center justify-center gap-2 shadow-lg cursor-pointer ${
                 addedSuccess
-                  ? 'bg-emerald-600 text-white'
-                  : 'bg-[#E11D48] hover:bg-[#be123c] text-white shadow-pink-500/25'
+                  ? 'bg-[#2DD4BF] text-[#08090B]'
+                  : 'gradient-blue-violet text-white hover:opacity-95'
               }`}
             >
               {addedSuccess ? (
@@ -308,19 +308,19 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, isOpen,
               )}
             </button>
 
-            <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+            <div className="pt-2 border-t border-[#242C3D]">
               <SocialShare product={product} size="sm" />
             </div>
 
-            <div className="flex items-center justify-center gap-4 text-[11px] text-slate-500 dark:text-slate-400">
-              <span className="flex items-center gap-1">
-                <Shield className="w-3 h-3 text-emerald-500" />
-                <span>Luxury Gift Box</span>
+            <div className="flex items-center justify-center gap-4 text-[11px] text-[#737C8C]">
+              <span className="flex items-center gap-1 text-[#2DD4BF]">
+                <Shield className="w-3 h-3" />
+                <span>Luxury Gift Casket</span>
               </span>
-              <span>·</span>
+              <span>•</span>
               <span>7-Day Replacement</span>
-              <span>·</span>
-              <span>Free Calligraphy</span>
+              <span>•</span>
+              <span>Free Engraving</span>
             </div>
           </div>
         </div>
