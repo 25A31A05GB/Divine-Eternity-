@@ -35,27 +35,27 @@ export const BestsellerGrid: React.FC<BestsellerGridProps> = ({
   }, [products, selectedFilter]);
 
   return (
-    <section className="py-14 sm:py-20 border-b border-[#F3E8E2] dark:border-[#2D252A]">
+    <section className="py-14 sm:py-20 bg-[#FFF9DE]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Section Header */}
+        {/* Section Header matching Screenshot 2 */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
           <div>
-            <span className="text-[11px] font-extrabold uppercase tracking-widest text-[#F0508C] flex items-center gap-1">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Trending & Most Loved</span>
-            </span>
-            <h2 className="font-serif-heading text-2xl sm:text-3xl md:text-4xl font-bold text-[#231F20] dark:text-[#FDF9F7] mt-1">
-              Meet the <span className="italic text-[#F0508C]">Best sellers</span>
+            <div className="text-[11px] font-extrabold uppercase tracking-widest text-[#E05A47] flex items-center gap-1.5 mb-1">
+              <span>✦</span>
+              <span>THE ONES EVERYONE IS ASKING ABOUT</span>
+            </div>
+            <h2 className="font-serif-heading text-3xl sm:text-4xl lg:text-5xl font-bold text-[#211D1C]">
+              Meet the <span className="font-serif italic text-[#FF2E93] font-normal">Best sellers</span>
             </h2>
-            <p className="text-xs sm:text-sm text-slate-500 mt-1">
+            <p className="text-xs sm:text-sm text-stone-600 mt-1">
               Over 40,000+ happy phones styled this month. Buy 3 Pay For 2 on all bestsellers!
             </p>
           </div>
 
           <button
             onClick={onViewAll}
-            className="text-xs sm:text-sm font-bold text-[#F0508C] hover:text-[#d63b74] flex items-center gap-1 group self-start md:self-auto"
+            className="text-xs sm:text-sm font-bold text-[#FF2E93] hover:text-[#d62075] flex items-center gap-1 group self-start md:self-auto cursor-pointer"
           >
             <span>View All Collections</span>
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -70,10 +70,10 @@ export const BestsellerGrid: React.FC<BestsellerGridProps> = ({
               <button
                 key={tab}
                 onClick={() => setSelectedFilter(tab)}
-                className={`px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
+                className={`px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
                   isSelected
-                    ? 'bg-[#231F20] dark:bg-white text-white dark:text-[#231F20] shadow-sm'
-                    : 'bg-white dark:bg-[#1E1A1D] text-slate-700 dark:text-slate-300 border border-[#F3E8E2] dark:border-[#2D252A] hover:border-[#F0508C]'
+                    ? 'bg-[#211D1C] text-white shadow-sm'
+                    : 'bg-white text-stone-700 border border-stone-200 hover:border-[#FF2E93] hover:text-[#FF2E93]'
                 }`}
               >
                 {tab}

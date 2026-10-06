@@ -255,7 +255,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     isBestSeller: true,
     isNew: true,
     themeColor: '#FFE5EC',
-    secondaryColor: '#F0508C',
+    secondaryColor: '#FF2E93',
     designPattern: 'pearl_bracelet',
     supportedBrands: ['Apple', 'Samsung', 'OnePlus', 'Google', 'Xiaomi', 'Vivo', 'Oppo', 'Realme'],
     variantsStock: {
@@ -329,7 +329,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     badge: 'Buy 3 Pay For 2',
     isBestSeller: true,
     themeColor: '#E0E1DD',
-    secondaryColor: '#F0508C',
+    secondaryColor: '#FF2E93',
     designPattern: 'chrome_mirror',
     supportedBrands: ['Apple', 'Samsung', 'OnePlus', 'Google', 'Xiaomi', 'Vivo', 'Oppo', 'Realme'],
     variantsStock: {

@@ -5,76 +5,127 @@ import { INITIAL_REVIEWS } from '../../data/products';
 export const ReviewsSection: React.FC = () => {
   const [currentReviewIdx, setCurrentReviewIdx] = useState(0);
 
-  const STATS = [
-    { label: 'Orders Handcrafted & Delivered', value: '45,000+' },
-    { label: 'Would Recommend to a Bestie', value: '99.4%' },
-    { label: 'Hassle-Free Replacement Policy', value: '7 Days' },
-    { label: 'Average Customer Rating', value: '4.9 / 5.0' },
+  const REVIEWS_DATA = [
+    {
+      id: 'rev-1',
+      rating: 5,
+      comment: 'Build quality is solid. The volume buttons are clicky and not hard to press like other cheap covers I bought earlier.',
+      productName: 'Gadget Destiny Cover',
+      verified: true,
+    },
+    {
+      id: 'rev-2',
+      rating: 5,
+      comment: 'Good case. The bumper corners give decent drop protection. Color matches the product pictures properly.',
+      productName: 'Gadget Destiny Cover',
+      verified: true,
+    },
+    {
+      id: 'rev-3',
+      rating: 5,
+      comment: 'Got my parcel today in Mumbai. Case fits my phone snugly and the edges around the screen are raised enough for safety.',
+      productName: 'Gadget Destiny Cover',
+      verified: true,
+    },
+    {
+      id: 'rev-4',
+      rating: 5,
+      comment: 'The wristlet charm is so sturdy! I carry my phone everywhere by the bracelet and get compliments every single day.',
+      productName: 'Gadget Destiny Cover',
+      verified: true,
+    },
   ];
 
   const handlePrev = () => {
-    setCurrentReviewIdx((prev) => (prev - 1 + INITIAL_REVIEWS.length) % INITIAL_REVIEWS.length);
+    setCurrentReviewIdx((prev) => (prev - 1 + REVIEWS_DATA.length) % REVIEWS_DATA.length);
   };
 
   const handleNext = () => {
-    setCurrentReviewIdx((prev) => (prev + 1) % INITIAL_REVIEWS.length);
+    setCurrentReviewIdx((prev) => (prev + 1) % REVIEWS_DATA.length);
   };
 
   return (
-    <section className="py-16 sm:py-24 border-b border-[#F5E6E8] dark:border-[#2D252A] overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="py-14 sm:py-20 bg-[#FFFDF8]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         
-        {/* Section Heading with Serif & Italic */}
-        <div className="text-center max-w-3xl mx-auto mb-12 space-y-3">
-          <span className="text-[11px] font-extrabold uppercase tracking-widest text-[#E11D48] flex items-center justify-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-[#FFD94A]" />
-            <span>Customer Love & Testimonials</span>
-          </span>
-          <h2 className="font-serif-heading text-3xl sm:text-4xl md:text-5xl font-bold text-[#231F20] dark:text-[#FDF9F7]">
-            Gifts that stay in <span className="italic text-[#E11D48]">hearts.</span>
-          </h2>
-          <p className="text-sm text-slate-600 dark:text-slate-400">
-            Read real unfiltered reviews from gift and keepsake lovers all across India.
-          </p>
-        </div>
-
-        {/* 4-Item Stats Row */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-14">
-          {STATS.map((stat, i) => (
-            <div
-              key={i}
-              className="bg-white dark:bg-[#1E1A1D] p-5 sm:p-6 rounded-2xl border border-[#F5E6E8] dark:border-[#2D252A] text-center shadow-xs flex flex-col justify-center"
-            >
-              <span className="font-serif-heading text-2xl sm:text-3xl font-extrabold text-[#E11D48] tabular-nums">
-                {stat.value}
-              </span>
-              <span className="text-xs text-slate-600 dark:text-slate-400 font-medium mt-1">
-                {stat.label}
-              </span>
+        {/* Top Summary Card matching Screenshot 7 */}
+        <div className="bg-white rounded-3xl border border-[#F3E8E2] p-6 sm:p-10 shadow-xs flex flex-col lg:flex-row items-center justify-between gap-8">
+          
+          {/* Left: Tag, Heading, and 3 Stats */}
+          <div className="space-y-6 flex-1">
+            <div>
+              <div className="text-[11px] font-extrabold uppercase tracking-widest text-[#E05A47] mb-1">
+                THE CUTE COVERS CLUB HAS SPOKEN
+              </div>
+              <h2 className="font-serif-heading text-3xl sm:text-5xl font-bold text-[#211D1C]">
+                Happy phones. <br />
+                <span className="font-serif italic text-[#FF2E93] font-normal">Happier people.</span>
+              </h2>
             </div>
-          ))}
+
+            {/* 3 Stats Bar matching Screenshot 7 */}
+            <div className="grid grid-cols-3 gap-4 pt-4 border-t border-stone-100 max-w-lg">
+              <div>
+                <div className="text-2xl sm:text-3xl font-extrabold text-[#211D1C] font-serif">
+                  5 Lakh+
+                </div>
+                <div className="text-[11px] text-stone-500 mt-0.5">
+                  orders delivered
+                </div>
+              </div>
+              <div className="border-l border-stone-200 pl-4">
+                <div className="text-2xl sm:text-3xl font-extrabold text-[#211D1C] font-serif">
+                  98%
+                </div>
+                <div className="text-[11px] text-stone-500 mt-0.5">
+                  would recommend us
+                </div>
+              </div>
+              <div className="border-l border-stone-200 pl-4">
+                <div className="text-2xl sm:text-3xl font-extrabold text-[#211D1C] font-serif">
+                  7 days
+                </div>
+                <div className="text-[11px] text-stone-500 mt-0.5">
+                  easy replacement help
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right: Butter Yellow Rating Card matching Screenshot 7 */}
+          <div className="bg-[#FFF9DE] border border-[#F7E7A9] rounded-2xl p-6 sm:p-8 text-center shrink-0 w-full sm:w-64">
+            <div className="font-serif text-4xl sm:text-5xl font-extrabold text-[#211D1C]">
+              4.98
+            </div>
+            <div className="flex items-center justify-center gap-1 text-[#F59E0B] my-2 text-sm">
+              {'★★★★★'}
+            </div>
+            <div className="text-[11px] text-stone-600 font-medium">
+              Based on 1,248 verified reviews
+            </div>
+          </div>
+
         </div>
 
-        {/* "Latest Love Notes" Review Cards */}
+        {/* Reviews Carousel Section matching Screenshot 7 */}
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-[#231F20] dark:text-white flex items-center gap-2">
-              <Heart className="w-4 h-4 text-[#E11D48] fill-current" />
-              <span>Latest Love Notes</span>
+            <h3 className="font-serif-heading text-xl sm:text-2xl font-bold text-[#211D1C]">
+              Latest love notes
             </h3>
 
             <div className="flex items-center gap-2">
               <button
                 onClick={handlePrev}
                 aria-label="Previous review"
-                className="w-8 h-8 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 hover:bg-[#E11D48] hover:text-white transition-colors"
+                className="w-9 h-9 rounded-full bg-white border border-stone-300 flex items-center justify-center text-[#211D1C] hover:border-[#FF2E93] hover:text-[#FF2E93] transition-colors cursor-pointer"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
               <button
                 onClick={handleNext}
                 aria-label="Next review"
-                className="w-8 h-8 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 hover:bg-[#E11D48] hover:text-white transition-colors"
+                className="w-9 h-9 rounded-full bg-[#FFD94A] border border-[#F5C71A] flex items-center justify-center text-[#211D1C] hover:opacity-90 transition-opacity cursor-pointer"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
@@ -82,55 +133,45 @@ export const ReviewsSection: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-            {INITIAL_REVIEWS.map((rev) => (
+            {REVIEWS_DATA.map((rev) => (
               <div
                 key={rev.id}
-                className="bg-white dark:bg-[#1E1A1D] p-5 rounded-2xl border border-[#F5E6E8] dark:border-[#2D252A] shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between"
+                className="bg-white p-6 rounded-2xl border border-[#F3E8E2] shadow-xs flex flex-col justify-between space-y-4"
               >
                 <div>
-                  {/* Stars & Verified Buyer */}
                   <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-1 text-[#FFD94A]">
-                      {Array.from({ length: rev.rating }).map((_, idx) => (
-                        <Star key={idx} className="w-3.5 h-3.5 fill-current" />
-                      ))}
+                    <div className="flex items-center gap-0.5 text-[#F59E0B] text-xs">
+                      {'★★★★★'}
                     </div>
-                    {rev.verified && (
-                      <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full flex items-center gap-1">
-                        <CheckCircle2 className="w-3 h-3" />
-                        <span>Verified Buyer</span>
-                      </span>
-                    )}
+                    <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md uppercase tracking-wider">
+                      VERIFIED BUYER
+                    </span>
                   </div>
 
-                  <h4 className="font-serif-heading text-sm font-bold text-slate-900 dark:text-white mb-1.5">
-                    "{rev.title}"
-                  </h4>
-
-                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                    {rev.comment}
+                  <p className="text-xs sm:text-sm text-stone-700 leading-relaxed font-normal">
+                    "{rev.comment}"
                   </p>
                 </div>
 
-                <div className="pt-4 mt-4 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-xs text-slate-500">
-                  <div>
-                    <p className="font-bold text-slate-800 dark:text-slate-200">
-                      {rev.author}
-                    </p>
-                    {rev.giftTypeUsed && (
-                      <p className="text-[10px] text-[#E11D48] font-semibold">
-                        {rev.giftTypeUsed}
-                      </p>
-                    )}
+                {/* Bottom Product Chip in Yellow matching Screenshot 7 */}
+                <div className="bg-[#FFF9DE] border border-[#F7E7A9] p-3 rounded-xl flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-white border border-[#EFE7DE] flex items-center justify-center text-xs">
+                    📱
                   </div>
-                  <span className="text-[10px] text-slate-400 font-mono">
-                    {rev.date}
-                  </span>
+                  <div>
+                    <div className="text-xs font-bold text-[#211D1C]">
+                      {rev.productName}
+                    </div>
+                    <div className="text-[10px] text-stone-500">
+                      Verified purchase
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         </div>
+
       </div>
     </section>
   );

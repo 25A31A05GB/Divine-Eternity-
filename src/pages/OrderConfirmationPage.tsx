@@ -15,44 +15,47 @@ export const OrderConfirmationPage: React.FC<OrderConfirmationPageProps> = ({
   onTrackOrder,
   onContinueShopping,
 }) => {
+  const confirmationUrl = typeof window !== 'undefined' ? window.location.href : 'https://divineseternity.com/#order-confirmation';
+
   return (
     <div className="py-12 sm:py-16">
       <SEO
-        title="Order Confirmed - Thank You"
-        description="Your Divine's Eternity personalized keepsake order has been received and is being prepared with love."
+        title={`Order Confirmed #${order.id} — Gadgets Destiny`}
+        description={`Your Gadgets Destiny cute phone cover order #${order.id} for ₹${order.totalAmount} has been confirmed and is being prepared.`}
+        url={confirmationUrl}
         noindex={true}
       />
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         
         {/* Celebration Header */}
-        <div className="bg-white dark:bg-[#1E1A1D] p-8 sm:p-10 rounded-3xl border border-[#F3E8E2] dark:border-[#2D252A] shadow-xl text-center space-y-4">
-          <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto shadow-inner">
+        <div className="bg-white p-8 sm:p-10 rounded-3xl border border-[#F3E8E2] shadow-xs text-center space-y-4">
+          <div className="w-16 h-16 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto shadow-xs border border-emerald-100">
             <CheckCircle2 className="w-10 h-10" />
           </div>
 
-          <div className="inline-flex items-center gap-1.5 bg-[#FFD94A] text-[#231F20] px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-xs">
-            <Sparkles className="w-3.5 h-3.5 text-[#F0508C]" />
+          <div className="inline-flex items-center gap-1.5 bg-[#FFD94A] text-[#211D1C] px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-xs">
+            <Sparkles className="w-3.5 h-3.5 text-[#FF2E93]" />
             <span>Order Placed Successfully!</span>
           </div>
 
-          <h1 className="font-serif-heading text-3xl sm:text-4xl font-extrabold text-[#231F20] dark:text-white">
-            Thank you, <span className="italic text-[#F0508C]">{order.customer.fullName}</span>!
+          <h1 className="font-serif-heading text-3xl sm:text-4xl font-extrabold text-[#211D1C]">
+            Thank you, <span className="font-serif italic text-[#FF2E93]">{order.customer.fullName}</span>!
           </h1>
 
-          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 max-w-md mx-auto">
-            Your handcrafted cases are now being prepared and gift-boxed with love.
+          <p className="text-xs sm:text-sm text-stone-600 max-w-md mx-auto">
+            Your cute phone covers are now being carefully packed and prepared with love.
           </p>
 
           {/* Order ID Badge */}
-          <div className="bg-[#FFF8F4] dark:bg-slate-900/60 p-4 rounded-2xl border border-pink-200 dark:border-slate-800 inline-block space-y-1">
-            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest block">
+          <div className="bg-[#FFFDF8] p-4 rounded-2xl border border-[#F3E8E2] inline-block space-y-1">
+            <span className="text-[11px] font-bold text-stone-500 uppercase tracking-widest block">
               Your Order Reference ID
             </span>
-            <span className="font-mono text-xl sm:text-2xl font-extrabold text-[#F0508C]">
+            <span className="font-mono text-xl sm:text-2xl font-extrabold text-[#FF2E93]">
               {order.id}
             </span>
-            <p className="text-[10px] text-slate-400">
-              Tracking code: <span className="font-mono text-slate-600 dark:text-slate-300">{order.trackingNumber}</span>
+            <p className="text-[10px] text-stone-400">
+              Tracking code: <span className="font-mono text-stone-700">{order.trackingNumber}</span>
             </p>
           </div>
 
@@ -60,7 +63,7 @@ export const OrderConfirmationPage: React.FC<OrderConfirmationPageProps> = ({
           <div className="flex flex-wrap items-center justify-center gap-3 pt-4">
             <button
               onClick={() => onTrackOrder(order.id)}
-              className="bg-[#231F20] hover:bg-[#F0508C] text-white px-6 py-3 rounded-full text-xs font-bold tracking-widest uppercase transition-all flex items-center gap-2 shadow-md"
+              className="bg-[#211D1C] hover:bg-[#FF2E93] text-white px-6 py-3 rounded-full text-xs font-bold tracking-widest uppercase transition-all flex items-center gap-2 shadow-md cursor-pointer"
             >
               <Truck className="w-4 h-4" />
               <span>Track Live Delivery</span>
@@ -68,7 +71,7 @@ export const OrderConfirmationPage: React.FC<OrderConfirmationPageProps> = ({
 
             <button
               onClick={onContinueShopping}
-              className="bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:border-[#F0508C] px-6 py-3 rounded-full text-xs font-bold tracking-widest uppercase transition-colors flex items-center gap-2 shadow-xs"
+              className="bg-white text-[#211D1C] border border-stone-200 hover:border-[#FF2E93] hover:text-[#FF2E93] px-6 py-3 rounded-full text-xs font-bold tracking-widest uppercase transition-colors flex items-center gap-2 shadow-xs cursor-pointer"
             >
               <Home className="w-4 h-4" />
               <span>Back To Home</span>
@@ -77,8 +80,8 @@ export const OrderConfirmationPage: React.FC<OrderConfirmationPageProps> = ({
         </div>
 
         {/* Order Details & Summary Card */}
-        <div className="bg-white dark:bg-[#1E1A1D] p-6 sm:p-8 rounded-3xl border border-[#F3E8E2] dark:border-[#2D252A] shadow-xs space-y-6">
-          <h2 className="font-serif-heading text-lg font-bold text-slate-900 dark:text-white pb-3 border-b border-slate-100 dark:border-slate-800">
+        <div className="bg-white p-6 sm:p-8 rounded-3xl border border-[#F3E8E2] shadow-xs space-y-6">
+          <h2 className="font-serif-heading text-lg font-bold text-[#211D1C] pb-3 border-b border-[#F3E8E2]">
             Items in this Shipment
           </h2>
 
@@ -86,9 +89,9 @@ export const OrderConfirmationPage: React.FC<OrderConfirmationPageProps> = ({
             {order.items.map((item) => (
               <div
                 key={item.id}
-                className="flex items-center gap-3 p-3 rounded-2xl bg-[#FFF8F4] dark:bg-slate-900/40 border border-pink-100 dark:border-slate-800"
+                className="flex items-center gap-3 p-3 rounded-2xl bg-[#FFFDF8] border border-[#F3E8E2]"
               >
-                <div className="w-14 h-16 rounded-xl bg-white dark:bg-black/30 overflow-hidden flex items-center justify-center shrink-0 border border-pink-100">
+                <div className="w-14 h-16 rounded-xl bg-white overflow-hidden flex items-center justify-center shrink-0 border border-[#F3E8E2]">
                   <PhoneCaseMockup
                     product={{
                       designPattern: item.designPattern,
@@ -102,23 +105,23 @@ export const OrderConfirmationPage: React.FC<OrderConfirmationPageProps> = ({
                   />
                 </div>
                 <div className="flex-1 min-w-0 text-xs">
-                  <h4 className="font-bold text-slate-900 dark:text-white truncate">
+                  <h4 className="font-bold text-[#211D1C] truncate">
                     {item.name}
                   </h4>
-                  <p className="text-[11px] text-slate-600 dark:text-slate-300">
+                  <p className="text-[11px] text-stone-600">
                     {item.brand} {item.model} · {item.caseType}
                   </p>
                   {item.customText && (
-                    <p className="text-[10px] text-[#F0508C] font-script text-xs font-semibold">
+                    <p className="text-[10px] text-[#FF2E93] font-script text-xs font-semibold">
                       Engraved Name: "{item.customText}"
                     </p>
                   )}
                 </div>
                 <div className="text-right">
-                  <span className="text-xs font-bold text-slate-900 dark:text-white tabular-nums">
+                  <span className="text-xs font-bold text-[#211D1C] tabular-nums">
                     ₹{item.price * item.quantity}
                   </span>
-                  <p className="text-[10px] text-slate-400">Qty: {item.quantity}</p>
+                  <p className="text-[10px] text-stone-400">Qty: {item.quantity}</p>
                 </div>
               </div>
             ))}
@@ -126,13 +129,13 @@ export const OrderConfirmationPage: React.FC<OrderConfirmationPageProps> = ({
 
           {/* Gift Packaging & Note Card if selected */}
           {order.isGiftWrapped && (
-            <div className="p-4 rounded-2xl bg-pink-50/70 dark:bg-pink-950/30 border border-pink-200 dark:border-pink-900/50 space-y-1.5 text-xs">
-              <div className="flex items-center gap-2 font-bold text-[#881337] dark:text-[#FB7185]">
-                <Gift className="w-4 h-4 text-[#881337] dark:text-[#FB7185]" />
-                <span>Luxury Gift Packaging & Stationery Card Included (+₹99)</span>
+            <div className="p-4 rounded-2xl bg-[#FFF0F3] border border-[#FFD2DF] space-y-1.5 text-xs">
+              <div className="flex items-center gap-2 font-bold text-[#FF2E93]">
+                <Gift className="w-4 h-4 text-[#FF2E93]" />
+                <span>Cute Gift Packaging & Card Included (+₹99)</span>
               </div>
               {order.giftNote && (
-                <div className="text-slate-700 dark:text-slate-300 italic pl-6">
+                <div className="text-stone-700 italic pl-6">
                   "{order.giftNote}"
                 </div>
               )}
@@ -140,24 +143,24 @@ export const OrderConfirmationPage: React.FC<OrderConfirmationPageProps> = ({
           )}
 
           {/* Delivery Address & Receipt Recap */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4 border-t border-slate-100 dark:border-slate-800 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4 border-t border-[#F3E8E2] text-xs">
             <div>
-              <h4 className="font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-1">
+              <h4 className="font-bold text-[#211D1C] uppercase tracking-wider mb-1">
                 Delivering To:
               </h4>
-              <p className="text-slate-700 dark:text-slate-300 font-semibold">{order.customer.fullName}</p>
-              <p className="text-slate-500">{order.customer.streetAddress}</p>
-              <p className="text-slate-500">{order.customer.city}, {order.customer.state} - {order.customer.pincode}</p>
-              <p className="text-slate-500 font-mono mt-1">Phone: +91 {order.customer.phone}</p>
+              <p className="text-[#211D1C] font-semibold">{order.customer.fullName}</p>
+              <p className="text-stone-600">{order.customer.streetAddress}</p>
+              <p className="text-stone-600">{order.customer.city}, {order.customer.state} - {order.customer.pincode}</p>
+              <p className="text-stone-500 font-mono mt-1">Phone: +91 {order.customer.phone}</p>
             </div>
 
             <div className="space-y-1 sm:text-right">
-              <h4 className="font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-1">
+              <h4 className="font-bold text-[#211D1C] uppercase tracking-wider mb-1">
                 Payment Summary:
               </h4>
-              <p className="text-slate-500">Method: <strong className="text-slate-800 dark:text-slate-200">{order.paymentMethod}</strong></p>
-              <p className="text-slate-500">Payment Status: <span className="text-emerald-600 font-bold">{order.paymentStatus}</span></p>
-              <p className="text-sm font-extrabold text-[#F0508C] pt-1">
+              <p className="text-stone-600">Method: <strong className="text-[#211D1C]">{order.paymentMethod}</strong></p>
+              <p className="text-stone-600">Payment Status: <span className="text-emerald-600 font-bold">{order.paymentStatus}</span></p>
+              <p className="text-sm font-extrabold text-[#FF2E93] pt-1">
                 Total Paid: ₹{order.totalAmount}
               </p>
             </div>

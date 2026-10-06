@@ -27,194 +27,134 @@ export const Footer: React.FC<FooterProps> = ({ setCurrentView }) => {
   };
 
   return (
-    <footer className="bg-[#111318] text-[#F5F2EA] pt-16 pb-12 border-t border-[#2A2B2F] relative overflow-hidden">
-      {/* Background soft ambient glow */}
-      <div className="absolute top-0 right-1/4 w-96 h-96 bg-[#D6B36A]/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 left-10 w-80 h-80 bg-[#D6B36A]/10 rounded-full blur-3xl pointer-events-none" />
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+    <footer className="bg-[#211D1C] text-white pt-16 pb-12 relative overflow-hidden">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Four Trust Columns in Pre-Footer */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 pb-12 border-b border-white/10 mb-12">
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-xl bg-stone-900 border border-stone-800 flex items-center justify-center text-[#C5A059] shrink-0">
-              <Award className="w-5 h-5" />
-            </div>
-            <div>
-              <h4 className="text-sm font-bold text-white font-serif">Haute Atelier Craft</h4>
-              <p className="text-xs text-stone-400 mt-0.5">18k gold vermeil and laser calligraphy precision</p>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-xl bg-stone-900 border border-stone-800 flex items-center justify-center text-[#881337] dark:text-[#FB7185] shrink-0">
-              <RefreshCw className="w-5 h-5" />
-            </div>
-            <div>
-              <h4 className="text-sm font-bold text-white font-serif">7-Day Replacement</h4>
-              <p className="text-xs text-stone-400 mt-0.5">Zero-hassle exchange if sizing or fit needs adjustment</p>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-xl bg-stone-900 border border-stone-800 flex items-center justify-center text-emerald-400 shrink-0">
-              <Truck className="w-5 h-5" />
-            </div>
-            <div>
-              <h4 className="text-sm font-bold text-white font-serif">Insured Express Dispatch</h4>
-              <p className="text-xs text-stone-400 mt-0.5">Speedy courier delivery with live SMS updates</p>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-xl bg-stone-900 border border-stone-800 flex items-center justify-center text-[#C5A059] shrink-0">
-              <ShieldCheck className="w-5 h-5" />
-            </div>
-            <div>
-              <h4 className="text-sm font-bold text-white font-serif">256-Bit Encrypted</h4>
-              <p className="text-xs text-stone-400 mt-0.5">Instant UPI, Cards, NetBanking, and COD</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Main Footer Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-white/10">
+        {/* Main Footer Grid matching Screenshot 8 */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-stone-800">
           
-          {/* Brand Blurb (2 cols wide on desktop) */}
+          {/* Brand Column (2 cols wide on desktop) */}
           <div className="lg:col-span-2 space-y-4">
-            <div className="flex items-center gap-2">
-              <span className="font-serif text-2xl sm:text-3xl font-bold tracking-tight text-white">
-                Divine's Eternity
+            <div className="flex items-baseline">
+              <span className="font-extrabold text-2xl sm:text-3xl tracking-tight text-[#FF2E93]">
+                Gadgets
               </span>
+              <span className="font-extrabold text-2xl sm:text-3xl tracking-tight text-white">
+                Destiny
+              </span>
+              <span className="text-[#FFD94A] text-xl font-bold ml-1">✦</span>
             </div>
+            
             <p className="text-xs sm:text-sm text-stone-300 leading-relaxed max-w-sm">
-              Gifts that stay in hearts. Handcrafted personalized jewelry, preserved eternal roses, acrylic song plaques, and custom keepsakes designed for timeless memories.
+              Phone covers for people who refuse to carry boring things. Designed with personality, built for everyday life.
             </p>
-            <div className="pt-2 text-xs text-stone-400 space-y-1.5 font-sans">
-              <p className="flex items-center gap-2">
-                <Mail className="w-3.5 h-3.5 text-[#C5A059]" />
-                <span>concierge@divineseternity.com</span>
-              </p>
-              <p className="flex items-center gap-2">
-                <Phone className="w-3.5 h-3.5 text-[#C5A059]" />
-                <span>+91 98765 43210 (Mon - Sat, 10am - 7pm IST)</span>
-              </p>
-              <p className="flex items-center gap-2">
-                <MapPin className="w-3.5 h-3.5 text-[#881337]" />
-                <span>Divine Atelier Studio, Bandra West, Mumbai 400050</span>
-              </p>
-            </div>
           </div>
 
-          {/* Shop Column */}
+          {/* Shop Column matching Screenshot 8 */}
           <div>
-            <h5 className="text-xs font-bold tracking-widest text-[#C5A059] uppercase mb-4 font-serif">
-              Collections
+            <h5 className="text-sm font-bold text-white mb-4">
+              Shop
             </h5>
-            <ul className="space-y-2.5 text-xs text-stone-300">
-              {CATEGORIES.slice(0, 5).map((cat) => (
-                <li key={cat.slug}>
-                  <button
-                    onClick={() => navigateTo('collections', { category: cat.name })}
-                    className="hover:text-white hover:translate-x-1 transition-all"
-                  >
-                    {cat.name}
-                  </button>
-                </li>
-              ))}
+            <ul className="space-y-3 text-xs text-stone-300">
               <li>
                 <button
-                  onClick={() => navigateTo('collections', { category: 'all' })}
-                  className="text-[#C5A059] font-semibold hover:underline"
+                  onClick={() => navigateTo('track-order')}
+                  className="hover:text-[#FF2E93] transition-colors"
                 >
-                  View All Keepsakes →
+                  Orders
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => navigateTo('wishlist')}
+                  className="hover:text-[#FF2E93] transition-colors"
+                >
+                  Profile
                 </button>
               </li>
             </ul>
           </div>
 
-          {/* Help Column */}
+          {/* Help Column matching Screenshot 8 */}
           <div>
-            <h5 className="text-xs font-bold tracking-widest text-[#C5A059] uppercase mb-4 font-serif">
-              Client Care
+            <h5 className="text-sm font-bold text-white mb-4">
+              Help
             </h5>
-            <ul className="space-y-2.5 text-xs text-stone-300">
+            <ul className="space-y-3 text-xs text-stone-300">
               <li>
                 <button
-                  onClick={() => navigateTo('track-order')}
-                  className="hover:text-white hover:translate-x-1 transition-all flex items-center gap-1.5"
+                  onClick={() => navigateTo('collections', { category: 'all' })}
+                  className="hover:text-[#FF2E93] transition-colors"
                 >
-                  <span>Track Your Order</span>
-                  <span className="text-[10px] bg-emerald-950 text-emerald-300 px-1.5 py-0.5 rounded font-mono">Live</span>
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => navigateTo('policy', { tab: 'refund' })}
-                  className="hover:text-white hover:translate-x-1 transition-all"
-                >
-                  7-Day Replacement Policy
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => navigateTo('policy', { tab: 'shipping' })}
-                  className="hover:text-white hover:translate-x-1 transition-all"
-                >
-                  Shipping & Dispatch Timelines
+                  Search
                 </button>
               </li>
               <li>
                 <button
                   onClick={() => navigateTo('contact')}
-                  className="hover:text-white hover:translate-x-1 transition-all"
+                  className="hover:text-[#FF2E93] transition-colors"
                 >
-                  Contact & Concierge Support
+                  Contact
                 </button>
               </li>
               <li>
                 <button
                   onClick={() => navigateTo('policy', { tab: 'privacy' })}
-                  className="hover:text-white hover:translate-x-1 transition-all"
+                  className="hover:text-[#FF2E93] transition-colors"
                 >
                   Privacy Policy
                 </button>
               </li>
               <li>
                 <button
-                  onClick={() => navigateTo('policy', { tab: 'terms' })}
-                  className="hover:text-white hover:translate-x-1 transition-all"
+                  onClick={() => navigateTo('policy', { tab: 'refund' })}
+                  className="hover:text-[#FF2E93] transition-colors"
                 >
-                  Terms of Service
+                  Refund Policy
                 </button>
               </li>
             </ul>
           </div>
 
-          {/* Explore & Brand Column */}
+          {/* Gadget Destinys Column matching Screenshot 8 */}
           <div>
-            <h5 className="text-xs font-bold tracking-widest text-[#C5A059] uppercase mb-4 font-serif">
-              Creator Collective
+            <h5 className="text-sm font-bold text-white mb-4">
+              Gadget Destinys
             </h5>
-            <p className="text-xs text-stone-400 leading-relaxed mb-3">
-              Join 250+ ambassador creators earning 15% recurring commissions with complimentary PR gift boxes.
-            </p>
-            <div className="bg-white/5 p-3 rounded-xl border border-white/10 space-y-2 mb-3">
-              <div className="flex items-center gap-1 text-[11px] text-[#C5A059] font-semibold">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Atelier Promotion</span>
-              </div>
-              <p className="text-[11px] text-stone-300">
-                Use code <span className="text-[#E5C378] font-bold font-mono">LOVE100</span> for ₹100 off your first bespoke order.
-              </p>
-            </div>
-
-            <button
-              onClick={() => navigateTo('creator-club')}
-              className="w-full text-center py-2.5 px-3 rounded-xl bg-[#881337] hover:bg-[#700f2d] text-white font-bold text-xs transition-colors flex items-center justify-center gap-1.5"
-            >
-              <span>Join Creator Club →</span>
-            </button>
+            <ul className="space-y-3 text-xs text-stone-300">
+              <li>
+                <button
+                  onClick={() => navigateTo('home')}
+                  className="hover:text-[#FF2E93] transition-colors"
+                >
+                  Home
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => navigateTo('collections', { category: 'all' })}
+                  className="hover:text-[#FF2E93] transition-colors"
+                >
+                  Collections
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => navigateTo('track-order')}
+                  className="hover:text-[#FF2E93] transition-colors"
+                >
+                  Track Your Order
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => navigateTo('contact')}
+                  className="hover:text-[#FF2E93] transition-colors"
+                >
+                  Contact
+                </button>
+              </li>
+            </ul>
           </div>
         </div>
 
@@ -222,13 +162,13 @@ export const Footer: React.FC<FooterProps> = ({ setCurrentView }) => {
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-stone-400">
           <p
             onClick={handleStealthAccess}
-            className="cursor-default select-none transition-opacity hover:opacity-90"
-            title="Divine's Eternity Studio"
+            className="cursor-pointer select-none transition-opacity hover:opacity-90"
+            title="Gadgets Destiny"
           >
-            © {new Date().getFullYear()} Divine's Eternity. Handcrafted for hearts that love deeply.
+            © {new Date().getFullYear()} Gadgets Destiny. Cute Covers Club.
           </p>
 
-          <div className="flex items-center gap-3 sm:gap-4 text-[11px]">
+          <div className="flex items-center gap-3 text-[11px]">
             <button
               onClick={() => navigateTo('policy', { tab: 'privacy' })}
               className="hover:text-white transition-colors"
@@ -240,27 +180,28 @@ export const Footer: React.FC<FooterProps> = ({ setCurrentView }) => {
               onClick={() => navigateTo('policy', { tab: 'refund' })}
               className="hover:text-white transition-colors"
             >
-              Replacements
-            </button>
-            <span>·</span>
-            <button
-              onClick={() => navigateTo('policy', { tab: 'shipping' })}
-              className="hover:text-white transition-colors"
-            >
-              Shipping
+              Refund Policy
             </button>
             <span>·</span>
             <button
               onClick={() => navigateTo('secret-admin-portal')}
-              className="text-stone-500 hover:text-[#E5C378] transition-colors p-1 flex items-center gap-1"
-              title="Executive Admin Gate"
+              className="text-stone-600 hover:text-stone-400 transition-colors"
             >
-              <Lock className="w-3 h-3 text-[#C5A059]" />
-              <span className="hidden xs:inline text-[10px]">Admin</span>
+              Admin
             </button>
           </div>
         </div>
+
       </div>
+
+      {/* Floating Scroll To Top Button on Bottom Right matching Screenshot 8 */}
+      <button
+        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        aria-label="Back to top"
+        className="fixed bottom-6 right-6 w-11 h-11 rounded-full bg-[#211D1C] border border-stone-600 text-white flex items-center justify-center shadow-2xl hover:scale-105 active:scale-95 transition-all z-40 cursor-pointer"
+      >
+        <span className="text-base font-bold">↑</span>
+      </button>
     </footer>
   );
 };

@@ -22,43 +22,46 @@ export const WishlistPage: React.FC<WishlistPageProps> = ({
 
   const wishlistedProducts = products.filter((p) => wishlist.includes(p.id));
 
+  const wishlistUrl = typeof window !== 'undefined' ? window.location.href : 'https://gadgetsdestiny.com/#wishlist';
+
   return (
     <div className="py-10 sm:py-16">
       <SEO
-        title={`Your Wishlist (${wishlistCount})`}
-        description="View your saved luxury phone cases, personalized necklaces, and custom gifts ready to order at Divine's Eternity."
+        title={`Your Wishlist Favorites (${wishlistCount}) — Gadgets Destiny`}
+        description="View your saved cute phone cases and designer covers ready to order at Gadgets Destiny."
+        url={wishlistUrl}
         noindex={true}
       />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         
         {/* Header */}
         <div className="text-center max-w-2xl mx-auto space-y-2">
-          <span className="text-[11px] font-extrabold uppercase tracking-widest text-[#F0508C] flex items-center justify-center gap-1.5">
-            <Heart className="w-3.5 h-3.5 fill-[#F0508C]" />
+          <span className="text-[11px] font-extrabold uppercase tracking-widest text-[#FF2E93] flex items-center justify-center gap-1.5">
+            <Heart className="w-3.5 h-3.5 fill-[#FF2E93] text-[#FF2E93]" />
             <span>Saved Favorites</span>
           </span>
-          <h1 className="font-serif-heading text-3xl sm:text-4xl font-bold text-[#231F20] dark:text-[#FDF9F7]">
-            Your <span className="italic text-[#F0508C]">Wishlist</span> ({wishlistCount})
+          <h1 className="font-serif-heading text-3xl sm:text-4xl font-extrabold text-[#211D1C]">
+            Your <span className="italic text-[#FF2E93]">Wishlist</span> ({wishlistCount})
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500">
-            Keep track of the cases and pearl wristlets you love.
+          <p className="text-xs sm:text-sm text-stone-600">
+            Keep track of the cute phone covers and accessories you love.
           </p>
         </div>
 
         {wishlistedProducts.length === 0 ? (
-          <div className="bg-white dark:bg-[#1E1A1D] rounded-3xl p-12 text-center border border-[#F3E8E2] dark:border-[#2D252A] shadow-xs max-w-lg mx-auto space-y-4">
-            <div className="w-16 h-16 rounded-full bg-rose-50 dark:bg-rose-950/40 border border-rose-100 dark:border-rose-900/40 flex items-center justify-center mx-auto text-[#BE123C]">
-              <Heart className="w-7 h-7" />
+          <div className="bg-white rounded-3xl p-12 text-center border border-[#F3E8E2] shadow-xs max-w-lg mx-auto space-y-4">
+            <div className="w-16 h-16 rounded-full bg-[#FFF0F3] border border-[#FFD2DF] flex items-center justify-center mx-auto text-[#FF2E93]">
+              <Heart className="w-7 h-7 fill-[#FF2E93]" />
             </div>
-            <h3 className="font-serif-heading text-lg font-bold text-slate-900 dark:text-white">
+            <h3 className="font-serif-heading text-lg font-bold text-[#211D1C]">
               Your wishlist is empty
             </h3>
-            <p className="text-xs text-slate-500 max-w-xs mx-auto">
+            <p className="text-xs text-stone-500 max-w-xs mx-auto">
               Tap the heart icon on any case to save your favorites here for later.
             </p>
             <button
               onClick={onExploreProducts}
-              className="bg-[#F0508C] hover:bg-[#d63b74] text-white px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider shadow-md transition-colors"
+              className="bg-[#FF2E93] hover:bg-[#e02680] text-white px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider shadow-md transition-colors cursor-pointer"
             >
               Explore Collections
             </button>

@@ -204,11 +204,16 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
   return (
     <div className="py-8 sm:py-12">
       <SEO
-        title={`${product.name} — Luxury Keepsake & Gift`}
-        description={product.description || `Buy ${product.name} for ₹${product.price} at Divine's Eternity. Personalized handcrafted gifts with free express delivery.`}
+        title={`${product.name} — Handcrafted ${product.category}`}
+        description={
+          product.description
+            ? `${product.name}: ${product.description.slice(0, 140)}`
+            : `Buy ${product.name} for ₹${product.price} at Divine's Eternity. Custom laser engraving, 18k vermeil plating, and express gift packaging.`
+        }
         image={product.images[0]}
+        url={productUrl}
         type="product"
-        keywords={`${product.name}, ${product.category}, personalized gift, luxury gift, divines eternity`}
+        keywords={`${product.name}, ${product.category}, ${product.supportedBrands?.join(', ') || ''}, personalized gift, luxury gift, divines eternity`}
         structuredData={productSchema}
       />
 
@@ -218,13 +223,13 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
         <div className="flex items-center gap-4">
           <button
             onClick={onBack}
-            className="flex items-center gap-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-[#E11D48] bg-white dark:bg-[#1E1A1D] border border-slate-200 dark:border-slate-800 px-3.5 py-1.5 rounded-full shadow-xs transition-colors"
+            className="flex items-center gap-1.5 text-xs font-bold text-stone-700 hover:text-[#FF2E93] bg-white border border-stone-200 px-3.5 py-1.5 rounded-full shadow-xs transition-colors cursor-pointer"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Back to Catalog</span>
           </button>
-          <div className="text-xs text-slate-400 truncate hidden sm:block">
-            Home / {product.category} / <span className="text-slate-700 dark:text-slate-200 font-semibold">{product.name}</span>
+          <div className="text-xs text-stone-500 truncate hidden sm:block">
+            Home / {product.category} / <span className="text-[#211D1C] font-semibold">{product.name}</span>
           </div>
         </div>
 
@@ -232,12 +237,12 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-12 items-start">
           
           {/* Left Column: Gallery & Interactive Visual Customizer */}
-          <div className="lg:col-span-6 bg-white dark:bg-[#1E1A1D] p-6 sm:p-10 rounded-3xl border border-[#F5E6E8] dark:border-[#2D252A] shadow-md flex flex-col items-center justify-center relative lg:sticky lg:top-24 lg:z-10 z-0">
+          <div className="lg:col-span-6 bg-white p-6 sm:p-10 rounded-3xl border border-[#F3E8E2] shadow-sm flex flex-col items-center justify-center relative lg:sticky lg:top-24 lg:z-10 z-0">
             <button
               onClick={() => toggleWishlist(product.id)}
               aria-label="Wishlist"
-              className={`absolute top-6 right-6 z-20 w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-md shadow-md transition-all ${
-                wishlisted ? 'bg-[#E11D48] text-white' : 'bg-white/80 dark:bg-black/60 text-slate-700 hover:text-[#E11D48]'
+              className={`absolute top-6 right-6 z-20 w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-md shadow-sm transition-all ${
+                wishlisted ? 'bg-[#FF2E93] text-white' : 'bg-white/90 border border-stone-200 text-stone-500 hover:text-[#FF2E93]'
               }`}
             >
               <Heart className={`w-5 h-5 ${wishlisted ? 'fill-current' : ''}`} />
@@ -250,22 +255,22 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                 customPhoto={customPhoto}
                 customSong={customSong}
                 customArtist={customArtist}
-                className="w-[240px] h-[390px] sm:w-[280px] sm:h-[440px] drop-shadow-2xl"
+                className="w-[240px] h-[390px] sm:w-[280px] sm:h-[440px] drop-shadow-xl"
               />
             </div>
 
-            <div className="w-full bg-[#FFF9F5] dark:bg-black/40 rounded-2xl p-4 text-center border border-pink-100 dark:border-pink-950/40 mt-4">
-              <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                Live Bespoke Preview: <strong className="text-[#E11D48]">{product.name}</strong>
+            <div className="w-full bg-[#FFF9DE] rounded-2xl p-4 text-center border border-[#F5E6B8] mt-4">
+              <p className="text-xs font-semibold text-stone-700">
+                Live Preview: <strong className="text-[#211D1C]">{product.name}</strong>
               </p>
               {customText && (
-                <p className="font-script text-xl text-[#E11D48] mt-1">
+                <p className="font-script text-xl text-[#FF2E93] mt-1">
                   "{customText}"
                 </p>
               )}
             </div>
 
-            <div className="w-full mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
+            <div className="w-full mt-6 pt-4 border-t border-stone-100">
               <SocialShare product={product} />
             </div>
           </div>
@@ -274,40 +279,40 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
           <div className="lg:col-span-6 space-y-6">
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-xs font-bold uppercase tracking-widest text-[#E11D48]">
+                <span className="text-xs font-black uppercase tracking-widest text-[#FF2E93]">
                   {product.category}
                 </span>
                 <span>·</span>
                 <div className="flex items-center gap-1 text-xs text-amber-500">
-                  <Star className="w-3.5 h-3.5 fill-current" />
-                  <span className="font-bold text-slate-800 dark:text-slate-200">{averageRating}</span>
-                  <span className="text-slate-400">({totalReviews} verified reviews)</span>
+                  <Star className="w-3.5 h-3.5 fill-[#F59E0B] text-[#F59E0B]" />
+                  <span className="font-bold text-[#211D1C]">{averageRating}</span>
+                  <span className="text-stone-400">({totalReviews} verified reviews)</span>
                 </div>
               </div>
 
-              <h1 className="font-serif-heading text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#231F20] dark:text-[#FDF9F7]">
+              <h1 className="font-serif-heading text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#211D1C]">
                 {product.name}
               </h1>
 
               <div className="flex items-baseline gap-3 mt-3">
-                <span className="text-3xl font-extrabold text-[#231F20] dark:text-white tabular-nums">
+                <span className="text-3xl font-extrabold text-[#211D1C] tabular-nums font-serif">
                   ₹{product.price}
                 </span>
-                <span className="text-base text-slate-400 line-through tabular-nums">
+                <span className="text-base text-stone-400 line-through tabular-nums">
                   MRP ₹{product.mrp}
                 </span>
-                <span className="text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-md">
+                <span className="text-xs font-bold text-[#E05A47] bg-[#FFF0F3] px-2.5 py-1 rounded-md border border-[#FFE0E6]">
                   {discountPercent}% OFF
                 </span>
               </div>
 
-              <div className="bg-pink-50/70 dark:bg-pink-950/20 p-3 rounded-2xl border border-pink-200/60 dark:border-pink-900/40 mt-3 inline-flex items-center gap-2 text-xs text-[#E11D48] font-semibold">
-                <Sparkles className="w-4 h-4 text-[#D4AF37]" />
-                <span>Buy 3 Items, Pay for 2! Lowest priced gift is 100% FREE in cart.</span>
+              <div className="bg-[#FFF9DE] p-3 rounded-2xl border border-[#F5E6B8] mt-3 inline-flex items-center gap-2 text-xs text-[#211D1C] font-semibold">
+                <Sparkles className="w-4 h-4 text-[#FF2E93]" />
+                <span>Buy 2 Cases for ₹849 with code <strong className="text-[#FF2E93]">FLAT849</strong>!</span>
               </div>
             </div>
 
-            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+            <p className="text-xs sm:text-sm text-stone-600 leading-relaxed">
               {product.description}
             </p>
 
@@ -315,7 +320,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
             {isPhoneCase && (
               <div className="space-y-3">
                 <div className="space-y-1">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 block">
+                  <label className="text-xs font-bold uppercase tracking-wider text-stone-700 block">
                     1. Select Phone Brand *
                   </label>
                   <div className="grid grid-cols-4 gap-2">
@@ -327,10 +332,10 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                           setSelectedBrand(brand);
                           setSelectedModel(PHONE_MODELS_MAP[brand]?.[0] || '');
                         }}
-                        className={`py-2 px-3 rounded-xl text-xs font-bold border transition-all ${
+                        className={`py-2 px-3 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
                           selectedBrand === brand
-                            ? 'bg-[#231F20] text-white border-[#231F20]'
-                            : 'bg-white dark:bg-[#1E1A1D] border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-pink-300'
+                            ? 'bg-[#211D1C] text-white border-[#211D1C]'
+                            : 'bg-white border-stone-200 text-stone-700 hover:border-[#FF2E93]'
                         }`}
                       >
                         {brand}
@@ -340,13 +345,13 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 block">
+                  <label className="text-xs font-bold uppercase tracking-wider text-stone-700 block">
                     2. Select Phone Model *
                   </label>
                   <select
                     value={selectedModel}
                     onChange={(e) => setSelectedModel(e.target.value)}
-                    className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-xs font-medium text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-[#E11D48] focus:outline-none"
+                    className="w-full bg-stone-50 border border-stone-200 rounded-xl p-3 text-xs font-medium text-[#211D1C] focus:ring-2 focus:ring-[#FF2E93] focus:outline-none"
                   >
                     {(PHONE_MODELS_MAP[selectedBrand] || []).map((m) => (
                       <option key={m} value={m}>{m}</option>
@@ -374,19 +379,19 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
             {/* Quantity & Buy CTA */}
             <div className="space-y-3 pt-2">
               <div className="flex items-center gap-4">
-                <div className="flex items-center border border-slate-200 dark:border-slate-800 rounded-full bg-white dark:bg-slate-900 p-1">
+                <div className="flex items-center border border-stone-200 rounded-full bg-stone-50 p-1">
                   <button
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xs font-bold hover:text-[#E11D48]"
+                    className="w-8 h-8 rounded-full bg-white border border-stone-200 flex items-center justify-center text-xs font-bold hover:text-[#FF2E93] cursor-pointer"
                   >
                     -
                   </button>
-                  <span className="w-10 text-center text-xs font-bold tabular-nums">
+                  <span className="w-10 text-center text-xs font-bold tabular-nums font-mono text-[#211D1C]">
                     {quantity}
                   </span>
                   <button
                     onClick={() => setQuantity(quantity + 1)}
-                    className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xs font-bold hover:text-[#E11D48]"
+                    className="w-8 h-8 rounded-full bg-white border border-stone-200 flex items-center justify-center text-xs font-bold hover:text-[#FF2E93] cursor-pointer"
                   >
                     +
                   </button>
@@ -394,10 +399,10 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
 
                 <button
                   onClick={handleAddToCart}
-                  className={`flex-1 py-4 px-6 rounded-full font-bold text-xs sm:text-sm tracking-widest uppercase transition-all shadow-lg flex items-center justify-center gap-2 ${
+                  className={`flex-1 py-4 px-6 rounded-full font-bold text-xs sm:text-sm tracking-widest uppercase transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer ${
                     addedSuccess
                       ? 'bg-emerald-600 text-white'
-                      : 'bg-[#E11D48] hover:bg-[#be123c] text-white shadow-pink-500/25 active:scale-98'
+                      : 'bg-[#211D1C] hover:bg-[#FF2E93] text-white active:scale-98'
                   }`}
                 >
                   {addedSuccess ? (
@@ -412,31 +417,31 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
               </div>
 
               {/* Guarantees */}
-              <div className="grid grid-cols-3 gap-2 pt-4 border-t border-slate-100 dark:border-slate-800 text-center text-[11px] text-slate-600 dark:text-slate-400 font-medium">
+              <div className="grid grid-cols-3 gap-2 pt-4 border-t border-stone-200 text-center text-[11px] text-stone-600 font-medium">
                 <div className="flex flex-col items-center">
-                  <Truck className="w-4 h-4 text-emerald-500 mb-1" />
+                  <Truck className="w-4 h-4 text-emerald-600 mb-1" />
                   <span>Free Express Delivery</span>
                 </div>
                 <div className="flex flex-col items-center">
-                  <RefreshCw className="w-4 h-4 text-[#E11D48] mb-1" />
+                  <RefreshCw className="w-4 h-4 text-[#FF2E93] mb-1" />
                   <span>7-Day Replacement</span>
                 </div>
                 <div className="flex flex-col items-center">
                   <ShieldCheck className="w-4 h-4 text-amber-500 mb-1" />
-                  <span>Luxury Gift Packaging</span>
+                  <span>Cute Gift Packaging</span>
                 </div>
               </div>
             </div>
 
             {/* Features Checklist */}
-            <div className="p-5 rounded-2xl bg-white dark:bg-[#1E1A1D] border border-[#F5E6E8] dark:border-[#2D252A] space-y-2.5">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">
+            <div className="p-5 rounded-2xl bg-white border border-[#F3E8E2] space-y-2.5">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-[#211D1C]">
                 Handcrafted Specifications
               </h4>
-              <ul className="space-y-1.5 text-xs text-slate-600 dark:text-slate-300">
+              <ul className="space-y-1.5 text-xs text-stone-600">
                 {product.features.map((feat, i) => (
                   <li key={i} className="flex items-start gap-2">
-                    <Sparkles className="w-3.5 h-3.5 text-[#5B8CFF] shrink-0 mt-0.5" />
+                    <Sparkles className="w-3.5 h-3.5 text-[#FF2E93] shrink-0 mt-0.5" />
                     <span>{feat}</span>
                   </li>
                 ))}

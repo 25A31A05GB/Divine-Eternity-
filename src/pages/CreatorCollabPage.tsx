@@ -133,19 +133,22 @@ export const CreatorCollabPage: React.FC<CreatorCollabPageProps> = ({
     }
   };
 
+  const creatorUrl = typeof window !== 'undefined' ? window.location.href : 'https://gadgetsdestiny.com/#creator-club';
+
   return (
-    <div className="min-h-screen bg-[#FFF8F4] dark:bg-[#0E0C0E] text-[#231F20] dark:text-[#F8F5F2] py-8 lg:py-12 transition-colors">
+    <div className="min-h-screen bg-[#FFFDF8] text-[#211D1C] py-8 lg:py-12 transition-colors">
       <SEO
-        title="Creator Club & Influencer Affiliate Program"
-        description="Join the Divine's Eternity Creator Club. Earn 15% lifetime commissions, receive luxury PR hampers, and collaborate on viral gift campaigns."
-        keywords="creator club, affiliate marketing, influencer collaboration, PR hampers, brand ambassador, divine eternity affiliate"
+        title="Creator Club & Influencer Affiliate Collective — Gadgets Destiny"
+        description="Join the Gadgets Destiny Creator Club. Earn 15% lifetime commissions, receive cute PR phone case packages, and collaborate on viral TikTok & Instagram drops."
+        keywords="creator club, affiliate marketing, influencer collaboration, PR packages, brand ambassador, gadgets destiny affiliate"
+        url={creatorUrl}
         structuredData={{
           '@context': 'https://schema.org',
           '@type': 'WebPage',
-          name: "Creator Club & Influencer Affiliate Hub | Divine's Eternity",
+          name: "Creator Club & Influencer Affiliate Hub | Gadgets Destiny",
           description:
             'Join our exclusive affiliate marketing and content creator program. Earn 15% recurring commissions and receive curated PR gift boxes.',
-          url: typeof window !== 'undefined' ? window.location.href : 'https://divineseternity.com/creator-club',
+          url: creatorUrl,
         }}
       />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -153,47 +156,47 @@ export const CreatorCollabPage: React.FC<CreatorCollabPageProps> = ({
         {/* ============================================================ */}
         {/* HERO SECTION */}
         {/* ============================================================ */}
-        <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-[#FFF0F5] via-[#FFF9F5] to-[#F5F2FF] dark:from-[#1D141A] dark:via-[#161215] dark:to-[#1B1622] border border-[#F3E0E6] dark:border-[#2C2228] p-8 sm:p-12 mb-10 shadow-sm">
-          <div className="absolute -right-16 -bottom-16 w-80 h-80 bg-gradient-to-br from-[#F0508C]/15 to-[#FFD94A]/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-[#FFF0F3] via-[#FFF9DE]/40 to-[#FFFDF8] border border-[#F3E8E2] p-8 sm:p-12 mb-10 shadow-xs">
+          <div className="absolute -right-16 -bottom-16 w-80 h-80 bg-gradient-to-br from-[#FF2E93]/15 to-[#FFD94A]/20 rounded-full blur-3xl pointer-events-none" />
           
           <div className="max-w-3xl relative z-10">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F0508C]/10 text-[#F0508C] font-bold text-xs uppercase tracking-widest mb-4 border border-[#F0508C]/20">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#FFF0F3] text-[#FF2E93] font-bold text-xs uppercase tracking-widest mb-4 border border-[#FFD2DF]">
               <Sparkles className="w-3.5 h-3.5 text-[#FFD94A]" /> Creator & Affiliate Collective
             </div>
 
-            <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-[#231F20] dark:text-white leading-tight mb-4">
-              Create, Collaborate & Earn <span className="text-[#F0508C] italic">15% Lifetime</span> Commissions
+            <h1 className="font-serif-heading text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-[#211D1C] leading-tight mb-4">
+              Create, Collaborate & Earn <span className="text-[#FF2E93] italic">15% Lifetime</span> Commissions
             </h1>
 
-            <p className="text-sm sm:text-base text-[#6E646A] dark:text-[#BDB4B9] leading-relaxed mb-8">
-              Join the <strong>Divine’s Eternity Creator Club</strong>. Unbox seasonal PR gift boxes, get paid for viral aesthetic reels, and gift your community a custom 15% discount code.
+            <p className="text-sm sm:text-base text-stone-600 leading-relaxed mb-8">
+              Join the <strong>Gadgets Destiny Cute Covers Creator Club</strong>. Unbox seasonal PR phone cases, get paid for viral aesthetic reels, and gift your community a custom 15% discount code.
             </p>
 
             {/* Quick KPI stats bar */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-4 border-t border-[#F0D8E0] dark:border-[#332830]">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-4 border-t border-[#F3E8E2]">
               <div>
-                <div className="font-serif text-2xl sm:text-3xl font-black text-[#F0508C]">
+                <div className="font-serif-heading text-2xl sm:text-3xl font-black text-[#FF2E93]">
                   ₹4.8 Lakh+
                 </div>
-                <div className="text-xs text-[#7A7276] dark:text-[#A8A0A5]">
+                <div className="text-xs text-stone-500">
                   Paid to Creator Partners
                 </div>
               </div>
 
               <div>
-                <div className="font-serif text-2xl sm:text-3xl font-black text-[#231F20] dark:text-white">
+                <div className="font-serif-heading text-2xl sm:text-3xl font-black text-[#211D1C]">
                   250+
                 </div>
-                <div className="text-xs text-[#7A7276] dark:text-[#A8A0A5]">
+                <div className="text-xs text-stone-500">
                   Active Ambassadors
                 </div>
               </div>
 
               <div className="col-span-2 sm:col-span-1">
-                <div className="font-serif text-2xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-400">
+                <div className="font-serif-heading text-2xl sm:text-3xl font-black text-emerald-600">
                   48 Hours
                 </div>
-                <div className="text-xs text-[#7A7276] dark:text-[#A8A0A5]">
+                <div className="text-xs text-stone-500">
                   Fast PR Box Dispatch
                 </div>
               </div>
@@ -204,7 +207,7 @@ export const CreatorCollabPage: React.FC<CreatorCollabPageProps> = ({
         {/* ============================================================ */}
         {/* TAB CONTROLS */}
         {/* ============================================================ */}
-        <div className="flex items-center justify-center sm:justify-start gap-2 overflow-x-auto pb-4 mb-8 border-b border-[#EFE2DC] dark:border-[#262024] scrollbar-none">
+        <div className="flex items-center justify-center sm:justify-start gap-2 overflow-x-auto pb-4 mb-8 border-b border-[#F3E8E2] scrollbar-none">
           {[
             { id: 'campaigns', label: 'Upcoming Brand Campaigns', icon: Video },
             { id: 'register', label: 'Creator Club Registration', icon: Users },
@@ -217,13 +220,13 @@ export const CreatorCollabPage: React.FC<CreatorCollabPageProps> = ({
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all whitespace-nowrap ${
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
                   isActive
-                    ? 'bg-[#231F20] text-white dark:bg-white dark:text-[#231F20] shadow-md'
-                    : 'bg-white dark:bg-[#181417] text-[#6E646A] dark:text-[#9F969C] hover:bg-[#FBECEF] dark:hover:bg-[#241E22] border border-[#EFE4DE] dark:border-[#2D252A]'
+                    ? 'bg-[#211D1C] text-white shadow-md'
+                    : 'bg-white text-stone-700 hover:text-[#FF2E93] hover:bg-[#FFF0F3] border border-[#F3E8E2]'
                 }`}
               >
-                <Icon className={`w-4 h-4 ${isActive ? 'text-[#FFD94A] dark:text-[#F0508C]' : 'text-gray-400'}`} />
+                <Icon className={`w-4 h-4 ${isActive ? 'text-[#FFD94A]' : 'text-stone-400'}`} />
                 <span>{tab.label}</span>
               </button>
             );

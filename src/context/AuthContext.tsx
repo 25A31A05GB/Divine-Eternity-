@@ -46,7 +46,7 @@ const INITIAL_DEMO_ORDERS: Order[] = [
         customText: 'Ananya',
         quantity: 1,
         themeColor: '#FFE5EC',
-        secondaryColor: '#F0508C',
+        secondaryColor: '#FF2E93',
         designPattern: 'pearl_bracelet',
         category: 'Bracelet Phone Case',
       },

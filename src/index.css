@@ -2,39 +2,35 @@
 
 @layer base {
   :root {
-    --bg-main: #0A0D14;
-    --bg-navy: #0F1420;
-    --bg-surface: #151D2A;
-    --bg-elevated: #1C2638;
-    --text-primary: #F8FAFC;
-    --text-secondary: #94A3B8;
-    --text-muted: #64748B;
-    --border-subtle: #232F42;
-    
-    /* Vibrant Accents */
-    --accent-blue: #3B82F6;
-    --accent-cyan: #06B6D4;
-    --accent-violet: #A855F7;
-    --accent-magenta: #EC4899;
-    --accent-emerald: #10B981;
-    --accent-turquoise: #2DD4BF;
-    --accent-champagne: #F59E0B;
-    --accent-gold: #FCD34D;
+    --bg-cream: #FFFDF8;
+    --bg-butter: #FFF9DE;
+    --bg-sun: #FFD94A;
+    --bg-card: #FFFFFF;
+    --bg-espresso: #211D1C;
+    --text-espresso: #211D1C;
+    --text-muted: #78716C;
+    --pink-primary: #FF2E93;
+    --pink-light: #FFF0F3;
+    --pink-border: #FFD2DF;
+    --coral-tag: #E05A47;
+    --border-subtle: #F3E8E2;
+    --gold-star: #F59E0B;
   }
 
   body {
-    background-color: var(--bg-main);
-    color: var(--text-primary);
+    background-color: var(--bg-cream);
+    color: var(--text-espresso);
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   }
 
   h1, h2, h3, .font-serif-heading {
     font-family: 'Playfair Display', Georgia, serif;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.01em;
   }
 
   .font-script {
-    font-family: 'Sacramento', cursive;
+    font-family: 'Playfair Display', Georgia, cursive, serif;
+    font-style: italic;
   }
 }
 
@@ -69,51 +65,6 @@
 
 .animate-marquee:hover {
   animation-play-state: paused;
-}
-
-/* Vibrant Spectrum Gradient Utilities */
-.gradient-blue-violet {
-  background: linear-gradient(135deg, #3B82F6 0%, #A855F7 100%);
-}
-
-.gradient-violet-magenta {
-  background: linear-gradient(135deg, #A855F7 0%, #EC4899 100%);
-}
-
-.gradient-cyan-blue {
-  background: linear-gradient(135deg, #06B6D4 0%, #3B82F6 100%);
-}
-
-.gradient-champagne {
-  background: linear-gradient(135deg, #F59E0B 0%, #FCD34D 100%);
-}
-
-.gradient-tri {
-  background: linear-gradient(135deg, #06B6D4 0%, #3B82F6 50%, #EC4899 100%);
-}
-
-.text-gradient-tri {
-  background: linear-gradient(135deg, #06B6D4 0%, #3B82F6 50%, #EC4899 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.text-gradient-blue-violet {
-  background: linear-gradient(135deg, #3B82F6 0%, #A855F7 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.text-gradient-cyan-blue {
-  background: linear-gradient(135deg, #06B6D4 0%, #3B82F6 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.text-gradient-champagne {
-  background: linear-gradient(135deg, #F59E0B 0%, #FCD34D 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
 }
 
 /* Custom scrollbar for horizontal product sliders */

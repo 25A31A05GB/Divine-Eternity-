@@ -26,6 +26,45 @@ import { SecretAdminPortal } from './pages/SecretAdminPortal';
 import { INITIAL_PRODUCTS } from './data/products';
 import { Product, Order } from './types';
 
+// Helper to parse current hash into view, params, and target product
+function parseHash(hash: string, productsList: Product[]) {
+  const clean = hash.replace(/^#\/?/, '').trim();
+  if (!clean) return { view: 'home', params: {}, product: null };
+
+  const [routePart, queryPart] = clean.split('?');
+  const params: Record<string, string> = {};
+
+  if (queryPart) {
+    const searchParams = new URLSearchParams(queryPart);
+    searchParams.forEach((val, key) => {
+      params[key] = val;
+    });
+  }
+
+  let view = routePart || 'home';
+  if (view === 'admin') view = 'secret-admin-portal';
+
+  let foundProduct: Product | null = null;
+  if (view === 'product-detail' && params.slug) {
+    foundProduct = productsList.find((p) => p.slug === params.slug || p.id === params.slug) || null;
+  }
+
+  return { view, params, product: foundProduct };
+}
+
+// Helper to format view and params into a hash string
+function formatHash(view: string, params?: Record<string, string>) {
+  if (view === 'home' && (!params || Object.keys(params).length === 0)) {
+    return '#home';
+  }
+  let hashStr = `#${view}`;
+  if (params && Object.keys(params).length > 0) {
+    const q = new URLSearchParams(params).toString();
+    if (q) hashStr += `?${q}`;
+  }
+  return hashStr;
+}
+
 export function AppContent() {
   const [products, setProducts] = useState<Product[]>(() => {
     try {
@@ -47,30 +86,55 @@ export function AppContent() {
       console.error('Failed to persist products to storage', e);
     }
   }, [products]);
+
   const [currentView, setCurrentView] = useState<string>(() => {
-    if (typeof window !== 'undefined' && window.location.hash === '#secret-admin-portal') {
-      return 'secret-admin-portal';
+    if (typeof window !== 'undefined' && window.location.hash) {
+      const { view } = parseHash(window.location.hash, INITIAL_PRODUCTS);
+      return view;
     }
     return 'home';
   });
-  const [viewParams, setViewParams] = useState<Record<string, string>>({});
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
+  const [viewParams, setViewParams] = useState<Record<string, string>>(() => {
+    if (typeof window !== 'undefined' && window.location.hash) {
+      const { params } = parseHash(window.location.hash, INITIAL_PRODUCTS);
+      return params;
+    }
+    return {};
+  });
+
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(() => {
+    if (typeof window !== 'undefined' && window.location.hash) {
+      const { product } = parseHash(window.location.hash, INITIAL_PRODUCTS);
+      return product;
+    }
+    return null;
+  });
+
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [completedOrder, setCompletedOrder] = useState<Order | null>(null);
 
-  // Stealth hash and keyboard shortcut listener (Ctrl + Shift + A)
+  // Hash & Browser Back/Forward navigation listener
   useEffect(() => {
     const handleHashChange = () => {
-      if (window.location.hash === '#secret-admin-portal' || window.location.hash === '#admin') {
-        setCurrentView('secret-admin-portal');
+      const { view, params, product } = parseHash(window.location.hash, products);
+      setCurrentView(view);
+      setViewParams(params);
+      if (product) {
+        setSelectedProduct(product);
       }
     };
+
+    // Sync state on initial load if hash is present
+    if (window.location.hash) {
+      handleHashChange();
+    }
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.ctrlKey && e.shiftKey && (e.key === 'A' || e.key === 'a')) {
         e.preventDefault();
-        setCurrentView('secret-admin-portal');
+        handleNavigate('secret-admin-portal');
       }
     };
 
@@ -80,11 +144,20 @@ export function AppContent() {
       window.removeEventListener('hashchange', handleHashChange);
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, []);
+  }, [products]);
 
   const handleNavigate = (view: string, params?: Record<string, string>) => {
     setCurrentView(view);
-    if (params) setViewParams(params);
+    setViewParams(params || {});
+
+    // Sync URL hash for browser history & back button support
+    if (typeof window !== 'undefined') {
+      const targetHash = formatHash(view, params);
+      if (window.location.hash !== targetHash) {
+        window.location.hash = targetHash;
+      }
+    }
+
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -113,7 +186,7 @@ export function AppContent() {
   const isSecretAdminView = currentView === 'secret-admin-portal' || currentView === 'admin';
 
   return (
-    <div className="min-h-screen w-full overflow-x-hidden flex flex-col justify-between bg-[#08090B] text-[#F7F4EC] selection:bg-[#5B8CFF] selection:text-white transition-colors duration-300">
+    <div className="min-h-screen w-full overflow-x-hidden flex flex-col justify-between bg-[#FFFDF8] text-[#211D1C] selection:bg-[#FF2E93] selection:text-white transition-colors duration-300">
       
       {/* 1. Global Announcement Bar (hidden in secret admin view) */}
       {!isSecretAdminView && <AnnouncementBar />}

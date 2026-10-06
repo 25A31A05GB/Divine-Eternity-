@@ -26,25 +26,35 @@ export const CuratedCollectionRow: React.FC<CuratedCollectionRowProps> = ({
   const itemsToShow = filtered.length > 0 ? filtered.slice(0, 4) : products.slice(0, 4);
 
   return (
-    <section className="py-14 border-b border-[#F3E8E2] dark:border-[#2D252A]">
+    <section className="py-14 sm:py-20 bg-[#FFF9DE]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Section Header */}
+        {/* Section Header matching Screenshot 4 & 5 */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-8">
           <div>
-            <span className="text-[11px] font-extrabold uppercase tracking-widest text-[#F0508C] flex items-center gap-1">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Category Spotlight</span>
-            </span>
-            <h2 className="font-serif-heading text-2xl sm:text-3xl md:text-4xl font-bold text-[#231F20] dark:text-[#FDF9F7] mt-1">
-              {title}
+            <div className="text-[11px] font-extrabold uppercase tracking-widest text-[#E05A47] flex items-center gap-1.5 mb-1">
+              <span>✦</span>
+              <span>GADGET DESTINY COLLECTIONS</span>
+            </div>
+            <h2 className="font-serif-heading text-3xl sm:text-4xl lg:text-5xl font-bold text-[#211D1C]">
+              {title.includes('Shine') ? (
+                <>
+                  Built to Protect. <span className="font-serif italic text-[#FF2E93] font-normal">Designed to Shine.</span>
+                </>
+              ) : title.includes('Bracelet') ? (
+                <>
+                  Check the <span className="font-serif italic text-[#FF2E93] font-normal">Bracelet Phone Cases</span>
+                </>
+              ) : (
+                title
+              )}
             </h2>
-            <p className="text-xs sm:text-sm text-slate-500 mt-1">{subtitle}</p>
+            <p className="text-xs sm:text-sm text-stone-600 mt-1">{subtitle}</p>
           </div>
 
           <button
             onClick={() => onViewAll(category)}
-            className="text-xs sm:text-sm font-bold text-[#F0508C] hover:text-[#d63b74] flex items-center gap-1 group self-start sm:self-auto"
+            className="text-xs sm:text-sm font-bold text-[#FF2E93] hover:text-[#d62075] flex items-center gap-1 group self-start sm:self-auto cursor-pointer"
           >
             <span>Explore All ({filtered.length})</span>
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />

@@ -1,120 +1,121 @@
 import React from 'react';
-import { CATEGORIES } from '../../data/products';
-import { Sparkles, Gem, Heart, Music, Gift, Flame, Smartphone } from 'lucide-react';
+import { Smartphone } from 'lucide-react';
 
 interface CategoryCirclesProps {
   onSelectCategory: (categoryName: string) => void;
   activeCategory: string;
 }
 
+const GADGETS_CATEGORIES = [
+  {
+    name: 'Zipper Wallet Case',
+    slug: 'zipper-wallet-case',
+    image: 'https://images.unsplash.com/photo-1586105251261-72a756497a11?auto=format&fit=crop&w=400&q=80',
+    color: '#FFB5D5',
+  },
+  {
+    name: 'Bracelet Phone Case',
+    slug: 'bracelet-phone-case',
+    image: 'https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?auto=format&fit=crop&w=400&q=80',
+    color: '#D8B4F8',
+  },
+  {
+    name: 'Gripper Phone Case',
+    slug: 'gripper-phone-case',
+    image: 'https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?auto=format&fit=crop&w=400&q=80',
+    color: '#FF9EAA',
+  },
+  {
+    name: 'Mirror Phone Case',
+    slug: 'mirror-phone-case',
+    image: 'https://images.unsplash.com/photo-1541807084-5c52b6b3adef?auto=format&fit=crop&w=400&q=80',
+    color: '#FFEAA7',
+  },
+  {
+    name: 'Toy Cases',
+    slug: 'toy-cases',
+    image: 'https://images.unsplash.com/photo-1574944985070-8f3ebc6b79d2?auto=format&fit=crop&w=400&q=80',
+    color: '#A8E6CF',
+  },
+  {
+    name: 'Clear Designer Case',
+    slug: 'clear-designer-case',
+    image: 'https://images.unsplash.com/photo-1580910051074-3eb694886505?auto=format&fit=crop&w=400&q=80',
+    color: '#FFD3B6',
+  },
+  {
+    name: 'Designer Case',
+    slug: 'designer-case',
+    image: 'https://images.unsplash.com/photo-1533228896861-735eea76a755?auto=format&fit=crop&w=400&q=80',
+    color: '#FFAAA5',
+  },
+];
+
 export const CategoryCircles: React.FC<CategoryCirclesProps> = ({
   onSelectCategory,
   activeCategory,
 }) => {
-  const CATEGORY_VISUALS: Record<string, { bg: string; icon: React.ReactNode; subtitle: string }> = {
-    'Personalized Name Jewelry': {
-      bg: 'from-amber-100 to-amber-200 dark:from-amber-950/60 dark:to-amber-900/40 text-amber-800 dark:text-amber-300',
-      icon: <Sparkles className="w-7 h-7" />,
-      subtitle: '18k Vermeil',
-    },
-    'Preserved Eternal Roses & Dome Displays': {
-      bg: 'from-rose-100 to-rose-200 dark:from-rose-950/60 dark:to-rose-900/40 text-rose-800 dark:text-rose-300',
-      icon: <Heart className="w-7 h-7" />,
-      subtitle: '3-Year Cloche',
-    },
-    'Custom Acrylic Song Plaques & Photo Frames': {
-      bg: 'from-slate-100 to-indigo-100 dark:from-slate-900/60 dark:to-indigo-950/40 text-indigo-800 dark:text-indigo-300',
-      icon: <Music className="w-7 h-7" />,
-      subtitle: 'LED Acrylic',
-    },
-    'Memory Photo Lamps & Crystal Cubes': {
-      bg: 'from-sky-100 to-sky-200 dark:from-sky-950/60 dark:to-sky-900/40 text-sky-800 dark:text-sky-300',
-      icon: <Gem className="w-7 h-7" />,
-      subtitle: '3D Crystal',
-    },
-    'Engraved Wooden Gift Boxes & Keepsakes': {
-      bg: 'from-amber-100 to-stone-200 dark:from-stone-900/60 dark:to-amber-950/40 text-amber-900 dark:text-amber-400',
-      icon: <Gift className="w-7 h-7" />,
-      subtitle: 'Walnut Casket',
-    },
-    'Romantic Couple Hampers & Scented Candle Sets': {
-      bg: 'from-pink-100 to-rose-100 dark:from-pink-950/60 dark:to-rose-950/40 text-rose-900 dark:text-rose-300',
-      icon: <Flame className="w-7 h-7" />,
-      subtitle: 'Soy Wax & Flora',
-    },
-    'Personalized Phone Cases & Pocket Accessories': {
-      bg: 'from-stone-100 to-stone-200 dark:from-stone-900/60 dark:to-stone-800/40 text-stone-800 dark:text-stone-300',
-      icon: <Smartphone className="w-7 h-7" />,
-      subtitle: 'Pearl & Leather',
-    },
-  };
-
   return (
-    <section className="py-10 sm:py-14 border-b border-[#E5DFD5] dark:border-[#2A2B2F]">
+    <section className="py-10 sm:py-14 bg-[#FFFDF8]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Section Heading */}
-        <div className="text-center space-y-2 mb-8">
-          <div className="text-xs font-semibold uppercase tracking-widest text-[#B8934A] dark:text-[#D6B36A] flex items-center justify-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-[#D6B36A]" />
-            <span>Curated Gifting Collections</span>
+        {/* Section Heading matching Screenshot 2 */}
+        <div className="mb-8">
+          <div className="text-[11px] font-extrabold uppercase tracking-widest text-[#E05A47] flex items-center gap-1.5 mb-1">
+            <span className="text-[#E05A47]">✦</span>
+            <span>PICK YOUR VIBE</span>
           </div>
-          <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl font-bold text-[#1C1917] dark:text-[#F5F0EB]">
-            Explore by <span className="italic text-[#881337] dark:text-[#FB7185]">Atelier Category</span>
+          <h2 className="font-serif-heading text-3xl sm:text-4xl lg:text-5xl font-bold text-[#211D1C]">
+            Shop by <span className="font-serif italic text-[#FF2E93] font-normal">collection</span>
           </h2>
-          <p className="text-xs sm:text-sm text-stone-500 max-w-md mx-auto">
-            Bespoke gifts handcrafted to preserve cherished moments and stay in hearts forever.
+          <p className="text-xs sm:text-sm text-stone-500 mt-1">
+            Find the style that matches your mood.
           </p>
         </div>
 
-        {/* Categories Row - Mobile Touch Scroll Optimized */}
-        <div className="flex items-center gap-3.5 sm:gap-6 overflow-x-auto no-scrollbar pb-3 pt-2 justify-start md:justify-center px-1">
-          {CATEGORIES.map((cat) => {
-            const visual = CATEGORY_VISUALS[cat.name] || {
-              bg: 'from-stone-100 to-stone-200 text-stone-800',
-              icon: <Gift className="w-7 h-7" />,
-              subtitle: 'Custom Gift',
-            };
+        {/* Categories Row matching Screenshot 2 */}
+        <div className="flex items-center gap-4 sm:gap-6 overflow-x-auto no-scrollbar pb-3 pt-2 justify-start lg:justify-between px-1">
+          {GADGETS_CATEGORIES.map((cat) => {
             const isSelected = activeCategory === cat.name;
 
             return (
               <button
                 key={cat.slug}
                 onClick={() => onSelectCategory(cat.name)}
-                className="group flex flex-col items-center shrink-0 text-center focus:outline-none rounded-2xl p-1 transition-all"
+                className="group flex flex-col items-center shrink-0 text-center focus:outline-none cursor-pointer"
               >
-                {/* Showcase Ring with Gold/Burgundy Border */}
-                <div className="relative">
-                  <div
-                    className={`w-18 h-18 sm:w-22 sm:h-22 rounded-2xl p-1 transition-all duration-300 border ${
-                      isSelected
-                        ? 'border-[#881337] dark:border-[#FB7185] ring-2 ring-[#881337]/30 shadow-md scale-105'
-                        : 'border-[#EFE7DE] dark:border-[#2F262D] group-hover:border-[#C5A059] group-hover:scale-105 shadow-xs'
-                    }`}
-                  >
-                    <div
-                      className={`w-full h-full rounded-xl bg-gradient-to-br ${visual.bg} flex flex-col items-center justify-center shadow-inner relative overflow-hidden transition-transform duration-300 group-hover:scale-105`}
-                    >
-                      {visual.icon}
+                {/* Circular Image Container with Pink Ring & Gold Badge */}
+                <div className="relative mb-3">
+                  <div className="w-22 h-22 sm:w-24 sm:h-24 rounded-full p-1 border-2 border-[#FF2E93] transition-transform duration-300 group-hover:scale-105 shadow-xs">
+                    <div className="w-full h-full rounded-full overflow-hidden bg-[#FFF0F3] flex items-center justify-center">
+                      <img
+                        src={cat.image}
+                        alt={cat.name}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        onError={(e) => {
+                          // Fallback icon if image fails
+                          (e.currentTarget as HTMLElement).style.display = 'none';
+                        }}
+                      />
+                      <Smartphone className="w-8 h-8 text-[#FF2E93] opacity-60" />
                     </div>
+                  </div>
+
+                  {/* Gold Star Badge on bottom-right */}
+                  <div className="w-5 h-5 bg-[#FFD94A] rounded-full flex items-center justify-center text-[10px] text-[#211D1C] border border-white shadow-xs absolute bottom-0 right-1">
+                    ✦
                   </div>
                 </div>
 
-                {/* Clean Name & Subtitle Below */}
-                <div className="mt-2.5 max-w-[110px] sm:max-w-[130px] text-center">
-                  <span
-                    className={`block text-xs font-semibold transition-colors truncate max-w-full ${
-                      isSelected
-                        ? 'text-[#881337] dark:text-[#FB7185] font-bold'
-                        : 'text-[#1C1917] dark:text-[#F5F0EB] group-hover:text-[#881337]'
-                    }`}
-                    title={cat.name}
-                  >
-                    {cat.name.split(' ')[0]} {cat.name.split(' ')[1] || ''}
-                  </span>
-                  <span className="text-[10px] text-stone-400 block truncate">
-                    {visual.subtitle}
-                  </span>
+                {/* Pill Button underneath */}
+                <div
+                  className={`bg-white border rounded-full px-3.5 py-1 text-xs font-semibold whitespace-nowrap transition-all shadow-2xs ${
+                    isSelected
+                      ? 'border-[#FF2E93] text-[#FF2E93] ring-1 ring-[#FF2E93]/30'
+                      : 'border-[#E7E2DA] text-[#211D1C] group-hover:border-[#FF2E93] group-hover:text-[#FF2E93]'
+                  }`}
+                >
+                  {cat.name}
                 </div>
               </button>
             );

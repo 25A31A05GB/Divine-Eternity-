@@ -36,7 +36,7 @@ export const SecretAdminPortal: React.FC<SecretAdminPortalProps> = ({
   });
 
   const [pinCode, setPinCode] = useState('');
-  const [adminEmail, setAdminEmail] = useState('director@divineseternity.com');
+  const [adminEmail, setAdminEmail] = useState('admin@gadgetsdestiny.com');
   const [adminPassword, setAdminPassword] = useState('');
   const [authMode, setAuthMode] = useState<'pin' | 'password'>('pin');
   const [showPassword, setShowPassword] = useState(false);
@@ -91,83 +91,83 @@ export const SecretAdminPortal: React.FC<SecretAdminPortalProps> = ({
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-[#08090B] text-[#F5F2EA] flex items-center justify-center p-4 sm:p-6 relative overflow-hidden">
+      <div className="min-h-screen bg-[#211D1C] text-white flex items-center justify-center p-4 sm:p-6 relative overflow-hidden">
         <SEO
-          title="Secret Security Access Gate"
-          description="Restricted Executive Control Panel Access"
+          title="Admin Access Gate — Gadgets Destiny"
+          description="Restricted Store Control Panel Access"
           noindex={true}
         />
 
         {/* Ambient subtle glow */}
-        <div className="absolute top-1/4 left-1/3 w-96 h-96 bg-[#D6B36A]/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-1/4 right-1/3 w-80 h-80 bg-[#D6B36A]/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-1/4 left-1/3 w-96 h-96 bg-[#FF2E93]/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-1/4 right-1/3 w-80 h-80 bg-[#FFD94A]/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="max-w-md w-full relative z-10 space-y-6">
           
           {/* Back to store */}
           <button
             onClick={onReturnToStore}
-            className="inline-flex items-center gap-2 text-xs font-semibold text-[#A7A7A2] hover:text-[#F5F2EA] transition-colors"
+            className="inline-flex items-center gap-2 text-xs font-semibold text-stone-400 hover:text-[#FF2E93] transition-colors cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Return to Public Store</span>
           </button>
 
           {/* Security Gate Card */}
-          <div className="bg-[#17191F] border border-[#2A2B2F] rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 text-center">
-            <div className="w-16 h-16 rounded-2xl bg-[#111318] border border-[#2A2B2F] text-[#D6B36A] flex items-center justify-center mx-auto shadow-inner">
+          <div className="bg-[#171413] border border-stone-800 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-[#211D1C] border border-stone-800 text-[#FF2E93] flex items-center justify-center mx-auto shadow-inner">
               <Lock className="w-8 h-8" />
             </div>
 
             <div>
-              <div className="text-[10px] font-bold tracking-widest text-[#D6B36A] uppercase mb-1 flex items-center justify-center gap-1">
-                <ShieldCheck className="w-3.5 h-3.5" />
-                <span>Management Suite</span>
+              <div className="text-[10px] font-bold tracking-widest text-[#FFD94A] uppercase mb-1 flex items-center justify-center gap-1">
+                <ShieldCheck className="w-3.5 h-3.5 text-[#FF2E93]" />
+                <span>Store Management</span>
               </div>
-              <h1 className="font-serif text-2xl sm:text-3xl font-bold text-white">
-                Secret Access Gate
+              <h1 className="font-serif-heading text-2xl sm:text-3xl font-extrabold text-white">
+                Admin Access
               </h1>
               <p className="text-xs text-stone-400 mt-1">
-                Select your role and enter the Master PIN or Credentials to manage store visuals, videos, and orders.
+                Enter Master PIN or Credentials to manage products, banners, and customer orders.
               </p>
             </div>
 
             {/* Role Selection Picker */}
             <div className="text-left space-y-2">
               <label className="text-xs font-bold text-stone-300 block">
-                Executive Access Role
+                Select Admin Role
               </label>
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
                   onClick={() => setSelectedRole('director')}
-                  className={`p-2.5 rounded-xl border text-left transition-all ${
+                  className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
                     selectedRole === 'director'
-                      ? 'bg-[#D6B36A] border-[#F0D79A] text-[#08090B] shadow-xs'
-                      : 'bg-[#111318] border-[#2A2B2F] text-[#A7A7A2] hover:border-[#D6B36A]'
+                      ? 'bg-[#FF2E93] border-[#FF2E93] text-white shadow-xs'
+                      : 'bg-[#211D1C] border-stone-800 text-stone-400 hover:border-[#FF2E93]'
                   }`}
                 >
                   <div className="flex items-center gap-1.5 font-bold text-xs">
                     <Film className="w-3.5 h-3.5" />
-                    <span>Media Director</span>
+                    <span>Media CMS</span>
                   </div>
-                  <p className="text-[10px] opacity-80 mt-0.5">Control image/video slots</p>
+                  <p className="text-[10px] opacity-80 mt-0.5">Hero slides & video reels</p>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setSelectedRole('superadmin')}
-                  className={`p-2.5 rounded-xl border text-left transition-all ${
+                  className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
                     selectedRole === 'superadmin'
-                      ? 'bg-[#D6B36A] border-[#F0D79A] text-[#08090B] shadow-xs'
-                      : 'bg-[#111318] border-[#2A2B2F] text-[#A7A7A2] hover:border-[#D6B36A]'
+                      ? 'bg-[#FF2E93] border-[#FF2E93] text-white shadow-xs'
+                      : 'bg-[#211D1C] border-stone-800 text-stone-400 hover:border-[#FF2E93]'
                   }`}
                 >
                   <div className="flex items-center gap-1.5 font-bold text-xs">
                     <BarChart3 className="w-3.5 h-3.5" />
-                    <span>Super Admin</span>
+                    <span>Store Manager</span>
                   </div>
-                  <p className="text-[10px] opacity-80 mt-0.5">Full store operations</p>
+                  <p className="text-[10px] opacity-80 mt-0.5">Catalog & fulfillment</p>
                 </button>
               </div>
             </div>
@@ -184,8 +184,8 @@ export const SecretAdminPortal: React.FC<SecretAdminPortalProps> = ({
               <button
                 type="button"
                 onClick={() => setAuthMode('pin')}
-                className={`flex-1 py-2 rounded-lg transition-all ${
-                  authMode === 'pin' ? 'bg-[#881337] text-white shadow-xs' : 'text-stone-400 hover:text-white'
+                className={`flex-1 py-2 rounded-lg transition-all cursor-pointer ${
+                  authMode === 'pin' ? 'bg-[#FF2E93] text-white shadow-xs' : 'text-stone-400 hover:text-white'
                 }`}
               >
                 Security PIN
@@ -193,8 +193,8 @@ export const SecretAdminPortal: React.FC<SecretAdminPortalProps> = ({
               <button
                 type="button"
                 onClick={() => setAuthMode('password')}
-                className={`flex-1 py-2 rounded-lg transition-all ${
-                  authMode === 'password' ? 'bg-[#881337] text-white shadow-xs' : 'text-stone-400 hover:text-white'
+                className={`flex-1 py-2 rounded-lg transition-all cursor-pointer ${
+                  authMode === 'password' ? 'bg-[#FF2E93] text-white shadow-xs' : 'text-stone-400 hover:text-white'
                 }`}
               >
                 Password Login
@@ -217,17 +217,17 @@ export const SecretAdminPortal: React.FC<SecretAdminPortalProps> = ({
                       onChange={(e) => setPinCode(e.target.value)}
                       placeholder="Enter master PIN (7788)"
                       autoFocus
-                      className="w-full bg-stone-900 border border-stone-800 rounded-xl pl-10 pr-4 py-3 text-center text-lg tracking-widest font-mono text-white placeholder-stone-600 focus:ring-2 focus:ring-[#881337] focus:outline-none"
+                      className="w-full bg-stone-900 border border-stone-800 rounded-xl pl-10 pr-4 py-3 text-center text-lg tracking-widest font-mono text-white placeholder-stone-600 focus:ring-2 focus:ring-[#FF2E93] focus:outline-none"
                     />
                   </div>
-                  <p className="text-[11px] text-stone-500 text-center">
-                    Default Master PIN: <strong className="text-[#E5C378] font-mono">7788</strong>
+                  <p className="text-[11px] text-stone-400 text-center">
+                    Default Master PIN: <strong className="text-[#FFD94A] font-mono">7788</strong>
                   </p>
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full py-3.5 rounded-xl bg-[#D6B36A] hover:bg-[#b8934a] text-[#08090B] text-xs font-bold uppercase tracking-widest transition-all shadow-md active:scale-98"
+                  className="w-full py-3.5 rounded-xl bg-[#FF2E93] hover:bg-[#e02680] text-white text-xs font-bold uppercase tracking-widest transition-all shadow-md active:scale-98 cursor-pointer"
                 >
                   Unlock Admin Studio
                 </button>
@@ -235,19 +235,19 @@ export const SecretAdminPortal: React.FC<SecretAdminPortalProps> = ({
             ) : (
               <form onSubmit={handlePasswordSubmit} className="space-y-3.5 text-left">
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-[#A7A7A2] block">
-                    Director Email
+                  <label className="text-xs font-bold text-stone-400 block">
+                    Admin Email
                   </label>
                   <input
                     type="email"
                     value={adminEmail}
                     onChange={(e) => setAdminEmail(e.target.value)}
-                    className="w-full bg-[#111318] border border-[#2A2B2F] rounded-xl px-3.5 py-2.5 text-xs text-[#F5F2EA] placeholder-[#A7A7A2] focus:ring-2 focus:ring-[#D6B36A] focus:outline-none"
+                    className="w-full bg-[#211D1C] border border-stone-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-stone-500 focus:ring-2 focus:ring-[#FF2E93] focus:outline-none"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-[#A7A7A2] block">
+                  <label className="text-xs font-bold text-stone-400 block">
                     Password
                   </label>
                   <div className="relative">
@@ -256,7 +256,7 @@ export const SecretAdminPortal: React.FC<SecretAdminPortalProps> = ({
                       value={adminPassword}
                       onChange={(e) => setAdminPassword(e.target.value)}
                       placeholder="Enter password (admin123)"
-                      className="w-full bg-[#111318] border border-[#2A2B2F] rounded-xl px-3.5 py-2.5 text-xs text-[#F5F2EA] placeholder-[#A7A7A2] focus:ring-2 focus:ring-[#D6B36A] focus:outline-none pr-10"
+                      className="w-full bg-[#211D1C] border border-stone-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-stone-500 focus:ring-2 focus:ring-[#FF2E93] focus:outline-none pr-10"
                     />
                     <button
                       type="button"
@@ -266,14 +266,14 @@ export const SecretAdminPortal: React.FC<SecretAdminPortalProps> = ({
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
-                  <p className="text-[11px] text-[#A7A7A2]">
-                    Default Password: <strong className="text-[#D6B36A] font-mono">admin123</strong>
+                  <p className="text-[11px] text-stone-400">
+                    Default Password: <strong className="text-[#FFD94A] font-mono">admin123</strong>
                   </p>
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full py-3.5 rounded-xl bg-[#D6B36A] hover:bg-[#b8934a] text-[#08090B] text-xs font-bold uppercase tracking-widest transition-all shadow-md active:scale-98 mt-2"
+                  className="w-full py-3.5 rounded-xl bg-[#FF2E93] hover:bg-[#e02680] text-white text-xs font-bold uppercase tracking-widest transition-all shadow-md active:scale-98 mt-2 cursor-pointer"
                 >
                   Verify & Sign In
                 </button>

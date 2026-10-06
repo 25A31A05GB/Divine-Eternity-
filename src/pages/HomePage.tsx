@@ -29,10 +29,10 @@ export const HomePage: React.FC<HomePageProps> = ({
   const homeStructuredData = {
     '@context': 'https://schema.org',
     '@type': 'WebPage',
-    name: "Divine's Eternity - Handcrafted Luxury Phone Cases & Personalized Keepsakes",
+    name: "Gadgets Destiny - Cute Covers Club | Trendy Designer Phone Cases",
     description:
-      'Explore handcrafted luxury phone cases, personalized jewelry, preserved eternal roses, acrylic song plaques, and custom memory lamps.',
-    url: typeof window !== 'undefined' ? window.location.origin : 'https://divineseternity.com',
+      'Explore cute phone covers, bracelet phone cases, zipper wallet cases, and makeup mirror covers at Gadgets Destiny.',
+    url: typeof window !== 'undefined' ? window.location.origin : 'https://gadgetsdestiny.com',
     mainEntity: {
       '@type': 'ItemList',
       itemListElement: products.slice(0, 8).map((p, idx) => ({
@@ -40,17 +40,22 @@ export const HomePage: React.FC<HomePageProps> = ({
         position: idx + 1,
         name: p.name,
         image: p.images[0] || '',
-        url: `${typeof window !== 'undefined' ? window.location.origin : 'https://divineseternity.com'}#product-${p.id}`,
+        url: `${typeof window !== 'undefined' ? window.location.origin : 'https://gadgetsdestiny.com'}#product-${p.id}`,
       })),
     },
   };
 
+  const homeUrl = typeof window !== 'undefined' ? window.location.origin : 'https://gadgetsdestiny.com';
+  const heroImage = products[0]?.images[0] || undefined;
+
   return (
     <div className="space-y-0">
       <SEO
-        title="Gifts That Stay in Hearts"
-        description="Handcrafted luxury phone cases, custom pearl wristlets, personalized name necklaces, eternal preserved roses, and luminous photo lamps."
-        keywords="luxury phone cases, personalized gifts, custom jewelry, eternal roses, acrylic song plaque, gifts for her, valentine gifts"
+        title="Cute Covers Club — Trendy Designer Phone Cases"
+        description="Phone covers for people who refuse to carry boring things. Designed with personality, built for everyday life. Buy 3 Pay For 2 at Gadgets Destiny."
+        keywords="cute phone cases, bracelet cases, mirror cases, zipper wallet cases, trendy phone covers, gadgets destiny"
+        url={homeUrl}
+        image={heroImage}
         structuredData={homeStructuredData}
       />
 
@@ -81,11 +86,11 @@ export const HomePage: React.FC<HomePageProps> = ({
         onQuickView={onQuickView}
       />
 
-      {/* 5. Spotlight: Personalized Name Jewelry */}
+      {/* 5. Spotlight: Bracelet Phone Cases */}
       <CuratedCollectionRow
-        title="Check the Personalized Name Jewelry"
-        subtitle="18k gold plated handwriting necklaces and freshwater pearl bracelets crafted with timeless elegance."
-        category="Personalized Name Jewelry"
+        title="Check the Bracelet Phone Cases"
+        subtitle="Cute pearl charms and aesthetic beaded wristlets crafted for everyday cute style."
+        category="Bracelet Phone Case"
         products={products}
         onQuickView={onQuickView}
         onOpenDetail={onOpenDetail}
