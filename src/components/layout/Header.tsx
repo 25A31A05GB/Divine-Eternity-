@@ -84,7 +84,7 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, ope
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-[#08090B]/90 backdrop-blur-xl border-b border-[#242C3D] transition-all duration-300">
+    <header className="sticky top-0 z-50 w-full bg-[#08090B]/90 backdrop-blur-xl border-b border-[#242C3D] transition-all duration-300">
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-14 sm:h-20 flex items-center justify-between gap-2 sm:gap-4">
         
         {/* Zone 1: Brand Wordmark */}
@@ -252,13 +252,25 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, ope
 
           <button
             onClick={() => navigateTo('contact')}
-            className={`text-xs font-medium transition-colors hover:text-[#881337] dark:hover:text-[#FB7185] ${
+            className={`text-xs font-medium transition-colors hover:text-[#5B8CFF] ${
               currentView === 'contact'
-                ? 'text-[#881337] dark:text-[#FB7185] font-bold border-b-2 border-[#881337] pb-0.5'
-                : 'text-stone-700 dark:text-stone-300'
+                ? 'text-[#5B8CFF] font-bold border-b-2 border-[#5B8CFF] pb-0.5'
+                : 'text-[#A7AFBD]'
             }`}
           >
             Contact
+          </button>
+
+          <button
+            onClick={() => navigateTo('secret-admin-portal')}
+            className={`text-xs font-semibold flex items-center gap-1 transition-colors hover:text-[#22D3EE] ${
+              currentView === 'secret-admin-portal' || currentView === 'admin'
+                ? 'text-[#22D3EE] font-bold border-b-2 border-[#22D3EE] pb-0.5'
+                : 'text-[#A7AFBD]'
+            }`}
+          >
+            <ShieldCheck className="w-3.5 h-3.5 text-[#22D3EE]" />
+            <span>Dashboard</span>
           </button>
         </nav>
 
@@ -267,15 +279,15 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, ope
           <button
             onClick={toggleTheme}
             aria-label="Toggle Theme"
-            className="p-1.5 sm:p-2 text-stone-700 dark:text-stone-300 hover:text-[#881337] rounded-full hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+            className="hidden sm:flex p-1.5 sm:p-2 text-[#A7AFBD] hover:text-[#F7F4EC] rounded-full hover:bg-[#1B2230] transition-colors"
           >
-            {theme === 'dark' ? <Sun className="w-4 h-4 text-[#E5C378]" /> : <Moon className="w-4 h-4 text-stone-700" />}
+            {theme === 'dark' ? <Sun className="w-4 h-4 text-[#22D3EE]" /> : <Moon className="w-4 h-4 text-[#A7AFBD]" />}
           </button>
 
           <button
             onClick={openSearch}
             aria-label="Search gifts"
-            className="p-1.5 sm:p-2 text-stone-700 dark:text-stone-300 hover:text-[#881337] rounded-full hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+            className="p-1.5 sm:p-2 text-[#A7AFBD] hover:text-[#F7F4EC] rounded-full hover:bg-[#1B2230] transition-colors"
           >
             <Search className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
@@ -283,11 +295,11 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, ope
           <button
             onClick={() => navigateTo('wishlist')}
             aria-label="Wishlist"
-            className="relative p-1.5 sm:p-2 text-stone-700 dark:text-stone-300 hover:text-[#881337] rounded-full hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+            className="hidden sm:flex relative p-1.5 sm:p-2 text-[#A7AFBD] hover:text-[#F7F4EC] rounded-full hover:bg-[#1B2230] transition-colors"
           >
             <Heart className="w-4 h-4 sm:w-5 sm:h-5" />
             {wishlistCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 bg-[#881337] text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow-xs">
+              <span className="absolute -top-0.5 -right-0.5 bg-[#5B8CFF] text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow-xs">
                 {wishlistCount}
               </span>
             )}
@@ -297,24 +309,34 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, ope
           <button
             onClick={openCart}
             aria-label="Open Shopping Bag"
-            className="sm:hidden relative p-2 bg-[#1C1917] dark:bg-white text-white dark:text-[#1C1917] rounded-xl flex items-center justify-center active:scale-95 transition-transform"
+            className="sm:hidden relative p-2 bg-[#151A24] border border-[#242C3D] text-[#F7F4EC] rounded-xl flex items-center justify-center active:scale-95 transition-transform"
           >
-            <ShoppingBag className="w-4 h-4" />
+            <ShoppingBag className="w-4 h-4 text-[#22D3EE]" />
             {totalItemsCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-[#C5A059] text-stone-950 text-[9px] font-extrabold w-4 h-4 rounded-full flex items-center justify-center shadow-xs">
+              <span className="absolute -top-1 -right-1 bg-[#5B8CFF] text-white text-[9px] font-extrabold w-4 h-4 rounded-full flex items-center justify-center shadow-xs">
                 {totalItemsCount}
               </span>
             )}
           </button>
 
+          {/* Quick Dashboard Action Button */}
+          <button
+            onClick={() => navigateTo('secret-admin-portal')}
+            title="Admin & Media Dashboard"
+            className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#151A24] border border-[#242C3D] hover:border-[#5B8CFF] text-xs font-semibold text-[#F7F4EC] transition-all hover:bg-[#1B2230] shadow-xs cursor-pointer"
+          >
+            <Lock className="w-3.5 h-3.5 text-[#22D3EE]" />
+            <span>Dashboard</span>
+          </button>
+
           <button
             onClick={openCart}
             aria-label="Open Shopping Bag"
-            className="hidden sm:flex items-center gap-2 bg-[#1C1917] dark:bg-white text-white dark:text-[#1C1917] hover:bg-[#881337] dark:hover:bg-[#BE123C] dark:hover:text-white px-3.5 sm:px-4 py-2 rounded-xl font-bold text-xs sm:text-sm tracking-wide transition-all transform active:scale-95 shadow-sm"
+            className="hidden sm:flex items-center gap-2 bg-[#151A24] border border-[#242C3D] text-[#F7F4EC] hover:bg-[#1B2230] hover:border-[#5B8CFF] px-3.5 sm:px-4 py-2 rounded-xl font-bold text-xs sm:text-sm tracking-wide transition-all transform active:scale-95 shadow-sm"
           >
-            <ShoppingBag className="w-4 h-4" />
+            <ShoppingBag className="w-4 h-4 text-[#22D3EE]" />
             <span>Bag</span>
-            <span className="bg-[#C5A059] text-stone-950 text-xs px-1.5 py-0.2 rounded-md font-extrabold min-w-[18px] text-center">
+            <span className="bg-[#5B8CFF] text-white text-xs px-1.5 py-0.2 rounded-md font-extrabold min-w-[18px] text-center">
               {totalItemsCount}
             </span>
           </button>
@@ -322,23 +344,23 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, ope
           <button
             onClick={() => setIsMobileMenuOpen(true)}
             aria-label="Toggle menu"
-            className="md:hidden p-1.5 sm:p-2 text-stone-800 dark:text-stone-200 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800"
+            className="md:hidden p-1.5 sm:p-2 text-[#F7F4EC] rounded-xl bg-[#151A24] border border-[#242C3D] hover:bg-[#1B2230]"
           >
-            <Menu className="w-5 h-5 sm:w-6 sm:h-6" />
+            <Menu className="w-5 h-5" />
           </button>
         </div>
       </div>
 
       {/* Full-Screen Slide-in Mobile Navigation Drawer */}
       {isMobileMenuOpen && (
-        <div className="md:hidden fixed inset-0 z-50 bg-[#FAF7F2] dark:bg-[#0F0D10] text-[#1C1917] dark:text-[#F5F0EB] flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right duration-300 p-5 sm:p-6 shadow-2xl">
+        <div className="md:hidden fixed inset-0 z-[100] bg-[#08090B] text-[#F7F4EC] flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right duration-300 p-5 shadow-2xl">
           
           <div>
             {/* Drawer Header Bar */}
-            <div className="flex items-center justify-between pb-4 border-b border-[#EFE7DE] dark:border-[#282127]">
+            <div className="flex items-center justify-between pb-4 border-b border-[#242C3D]">
               <button
                 onClick={() => navigateTo('home')}
-                className="font-serif text-xl font-bold text-[#1C1917] dark:text-[#F5F0EB]"
+                className="font-serif text-xl font-bold text-[#F7F4EC]"
               >
                 Divine's Eternity
               </button>
@@ -347,19 +369,40 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, ope
                 <button
                   onClick={toggleTheme}
                   aria-label="Toggle Theme"
-                  className="p-2 rounded-full bg-stone-200 dark:bg-stone-800 text-stone-700 dark:text-stone-300"
+                  className="p-2 rounded-full bg-[#151A24] border border-[#242C3D] text-[#F7F4EC]"
                 >
-                  {theme === 'dark' ? <Sun className="w-4 h-4 text-[#E5C378]" /> : <Moon className="w-4 h-4 text-stone-700" />}
+                  {theme === 'dark' ? <Sun className="w-4 h-4 text-[#22D3EE]" /> : <Moon className="w-4 h-4 text-[#A7AFBD]" />}
                 </button>
 
                 <button
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="p-2 rounded-full bg-[#1C1917] dark:bg-white text-white dark:text-[#1C1917] shadow-md"
+                  className="p-2 rounded-full bg-[#151A24] border border-[#242C3D] text-[#F7F4EC] shadow-md"
                   aria-label="Close menu"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
+            </div>
+
+            {/* Executive Secret Admin Access Banner (Top of Drawer) */}
+            <div className="my-4">
+              <button
+                onClick={() => navigateTo('secret-admin-portal')}
+                className="w-full p-3.5 rounded-2xl bg-[#151A24] border border-[#5B8CFF]/50 text-left text-white flex items-center justify-between shadow-lg active:scale-98 transition-all"
+              >
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-[#0C1220] border border-[#242C3D] text-[#22D3EE] flex items-center justify-center shrink-0">
+                    <Lock className="w-4.5 h-4.5" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-[#F7F4EC]">Executive Admin Studio</div>
+                    <div className="text-[10px] text-[#22D3EE]">Media & Slot Control Panel</div>
+                  </div>
+                </div>
+                <span className="text-[10px] font-mono font-bold gradient-blue-violet text-white px-2.5 py-1 rounded-md shadow-xs">
+                  PIN: 7788
+                </span>
+              </button>
             </div>
 
             {/* Search Input Box with Suggestions */}

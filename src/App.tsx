@@ -110,7 +110,7 @@ export function AppContent() {
       )}
 
       {/* Main View Router */}
-      <main key={currentView} className="flex-1 w-full animate-in fade-in duration-300">
+      <main key={currentView} className="flex-1 w-full animate-in fade-in duration-300 relative z-0">
         {currentView === 'home' && (
           <HomePage
             products={products}

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Sparkles, ArrowRight, ShieldCheck, Play, Pause } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { ChevronLeft, ChevronRight, Sparkles, ArrowRight, ShieldCheck, Volume2, VolumeX, Play, Pause, Check } from 'lucide-react';
 import { Product } from '../../types';
 import { PhoneCaseMockup } from '../../utils/productVisuals';
 import { useCart } from '../../context/CartContext';
@@ -19,17 +19,25 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
   const { heroSlides } = useMediaCMS();
   const activeSlides = heroSlides.filter((s) => s.isActive);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [isMuted, setIsMuted] = useState(true);
+  const [isPlayingVideo, setIsPlayingVideo] = useState(true);
+  const [couponApplied, setCouponApplied] = useState(false);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
   const { setCouponCode, openCart } = useCart();
 
   useEffect(() => {
     if (activeSlides.length <= 1) return;
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % activeSlides.length);
-    }, 7000);
+    }, 8000);
     return () => clearInterval(timer);
   }, [activeSlides.length]);
 
   const slide = activeSlides[currentSlide] || activeSlides[0];
+
+  useEffect(() => {
+    setCouponApplied(false);
+  }, [currentSlide]);
 
   if (!slide) return null;
 
@@ -38,76 +46,153 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
 
   const handleApplyCoupon = (code: string) => {
     setCouponCode(code);
-    openCart();
+    setCouponApplied(true);
+    setTimeout(() => {
+      openCart();
+    }, 600);
+  };
+
+  const toggleVideoMute = () => {
+    if (videoRef.current) {
+      videoRef.current.muted = !isMuted;
+      setIsMuted(!isMuted);
+    }
+  };
+
+  const toggleVideoPlay = () => {
+    if (videoRef.current) {
+      if (isPlayingVideo) {
+        videoRef.current.pause();
+      } else {
+        videoRef.current.play();
+      }
+      setIsPlayingVideo(!isPlayingVideo);
+    }
   };
 
   return (
-    <section aria-label="Hero Promotion" className="relative overflow-hidden pt-4 pb-10 sm:pt-6 sm:pb-14 border-b border-[#E5DFD5] dark:border-[#2A2B2F]">
+    <section aria-label="Cinematic Tech Hero" className="relative overflow-hidden py-4 sm:py-6 border-b border-[#242C3D]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Carousel Slide Card Container */}
-        <div
-          className={`relative rounded-3xl p-6 sm:p-10 lg:p-14 bg-gradient-to-br ${slide.bgGradient} border border-[#E5DFD5] dark:border-[#2A2B2F] shadow-sm overflow-hidden transition-all duration-700`}
-        >
-          {/* Real Background Video Support if set by Admin */}
-          {slide.customVideoUrl && (
+        {/* 16:9 Aspect Ratio Hero Container */}
+        <div className="relative w-full rounded-3xl border border-[#242C3D] overflow-hidden bg-[#151A24] shadow-2xl min-h-[500px] lg:aspect-[16/9] flex flex-col justify-between p-6 sm:p-10 lg:p-12 transition-all duration-700 group">
+          
+          {/* Layer 1: Admin-Controlled Dynamic Background Asset */}
+          {slide.customVideoUrl ? (
             <video
+              ref={videoRef}
               src={slide.customVideoUrl}
               autoPlay
               loop
-              muted
+              muted={isMuted}
               playsInline
-              className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none"
+              className="absolute inset-0 w-full h-full object-cover z-0 transition-opacity duration-700"
             />
+          ) : slide.customImageUrl ? (
+            <img
+              src={slide.customImageUrl}
+              alt={slide.title}
+              className="absolute inset-0 w-full h-full object-cover z-0 transition-opacity duration-700 scale-102 group-hover:scale-100 transition-transform duration-1000"
+            />
+          ) : (
+            /* Futuristic Tech Mesh Gradient Fallback */
+            <div className={`absolute inset-0 z-0 bg-gradient-to-br ${slide.bgGradient || 'from-[#0C1220] via-[#151A24] to-[#08090B]'}`}>
+              {/* Subtle Grid Pattern Overlay */}
+              <div 
+                className="absolute inset-0 opacity-15 pointer-events-none"
+                style={{
+                  backgroundImage: `radial-gradient(#5B8CFF 1px, transparent 1px), radial-gradient(#22D3EE 1px, #08090B 1px)`,
+                  backgroundSize: '40px 40px',
+                  backgroundPosition: '0 0, 20px 20px'
+                }}
+              />
+            </div>
           )}
 
-          {/* Subtle Ambient Accents */}
-          <Sparkles className="absolute top-6 left-8 w-5 h-5 text-[#5B8CFF] opacity-70 animate-pulse-glow" />
-          <Sparkles className="absolute bottom-10 left-1/3 w-4 h-4 text-[#8B5CF6] opacity-50 animate-pulse-glow" />
-          <Sparkles className="absolute top-1/4 right-8 w-6 h-6 text-[#22D3EE]/30" />
+          {/* Layer 2: Measured Scrim Gradient for Readability */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#08090B] via-[#08090B]/70 to-[#08090B]/30 z-1 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#08090B] via-[#08090B]/85 to-transparent z-1 pointer-events-none" />
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
-            
-            {/* Left Column: Headlines, Promo Badge & CTA */}
-            <div className="lg:col-span-7 space-y-5 text-left">
-              <div className="flex items-center gap-3">
-                <span className="bg-[#D6B36A] text-[#08090B] text-[11px] font-bold px-3 py-1 rounded-md uppercase tracking-widest shadow-xs inline-flex items-center gap-1.5">
-                  <Sparkles className="w-3 h-3 text-[#08090B]" />
-                  {slide.eyebrow}
-                </span>
-                <span className="text-xs font-semibold text-[#5B5A56] dark:text-[#A7A7A2]">
-                  {slide.highlightBadge}
-                </span>
+          {/* Layer 3: Ambient Glow Accents */}
+          <div className="absolute -top-24 -left-24 w-96 h-96 bg-[#5B8CFF]/20 rounded-full blur-3xl z-1 pointer-events-none" />
+          <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-[#8B5CF6]/20 rounded-full blur-3xl z-1 pointer-events-none" />
+
+          {/* Top Bar: Eyebrow Badge & Video Controls */}
+          <div className="relative z-10 flex items-center justify-between gap-4">
+            <div className="inline-flex items-center gap-2 bg-[#0C1220]/80 backdrop-blur-md border border-[#242C3D] text-[#5B8CFF] px-3.5 py-1.5 rounded-full text-xs font-semibold tracking-wide shadow-sm">
+              <span className="w-2 h-2 rounded-full bg-[#22D3EE] animate-ping" />
+              <Sparkles className="w-3.5 h-3.5 text-[#22D3EE]" />
+              <span className="text-[#F7F4EC]">{slide.eyebrow}</span>
+              <span className="text-[#737C8C]">•</span>
+              <span className="text-[#22D3EE] font-mono text-[11px] uppercase tracking-wider">{slide.highlightBadge}</span>
+            </div>
+
+            {/* Video Controls if background video is active */}
+            {slide.customVideoUrl && (
+              <div className="flex items-center gap-2 bg-[#0C1220]/80 backdrop-blur-md border border-[#242C3D] p-1.5 rounded-full z-20">
+                <button
+                  onClick={toggleVideoPlay}
+                  className="p-1.5 rounded-full text-[#A7AFBD] hover:text-white hover:bg-[#1B2230] transition-colors"
+                  aria-label={isPlayingVideo ? 'Pause background video' : 'Play background video'}
+                  title={isPlayingVideo ? 'Pause Video' : 'Play Video'}
+                >
+                  {isPlayingVideo ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+                </button>
+                <button
+                  onClick={toggleVideoMute}
+                  className="p-1.5 rounded-full text-[#A7AFBD] hover:text-white hover:bg-[#1B2230] transition-colors"
+                  aria-label={isMuted ? 'Unmute video audio' : 'Mute video audio'}
+                  title={isMuted ? 'Unmute Audio' : 'Mute Audio'}
+                >
+                  {isMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5 text-[#22D3EE]" />}
+                </button>
               </div>
+            )}
+          </div>
 
-              {/* Main Headline with Serif Typography */}
-              <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-[#111318] dark:text-[#F5F2EA] leading-[1.15] text-balance">
+          {/* Main Grid Content */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10 my-auto py-6">
+            
+            {/* Left Column: Headline, Copy & CTAs */}
+            <div className="lg:col-span-7 space-y-5 text-left">
+              
+              {/* Dynamic Headline */}
+              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-[#F7F4EC] leading-[1.1] text-balance">
                 {slide.title.split(' ')[0]}{' '}
-                <span className="italic text-[#B8934A] dark:text-[#D6B36A]">
+                <span className="text-gradient-cyan-blue">
                   {slide.title.split(' ').slice(1, 4).join(' ')}
                 </span>{' '}
                 {slide.title.split(' ').slice(4).join(' ')}
               </h1>
 
               {/* Tagline */}
-              <p className="text-sm sm:text-base text-[#5B5A56] dark:text-[#A7A7A2] max-w-lg leading-relaxed font-normal">
+              <p className="text-sm sm:text-base text-[#A7AFBD] max-w-xl leading-relaxed font-normal">
                 {slide.tagline}
               </p>
 
               {/* Coupon Badge Bar */}
               {slide.coupon && (
-                <div className="bg-white/90 dark:bg-[#17191F]/90 backdrop-blur-md p-2.5 px-4 rounded-xl border border-[#E5DFD5] dark:border-[#2A2B2F] inline-flex flex-wrap items-center gap-3 shadow-xs">
-                  <span className="text-xs font-medium text-[#5B5A56] dark:text-[#A7A7A2]">
-                    Special Atelier Code:
+                <div className="bg-[#0C1220]/90 backdrop-blur-md p-2.5 px-4 rounded-xl border border-[#242C3D] inline-flex flex-wrap items-center gap-3 shadow-md">
+                  <span className="text-xs font-medium text-[#A7AFBD]">
+                    Exclusive Code:
                   </span>
                   <button
                     onClick={() => handleApplyCoupon(slide.coupon)}
-                    className="bg-[#111318] hover:bg-[#D6B36A] dark:bg-[#F5F2EA] dark:hover:bg-[#D6B36A] text-white dark:text-[#08090B] hover:text-[#08090B] dark:hover:text-[#08090B] px-3 py-1 rounded-lg text-xs font-mono font-bold tracking-wider transition-colors"
+                    className="bg-[#151A24] hover:bg-[#1B2230] text-[#22D3EE] border border-[#22D3EE]/30 px-3 py-1 rounded-lg text-xs font-mono font-bold tracking-wider transition-all flex items-center gap-1.5"
                   >
-                    {slide.coupon}
+                    {couponApplied ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-[#2DD4BF]" />
+                        <span>Applied!</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>{slide.coupon}</span>
+                      </>
+                    )}
                   </button>
-                  <span className="text-[11px] text-[#B8934A] dark:text-[#D6B36A] font-semibold">
-                    (Click to Apply)
+                  <span className="text-[11px] text-[#2DD4BF] font-medium">
+                    (Tap to Apply Code)
                   </span>
                 </div>
               )}
@@ -116,7 +201,7 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
               <div className="flex flex-wrap items-center gap-3 pt-2">
                 <button
                   onClick={() => onShopNow(slide.ctaCategory || 'all')}
-                  className="bg-[#D6B36A] hover:bg-[#b8934a] text-[#08090B] px-7 py-3.5 rounded-xl font-bold text-xs sm:text-sm tracking-widest uppercase shadow-md flex items-center gap-2 transition-all transform active:scale-98"
+                  className="gradient-blue-violet hover:opacity-95 text-white px-7 py-3.5 rounded-xl font-bold text-xs sm:text-sm tracking-wider uppercase shadow-lg flex items-center gap-2 transition-all transform active:scale-98 cursor-pointer"
                 >
                   <span>{slide.ctaText}</span>
                   <ArrowRight className="w-4 h-4" />
@@ -125,45 +210,49 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
                 {featuredProd && (
                   <button
                     onClick={() => onQuickView(featuredProd)}
-                    className="bg-white dark:bg-[#17191F] hover:bg-stone-50 dark:hover:bg-[#111318] text-[#111318] dark:text-[#F5F2EA] px-5 py-3.5 rounded-xl font-bold text-xs sm:text-sm tracking-wider uppercase border border-[#E5DFD5] dark:border-[#2A2B2F] transition-colors shadow-xs"
+                    className="bg-[#151A24]/90 hover:bg-[#1B2230] text-[#F7F4EC] px-5 py-3.5 rounded-xl font-semibold text-xs sm:text-sm tracking-wide border border-[#242C3D] transition-colors shadow-sm flex items-center gap-2 cursor-pointer"
                   >
-                    Quick Customize
+                    <Sparkles className="w-4 h-4 text-[#5B8CFF]" />
+                    <span>Quick Customize</span>
                   </button>
                 )}
               </div>
 
               {/* Trust Badges */}
-              <div className="flex flex-wrap items-center gap-2.5 text-xs text-stone-500 dark:text-stone-400 pt-2 font-medium">
-                <span className="flex items-center gap-1 text-emerald-700 dark:text-emerald-400">
+              <div className="flex flex-wrap items-center gap-3 text-xs text-[#737C8C] pt-2 font-medium">
+                <span className="flex items-center gap-1.5 text-[#2DD4BF]">
                   <ShieldCheck className="w-3.5 h-3.5" />
-                  <span>Free 7-Day Replacement</span>
+                  <span>Precision Guarantee</span>
                 </span>
                 <span>·</span>
-                <span>Archival Velvet Packaging</span>
+                <span>Archival Packaging</span>
                 <span>·</span>
-                <span>Insured Express Dispatch</span>
+                <span>Express Worldwide Shipping</span>
               </div>
             </div>
 
-            {/* Right Column: Visual Showcase Mockup or Custom Image */}
+            {/* Right Column: Visual Showcase Card / Product Showcase */}
             <div className="lg:col-span-5 flex items-center justify-center relative">
-              <div className="relative w-72 sm:w-80 h-96 sm:h-[420px] flex items-center justify-center">
+              <div className="relative w-full max-w-sm aspect-[4/5] sm:aspect-square flex items-center justify-center">
+                
                 {slide.customImageUrl ? (
-                  <div className="relative z-10 w-full h-full rounded-2xl overflow-hidden border border-[#EFE7DE] dark:border-stone-800 shadow-2xl">
+                  <div className="relative z-10 w-full h-full rounded-2xl overflow-hidden border border-[#242C3D] shadow-2xl group-hover:border-[#5B8CFF]/50 transition-colors">
                     <img
                       src={slide.customImageUrl}
                       alt={slide.title}
                       className="w-full h-full object-cover"
                     />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#08090B] via-transparent to-transparent opacity-60" />
                   </div>
                 ) : (
-                  <>
+                  <div className="relative w-full h-full flex items-center justify-center">
+                    
                     {/* Secondary Product Backdrop Glow */}
                     {secondaryProd && (
-                      <div className="absolute -left-6 bottom-4 w-44 h-64 opacity-50 blur-[1px] transform -rotate-12 scale-90 transition-all duration-500 hidden sm:block">
+                      <div className="absolute -left-4 bottom-2 w-40 h-60 opacity-40 blur-[1px] transform -rotate-12 scale-90 transition-all duration-500 hidden sm:block pointer-events-none">
                         <PhoneCaseMockup
                           product={secondaryProd}
-                          className="w-full h-full drop-shadow-xl"
+                          className="w-full h-full"
                         />
                       </div>
                     )}
@@ -172,7 +261,7 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
                     {featuredProd && (
                       <div
                         onClick={() => onQuickView(featuredProd)}
-                        className="relative z-10 w-56 sm:w-64 h-80 sm:h-96 transform hover:scale-105 transition-transform duration-500 cursor-pointer drop-shadow-2xl"
+                        className="relative z-10 w-52 sm:w-60 h-72 sm:h-88 transform hover:scale-105 transition-transform duration-500 cursor-pointer drop-shadow-2xl"
                       >
                         <PhoneCaseMockup
                           product={featuredProd}
@@ -180,57 +269,62 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
                         />
                         
                         {/* Floating Price Pill */}
-                        <div className="absolute -bottom-2 right-2 bg-white/95 dark:bg-[#1A161A]/95 backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-[#EFE7DE] dark:border-[#2C242A] shadow-md flex items-center gap-2">
-                          <span className="font-serif font-bold text-sm text-[#1C1917] dark:text-white tabular-nums">
+                        <div className="absolute -bottom-2 right-2 bg-[#0C1220]/95 backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-[#242C3D] shadow-lg flex items-center gap-2">
+                          <span className="font-mono font-bold text-sm text-[#F7F4EC] tabular-nums">
                             ₹{featuredProd.price}
                           </span>
-                          <span className="text-[10px] text-stone-400 line-through tabular-nums">
+                          <span className="text-xs text-[#737C8C] line-through tabular-nums">
                             ₹{featuredProd.mrp}
                           </span>
                         </div>
                       </div>
                     )}
-                  </>
+                  </div>
                 )}
               </div>
             </div>
 
           </div>
 
-          {/* Navigation Dot Indicators */}
+          {/* Bottom Bar: Slide Progress Line & Navigation Controls */}
           {activeSlides.length > 1 && (
-            <div className="flex items-center justify-between mt-8 pt-4 border-t border-[#EFE7DE]/80 dark:border-white/10">
-              <div className="flex items-center gap-2">
-                {activeSlides.map((s, idx) => (
-                  <button
-                    key={s.id}
-                    onClick={() => setCurrentSlide(idx)}
-                    className={`h-1.5 rounded-full transition-all duration-300 ${
-                      currentSlide === idx
-                        ? 'w-8 bg-[#881337] dark:bg-[#BE123C]'
-                        : 'w-2 bg-stone-300 dark:bg-stone-700 hover:bg-stone-400'
-                    }`}
-                    aria-label={`Slide ${idx + 1}`}
+            <div className="relative z-10 flex items-center justify-between gap-4 pt-4 border-t border-[#242C3D]">
+              
+              {/* Counter & Progress */}
+              <div className="flex items-center gap-4 flex-1 max-w-xs">
+                <span className="text-xs font-mono font-semibold text-[#5B8CFF]">
+                  0{currentSlide + 1} <span className="text-[#737C8C]">/ 0{activeSlides.length}</span>
+                </span>
+
+                {/* Progress Bar Line */}
+                <div className="flex-1 h-1 bg-[#1B2230] rounded-full overflow-hidden">
+                  <div 
+                    className="h-full gradient-blue-violet transition-all duration-300"
+                    style={{ width: `${((currentSlide + 1) / activeSlides.length) * 100}%` }}
                   />
-                ))}
+                </div>
               </div>
 
-              <div className="flex items-center gap-1.5">
+              {/* Prev / Next Controls */}
+              <div className="flex items-center gap-2">
                 <button
                   onClick={() => setCurrentSlide((prev) => (prev - 1 + activeSlides.length) % activeSlides.length)}
-                  className="w-8 h-8 rounded-lg bg-white/90 dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 flex items-center justify-center text-stone-700 dark:text-stone-300 hover:bg-stone-100 transition-colors"
+                  className="w-9 h-9 rounded-xl bg-[#0C1220]/80 border border-[#242C3D] flex items-center justify-center text-[#A7AFBD] hover:text-[#F7F4EC] hover:bg-[#1B2230] transition-colors cursor-pointer"
                   aria-label="Previous slide"
+                  title="Previous Slide"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => setCurrentSlide((prev) => (prev + 1) % activeSlides.length)}
-                  className="w-8 h-8 rounded-lg bg-white/90 dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 flex items-center justify-center text-stone-700 dark:text-stone-300 hover:bg-stone-100 transition-colors"
+                  className="w-9 h-9 rounded-xl bg-[#0C1220]/80 border border-[#242C3D] flex items-center justify-center text-[#A7AFBD] hover:text-[#F7F4EC] hover:bg-[#1B2230] transition-colors cursor-pointer"
                   aria-label="Next slide"
+                  title="Next Slide"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
+
             </div>
           )}
 
@@ -240,3 +334,4 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
     </section>
   );
 };
+
