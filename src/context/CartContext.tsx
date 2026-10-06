@@ -220,8 +220,24 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }
 
+  // Get active coupons list from persistent storage or fallbacks
+  const getActiveCouponsList = (): Coupon[] => {
+    try {
+      const saved = localStorage.getItem('de_coupons_v1');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {
+      // ignore
+    }
+    return AVAILABLE_COUPONS;
+  };
+
+  const currentCouponsList = getActiveCouponsList();
+
   // 2. Custom manual coupon code evaluation
-  const activeManualCoupon = AVAILABLE_COUPONS.find(
+  const activeManualCoupon = currentCouponsList.find(
     (c) => c.code.toUpperCase() === couponCode.trim().toUpperCase()
   );
 
@@ -266,9 +282,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const applyCoupon = (code: string) => {
     const cleanCode = code.trim().toUpperCase();
-    const found = AVAILABLE_COUPONS.find((c) => c.code === cleanCode);
+    const found = currentCouponsList.find((c) => c.code === cleanCode);
     if (!found) {
-      return { success: false, message: 'Invalid coupon code. Try FLAT849, LOVE100 or BUY3PAY2.' };
+      return { success: false, message: 'Invalid coupon code. Please verify the code.' };
     }
     if (found.minItems && totalItemsCount < found.minItems) {
       return { success: false, message: `Add at least ${found.minItems} items to use ${cleanCode}.` };

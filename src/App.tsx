@@ -27,7 +27,26 @@ import { INITIAL_PRODUCTS } from './data/products';
 import { Product, Order } from './types';
 
 export function AppContent() {
-  const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
+  const [products, setProducts] = useState<Product[]>(() => {
+    try {
+      const saved = localStorage.getItem('divines_eternity_products_v1');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {
+      console.error('Failed to load products from storage', e);
+    }
+    return INITIAL_PRODUCTS;
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('divines_eternity_products_v1', JSON.stringify(products));
+    } catch (e) {
+      console.error('Failed to persist products to storage', e);
+    }
+  }, [products]);
   const [currentView, setCurrentView] = useState<string>(() => {
     if (typeof window !== 'undefined' && window.location.hash === '#secret-admin-portal') {
       return 'secret-admin-portal';

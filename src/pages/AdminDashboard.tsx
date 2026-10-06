@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useAuth } from '../context/AuthContext';
 import { useReviews } from '../context/ReviewsContext';
@@ -193,8 +193,27 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [newProductDesc, setNewProductDesc] = useState('');
   const [newProductBadge, setNewProductBadge] = useState('Atelier Special');
 
-  // Coupon state
-  const [coupons, setCoupons] = useState<Coupon[]>(AVAILABLE_COUPONS);
+  // Coupon state with persistent store synchronization
+  const [coupons, setCoupons] = useState<Coupon[]>(() => {
+    try {
+      const saved = localStorage.getItem('de_coupons_v1');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {
+      // ignore
+    }
+    return AVAILABLE_COUPONS;
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('de_coupons_v1', JSON.stringify(coupons));
+    } catch (e) {
+      console.error('Failed to save coupons', e);
+    }
+  }, [coupons]);
   const [isAddCouponOpen, setIsAddCouponOpen] = useState(false);
   const [newCouponCode, setNewCouponCode] = useState('');
   const [newCouponVal, setNewCouponVal] = useState(150);
