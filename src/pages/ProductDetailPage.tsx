@@ -1,0 +1,600 @@
+import React, { useState } from 'react';
+import { Product, PhoneBrand, CaseType } from '../types';
+import { PHONE_BRANDS, PHONE_MODELS_MAP, CASE_TYPES } from '../data/phoneModels';
+import { useCart } from '../context/CartContext';
+import { useWishlist } from '../context/WishlistContext';
+import { useReviews } from '../context/ReviewsContext';
+import { PhoneCaseMockup } from '../utils/productVisuals';
+import { ProductCard } from '../components/common/ProductCard';
+import { SocialShare } from '../components/common/SocialShare';
+import { GiftPersonalizer } from '../components/personalization/GiftPersonalizer';
+import {
+  Star,
+  ShieldCheck,
+  Truck,
+  RefreshCw,
+  Sparkles,
+  Heart,
+  Check,
+  ArrowLeft,
+  Send,
+  ThumbsUp,
+  CheckCircle2,
+} from 'lucide-react';
+import confetti from 'canvas-confetti';
+
+interface ProductDetailPageProps {
+  product: Product;
+  allProducts: Product[];
+  onBack: () => void;
+  onQuickView: (product: Product) => void;
+  onSelectProduct: (product: Product) => void;
+}
+
+export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
+  product,
+  allProducts,
+  onBack,
+  onQuickView,
+  onSelectProduct,
+}) => {
+  const { addToCart } = useCart();
+  const { isInWishlist, toggleWishlist } = useWishlist();
+  const {
+    getProductReviews,
+    getProductRatingStats,
+    addReview,
+    likeReview,
+  } = useReviews();
+
+  const isPhoneCase = product.category.includes('Phone Cases');
+  const [selectedBrand, setSelectedBrand] = useState<PhoneBrand>(
+    isPhoneCase && product.supportedBrands ? product.supportedBrands[0] || 'Apple' : 'Apple'
+  );
+  const [selectedModel, setSelectedModel] = useState<string>(
+    isPhoneCase && product.supportedBrands
+      ? PHONE_MODELS_MAP[product.supportedBrands[0] || 'Apple']?.[0] || 'iPhone 15 Pro Max'
+      : ''
+  );
+  const [selectedCaseType, setSelectedCaseType] = useState<CaseType>('18k Gold Plated Chain');
+  const [customText, setCustomText] = useState<string>('');
+  const [customPhoto, setCustomPhoto] = useState<string>('');
+  const [customSong, setCustomSong] = useState<string>('');
+  const [customArtist, setCustomArtist] = useState<string>('');
+  const [giftMessage, setGiftMessage] = useState<string>('');
+  const [quantity, setQuantity] = useState<number>(1);
+  const [addedSuccess, setAddedSuccess] = useState<boolean>(false);
+
+  // Review Form & Filter states
+  const [newAuthor, setNewAuthor] = useState('');
+  const [newTitle, setNewTitle] = useState('');
+  const [newComment, setNewComment] = useState('');
+  const [newRating, setNewRating] = useState(5);
+  const [reviewFilter, setReviewFilter] = useState<'all' | 'verified' | '5star'>('all');
+  const [reviewSubmitted, setReviewSubmitted] = useState(false);
+
+  const wishlisted = isInWishlist(product.id);
+  const discountPercent = Math.round(((product.mrp - product.price) / product.mrp) * 100);
+
+  const productReviews = getProductReviews(product.id);
+  const { averageRating, totalReviews, ratingBreakdown } = getProductRatingStats(
+    product.id,
+    product.rating,
+    product.reviewCount
+  );
+
+  const handleAddToCart = () => {
+    addToCart({
+      productId: product.id,
+      name: product.name,
+      slug: product.slug,
+      price: product.price,
+      mrp: product.mrp,
+      brand: isPhoneCase ? selectedBrand : undefined,
+      model: isPhoneCase ? selectedModel : undefined,
+      caseType: selectedCaseType,
+      customText: customText.trim() || undefined,
+      customPhoto: customPhoto || undefined,
+      customSong: customSong.trim() || undefined,
+      customArtist: customArtist.trim() || undefined,
+      giftMessage: giftMessage.trim() || undefined,
+      quantity,
+      themeColor: product.themeColor,
+      secondaryColor: product.secondaryColor,
+      designPattern: product.designPattern,
+      category: product.category,
+    });
+
+    setAddedSuccess(true);
+    setTimeout(() => setAddedSuccess(false), 1500);
+  };
+
+  const handleAddReviewSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newAuthor.trim() || !newComment.trim()) return;
+
+    addReview(product.id, {
+      author: newAuthor.trim(),
+      rating: newRating,
+      title: newTitle.trim() || 'Gorgeous aesthetic keepsake!',
+      comment: newComment.trim(),
+      verified: true,
+      giftTypeUsed: product.name,
+      phoneModelUsed: isPhoneCase ? `${selectedBrand} ${selectedModel}` : undefined,
+    });
+
+    try {
+      confetti({
+        particleCount: 50,
+        spread: 60,
+        origin: { y: 0.8 },
+      });
+    } catch {
+      // ignore
+    }
+
+    setNewAuthor('');
+    setNewTitle('');
+    setNewComment('');
+    setReviewSubmitted(true);
+    setTimeout(() => setReviewSubmitted(false), 4000);
+  };
+
+  const filteredReviews = productReviews.filter((r) => {
+    if (reviewFilter === 'verified') return r.verified;
+    if (reviewFilter === '5star') return r.rating === 5;
+    return true;
+  });
+
+  const relatedProducts = allProducts
+    .filter((p) => p.id !== product.id && (p.category === product.category || p.isBestSeller))
+    .slice(0, 4);
+
+  return (
+    <div className="py-8 sm:py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+        
+        {/* Back Button & Breadcrumbs */}
+        <div className="flex items-center gap-4">
+          <button
+            onClick={onBack}
+            className="flex items-center gap-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-[#E11D48] bg-white dark:bg-[#1E1A1D] border border-slate-200 dark:border-slate-800 px-3.5 py-1.5 rounded-full shadow-xs transition-colors"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Back to Catalog</span>
+          </button>
+          <div className="text-xs text-slate-400 truncate hidden sm:block">
+            Home / {product.category} / <span className="text-slate-700 dark:text-slate-200 font-semibold">{product.name}</span>
+          </div>
+        </div>
+
+        {/* 2-Column Main PDP View */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-12 items-start">
+          
+          {/* Left Column: Gallery & Interactive Visual Customizer */}
+          <div className="lg:col-span-6 bg-white dark:bg-[#1E1A1D] p-6 sm:p-10 rounded-3xl border border-[#F5E6E8] dark:border-[#2D252A] shadow-md flex flex-col items-center justify-center relative sticky top-24">
+            <button
+              onClick={() => toggleWishlist(product.id)}
+              aria-label="Wishlist"
+              className={`absolute top-6 right-6 z-20 w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-md shadow-md transition-all ${
+                wishlisted ? 'bg-[#E11D48] text-white' : 'bg-white/80 dark:bg-black/60 text-slate-700 hover:text-[#E11D48]'
+              }`}
+            >
+              <Heart className={`w-5 h-5 ${wishlisted ? 'fill-current' : ''}`} />
+            </button>
+
+            <div className="w-full flex items-center justify-center py-6">
+              <PhoneCaseMockup
+                product={product}
+                customText={customText}
+                customPhoto={customPhoto}
+                customSong={customSong}
+                customArtist={customArtist}
+                className="w-[240px] h-[390px] sm:w-[280px] sm:h-[440px] drop-shadow-2xl"
+              />
+            </div>
+
+            <div className="w-full bg-[#FFF9F5] dark:bg-black/40 rounded-2xl p-4 text-center border border-pink-100 dark:border-pink-950/40 mt-4">
+              <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                Live Bespoke Preview: <strong className="text-[#E11D48]">{product.name}</strong>
+              </p>
+              {customText && (
+                <p className="font-script text-xl text-[#E11D48] mt-1">
+                  "{customText}"
+                </p>
+              )}
+            </div>
+
+            <div className="w-full mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
+              <SocialShare product={product} />
+            </div>
+          </div>
+
+          {/* Right Column: Contiguous Purchase Module */}
+          <div className="lg:col-span-6 space-y-6">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-xs font-bold uppercase tracking-widest text-[#E11D48]">
+                  {product.category}
+                </span>
+                <span>·</span>
+                <div className="flex items-center gap-1 text-xs text-amber-500">
+                  <Star className="w-3.5 h-3.5 fill-current" />
+                  <span className="font-bold text-slate-800 dark:text-slate-200">{averageRating}</span>
+                  <span className="text-slate-400">({totalReviews} verified reviews)</span>
+                </div>
+              </div>
+
+              <h1 className="font-serif-heading text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#231F20] dark:text-[#FDF9F7]">
+                {product.name}
+              </h1>
+
+              <div className="flex items-baseline gap-3 mt-3">
+                <span className="text-3xl font-extrabold text-[#231F20] dark:text-white tabular-nums">
+                  ₹{product.price}
+                </span>
+                <span className="text-base text-slate-400 line-through tabular-nums">
+                  MRP ₹{product.mrp}
+                </span>
+                <span className="text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-md">
+                  {discountPercent}% OFF
+                </span>
+              </div>
+
+              <div className="bg-pink-50/70 dark:bg-pink-950/20 p-3 rounded-2xl border border-pink-200/60 dark:border-pink-900/40 mt-3 inline-flex items-center gap-2 text-xs text-[#E11D48] font-semibold">
+                <Sparkles className="w-4 h-4 text-[#D4AF37]" />
+                <span>Buy 3 Items, Pay for 2! Lowest priced gift is 100% FREE in cart.</span>
+              </div>
+            </div>
+
+            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+              {product.description}
+            </p>
+
+            {/* Phone brand & model selectors if applicable */}
+            {isPhoneCase && (
+              <div className="space-y-3">
+                <div className="space-y-1">
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 block">
+                    1. Select Phone Brand *
+                  </label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {PHONE_BRANDS.slice(0, 8).map((brand) => (
+                      <button
+                        key={brand}
+                        type="button"
+                        onClick={() => {
+                          setSelectedBrand(brand);
+                          setSelectedModel(PHONE_MODELS_MAP[brand]?.[0] || '');
+                        }}
+                        className={`py-2 px-3 rounded-xl text-xs font-bold border transition-all ${
+                          selectedBrand === brand
+                            ? 'bg-[#231F20] text-white border-[#231F20]'
+                            : 'bg-white dark:bg-[#1E1A1D] border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-pink-300'
+                        }`}
+                      >
+                        {brand}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 block">
+                    2. Select Phone Model *
+                  </label>
+                  <select
+                    value={selectedModel}
+                    onChange={(e) => setSelectedModel(e.target.value)}
+                    className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-xs font-medium text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-[#E11D48] focus:outline-none"
+                  >
+                    {(PHONE_MODELS_MAP[selectedBrand] || []).map((m) => (
+                      <option key={m} value={m}>{m}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            )}
+
+            {/* Comprehensive Personalization Module */}
+            <GiftPersonalizer
+              product={product}
+              customText={customText}
+              setCustomText={setCustomText}
+              customPhoto={customPhoto}
+              setCustomPhoto={setCustomPhoto}
+              customSong={customSong}
+              setCustomSong={setCustomSong}
+              customArtist={customArtist}
+              setCustomArtist={setCustomArtist}
+              giftMessage={giftMessage}
+              setGiftMessage={setGiftMessage}
+            />
+
+            {/* Quantity & Buy CTA */}
+            <div className="space-y-3 pt-2">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center border border-slate-200 dark:border-slate-800 rounded-full bg-white dark:bg-slate-900 p-1">
+                  <button
+                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xs font-bold hover:text-[#E11D48]"
+                  >
+                    -
+                  </button>
+                  <span className="w-10 text-center text-xs font-bold tabular-nums">
+                    {quantity}
+                  </span>
+                  <button
+                    onClick={() => setQuantity(quantity + 1)}
+                    className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xs font-bold hover:text-[#E11D48]"
+                  >
+                    +
+                  </button>
+                </div>
+
+                <button
+                  onClick={handleAddToCart}
+                  className={`flex-1 py-4 px-6 rounded-full font-bold text-xs sm:text-sm tracking-widest uppercase transition-all shadow-lg flex items-center justify-center gap-2 ${
+                    addedSuccess
+                      ? 'bg-emerald-600 text-white'
+                      : 'bg-[#E11D48] hover:bg-[#be123c] text-white shadow-pink-500/25 active:scale-98'
+                  }`}
+                >
+                  {addedSuccess ? (
+                    <>
+                      <Check className="w-4 h-4" />
+                      <span>Added to Bag!</span>
+                    </>
+                  ) : (
+                    <span>Add To Bag · ₹{product.price * quantity}</span>
+                  )}
+                </button>
+              </div>
+
+              {/* Guarantees */}
+              <div className="grid grid-cols-3 gap-2 pt-4 border-t border-slate-100 dark:border-slate-800 text-center text-[11px] text-slate-600 dark:text-slate-400 font-medium">
+                <div className="flex flex-col items-center">
+                  <Truck className="w-4 h-4 text-emerald-500 mb-1" />
+                  <span>Free Express Delivery</span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <RefreshCw className="w-4 h-4 text-[#E11D48] mb-1" />
+                  <span>7-Day Replacement</span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <ShieldCheck className="w-4 h-4 text-amber-500 mb-1" />
+                  <span>Luxury Gift Packaging</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Features Checklist */}
+            <div className="p-5 rounded-2xl bg-white dark:bg-[#1E1A1D] border border-[#F5E6E8] dark:border-[#2D252A] space-y-2.5">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">
+                Handcrafted Specifications
+              </h4>
+              <ul className="space-y-1.5 text-xs text-slate-600 dark:text-slate-300">
+                {product.features.map((feat, i) => (
+                  <li key={i} className="flex items-start gap-2">
+                    <span className="text-[#E11D48] font-bold">✦</span>
+                    <span>{feat}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        {/* Dynamic Reviews Section with Verified Buyer Badges */}
+        <div className="pt-12 border-t border-[#F5E6E8] dark:border-[#2D252A] space-y-8">
+          <div className="bg-white dark:bg-[#1E1A1D] p-6 sm:p-8 rounded-3xl border border-[#F5E6E8] dark:border-slate-800 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div>
+              <div className="flex items-baseline gap-3">
+                <span className="font-serif-heading text-4xl sm:text-5xl font-extrabold text-[#231F20] dark:text-white">
+                  {averageRating}
+                </span>
+                <div>
+                  <div className="flex text-[#FFD94A]">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Star
+                        key={star}
+                        className={`w-4 h-4 ${star <= Math.round(averageRating) ? 'fill-current' : 'text-slate-300'}`}
+                      />
+                    ))}
+                  </div>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Based on {totalReviews} customer ratings
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-1 text-xs w-full max-w-xs">
+              {[5, 4, 3, 2, 1].map((s) => {
+                const count = ratingBreakdown[s] || 0;
+                const pct = totalReviews > 0 ? Math.round((count / totalReviews) * 100) : 0;
+                return (
+                  <div key={s} className="flex items-center gap-2">
+                    <span className="w-6 text-[11px] font-mono text-slate-600 dark:text-slate-400">{s} ★</span>
+                    <div className="flex-1 h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-[#E11D48] to-[#FFD94A] rounded-full transition-all duration-500"
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                    <span className="w-8 text-[10px] text-slate-400 text-right font-mono">{pct}%</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div className="lg:col-span-7 space-y-4">
+              {filteredReviews.map((rev) => (
+                <div
+                  key={rev.id}
+                  className="bg-white dark:bg-[#1E1A1D] p-5 sm:p-6 rounded-2xl border border-[#F5E6E8] dark:border-slate-800 shadow-xs space-y-3"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1 text-[#FFD94A]">
+                      {Array.from({ length: 5 }).map((_, idx) => (
+                        <Star
+                          key={idx}
+                          className={`w-3.5 h-3.5 ${
+                            idx < rev.rating ? 'fill-current' : 'text-slate-300'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <span className="text-[10px] text-slate-400 font-mono">{rev.date}</span>
+                  </div>
+
+                  <div>
+                    <h5 className="font-serif-heading text-sm sm:text-base font-bold text-slate-900 dark:text-white">
+                      {rev.title}
+                    </h5>
+                    <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
+                      {rev.comment}
+                    </p>
+                  </div>
+
+                  <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-xs text-slate-500">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-bold text-slate-800 dark:text-slate-200">{rev.author}</span>
+                      {rev.giftTypeUsed && (
+                        <span className="text-[10px] text-pink-600 font-semibold">
+                          ({rev.giftTypeUsed})
+                        </span>
+                      )}
+                      {rev.verified && (
+                        <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full flex items-center gap-1 border border-emerald-200">
+                          <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+                          <span>Verified Buyer</span>
+                        </span>
+                      )}
+                    </div>
+
+                    <button
+                      onClick={() => likeReview(product.id, rev.id)}
+                      className="inline-flex items-center gap-1 text-[11px] text-slate-500 hover:text-[#E11D48] p-1"
+                    >
+                      <ThumbsUp className="w-3.5 h-3.5" />
+                      <span className="tabular-nums font-bold">{rev.likesCount}</span>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Leave a review form */}
+            <div className="lg:col-span-5 bg-white dark:bg-[#1E1A1D] p-6 sm:p-8 rounded-3xl border border-[#F5E6E8] dark:border-slate-800 space-y-4 shadow-sm">
+              <h4 className="font-serif-heading text-lg font-bold text-slate-900 dark:text-white">
+                Leave a Verified Review
+              </h4>
+              {reviewSubmitted ? (
+                <div className="bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 p-6 rounded-2xl text-xs font-semibold text-center space-y-2 border border-emerald-200">
+                  <Check className="w-8 h-8 mx-auto text-emerald-600" />
+                  <p className="text-sm font-bold">Review Published with Verified Buyer Badge!</p>
+                </div>
+              ) : (
+                <form onSubmit={handleAddReviewSubmit} className="space-y-3.5 text-xs">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Your Rating *
+                    </label>
+                    <div className="flex gap-1.5 bg-slate-50 dark:bg-slate-900 p-2 rounded-xl w-fit border border-slate-200 dark:border-slate-800">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          type="button"
+                          key={star}
+                          onClick={() => setNewRating(star)}
+                          className="p-0.5 text-slate-300 hover:text-[#FFD94A]"
+                        >
+                          <Star
+                            className={`w-6 h-6 ${
+                              star <= newRating ? 'text-[#FFD94A] fill-[#FFD94A]' : ''
+                            }`}
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Your Full Name *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={newAuthor}
+                      onChange={(e) => setNewAuthor(e.target.value)}
+                      placeholder="e.g. Diya Patel"
+                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Review Title
+                    </label>
+                    <input
+                      type="text"
+                      value={newTitle}
+                      onChange={(e) => setNewTitle(e.target.value)}
+                      placeholder="e.g. Breathtaking gift packaging!"
+                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Your Review *
+                    </label>
+                    <textarea
+                      rows={4}
+                      required
+                      value={newComment}
+                      onChange={(e) => setNewComment(e.target.value)}
+                      placeholder="Share your unboxing experience, laser engraving quality, or how your loved one reacted..."
+                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full bg-[#231F20] hover:bg-[#E11D48] text-white py-3 px-4 rounded-full text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-md"
+                  >
+                    <Send className="w-3.5 h-3.5" />
+                    <span>Post Verified Review</span>
+                  </button>
+                </form>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* You May Also Like Row */}
+        <div className="pt-12 border-t border-[#F5E6E8] dark:border-[#2D252A] space-y-6">
+          <h3 className="font-serif-heading text-2xl font-bold text-slate-900 dark:text-white">
+            You May Also Like
+          </h3>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            {relatedProducts.map((p) => (
+              <ProductCard
+                key={p.id}
+                product={p}
+                onQuickView={onQuickView}
+                onOpenDetail={(prod) => {
+                  onSelectProduct(prod);
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};

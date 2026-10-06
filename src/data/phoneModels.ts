@@ -1,0 +1,118 @@
+import { PhoneBrand } from '../types';
+
+export const PHONE_BRANDS: PhoneBrand[] = [
+  'Apple',
+  'Samsung',
+  'OnePlus',
+  'Google',
+  'Xiaomi',
+  'Vivo',
+  'Oppo',
+  'Realme',
+];
+
+export const PHONE_MODELS_MAP: Record<PhoneBrand, string[]> = {
+  Apple: [
+    'iPhone 16 Pro Max',
+    'iPhone 16 Pro',
+    'iPhone 16 Plus',
+    'iPhone 16',
+    'iPhone 15 Pro Max',
+    'iPhone 15 Pro',
+    'iPhone 15 Plus',
+    'iPhone 15',
+    'iPhone 14 Pro Max',
+    'iPhone 14 Pro',
+    'iPhone 14',
+    'iPhone 13 Pro Max',
+    'iPhone 13 Pro',
+    'iPhone 13',
+    'iPhone 12 / 12 Pro',
+    'iPhone 11',
+  ],
+  Samsung: [
+    'Galaxy S25 Ultra',
+    'Galaxy S25+ / S25',
+    'Galaxy S24 Ultra',
+    'Galaxy S24+ / S24',
+    'Galaxy S23 Ultra',
+    'Galaxy S23 FE',
+    'Galaxy S22 Ultra',
+    'Galaxy Z Flip 6',
+    'Galaxy Z Flip 5',
+    'Galaxy A55 5G',
+    'Galaxy A35 5G',
+  ],
+  OnePlus: [
+    'OnePlus 13',
+    'OnePlus 13R',
+    'OnePlus 12',
+    'OnePlus 12R',
+    'OnePlus 11',
+    'OnePlus Nord 4',
+    'OnePlus Nord CE4',
+  ],
+  Google: [
+    'Pixel 9 Pro XL',
+    'Pixel 9 Pro',
+    'Pixel 9',
+    'Pixel 8 Pro',
+    'Pixel 8',
+    'Pixel 8a',
+    'Pixel 7 Pro',
+    'Pixel 7',
+  ],
+  Xiaomi: [
+    'Xiaomi 14 Ultra',
+    'Xiaomi 14',
+    'Redmi Note 14 Pro+',
+    'Redmi Note 13 Pro',
+    'Redmi Note 12 Pro',
+    'Poco X6 Pro',
+  ],
+  Vivo: [
+    'Vivo X100 Pro',
+    'Vivo V40 Pro',
+    'Vivo V30 Pro',
+    'Vivo V29 Pro',
+    'Vivo T3 Ultra',
+  ],
+  Oppo: [
+    'Oppo Find X7 Ultra',
+    'Oppo Reno 12 Pro',
+    'Oppo Reno 11 Pro',
+    'Oppo Reno 10 Pro+',
+    'Oppo F25 Pro',
+  ],
+  Realme: [
+    'Realme GT 6',
+    'Realme 13 Pro+',
+    'Realme 12 Pro+ 5G',
+    'Realme Narzo 70 Pro',
+  ],
+};
+
+export const CASE_TYPES: { type: import('../types').CaseType; label: string; description: string; badge?: string }[] = [
+  {
+    type: 'Soft Silicone & TPU',
+    label: 'Soft Velvet Silicone',
+    description: 'Shockproof bumper, ultra-soft grip, scratch resistant',
+    badge: 'Popular',
+  },
+  {
+    type: 'Impact Hard Glossy',
+    label: 'Hard Gloss Armor',
+    description: 'Dual-layer military grade drop defense, glossy shine',
+    badge: 'Extra Protection',
+  },
+  {
+    type: 'Luxury Leather Wallet',
+    label: 'Quilted Leather Zipper',
+    description: 'Zip pouch for cards & cash, vegan luxury leather',
+  },
+  {
+    type: 'Metallic Chrome Mirror',
+    label: 'Chrome Makeup Mirror',
+    description: 'Real reflective finish for quick touch-ups on the go',
+  },
+];

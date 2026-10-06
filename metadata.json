@@ -1,0 +1,6 @@
+{
+  "name": "Divine's Eternity - Luxury Phone Cases & Personalized Gifts",
+  "description": "Gifts that stay in hearts. Handcrafted luxury phone cases, bracelet cases, mirror cases, and custom personalized accessories.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
