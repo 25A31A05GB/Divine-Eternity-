@@ -168,6 +168,9 @@ export interface Order {
   subtotal: number;
   discountTotal: number;
   appliedOffer?: AppliedOffer;
+  isGiftWrapped?: boolean;
+  giftWrappingFee?: number;
+  giftNote?: string;
   shippingFee: number;
   totalAmount: number;
   paymentMethod: 'UPI' | 'Card' | 'Cash on Delivery' | 'Razorpay Simulated';
@@ -208,3 +211,44 @@ export interface UserProfile {
   addresses: CustomerAddress[];
   wishlistProductIds: string[];
 }
+
+export interface CreatorApplication {
+  id: string;
+  fullName: string;
+  email: string;
+  phone: string;
+  instagramHandle?: string;
+  tiktokHandle?: string;
+  youtubeHandle?: string;
+  followerCount: string;
+  primaryNiche: string;
+  proposedCode: string;
+  prShippingAddress: string;
+  city: string;
+  pincode: string;
+  appliedCampaignId?: string;
+  portfolioUrl?: string;
+  message?: string;
+  status: 'Pending' | 'Approved' | 'Declined';
+  createdAt: string;
+  commissionRatePct: number;
+}
+
+export interface Campaign {
+  id: string;
+  title: string;
+  tagline: string;
+  category: string;
+  status: 'Active' | 'Upcoming' | 'Completed';
+  startDate: string;
+  endDate: string;
+  payoutPerReel: number;
+  freePrProducts: string[];
+  deliverables: string[];
+  slotsAvailable: number;
+  slotsFilled: number;
+  coverGradient: string;
+  description: string;
+  requirements: string[];
+}
+

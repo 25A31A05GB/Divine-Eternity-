@@ -18,6 +18,7 @@ import { OrderConfirmationPage } from './pages/OrderConfirmationPage';
 import { TrackOrderPage } from './pages/TrackOrderPage';
 import { WishlistPage } from './pages/WishlistPage';
 import { ContactPage } from './pages/ContactPage';
+import { CreatorCollabPage } from './pages/CreatorCollabPage';
 import { PolicyPage } from './pages/PolicyPage';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { INITIAL_PRODUCTS } from './data/products';
@@ -139,6 +140,12 @@ export function AppContent() {
         )}
 
         {currentView === 'contact' && <ContactPage />}
+
+        {currentView === 'creator-club' && (
+          <CreatorCollabPage
+            onExploreProducts={() => handleNavigate('collections', { category: 'all' })}
+          />
+        )}
 
         {currentView === 'policy' && (
           <PolicyPage initialTab={(viewParams.tab as any) || 'refund'} />

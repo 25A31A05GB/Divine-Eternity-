@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { Order, OrderStatus } from '../types';
 import { Truck, Search, CheckCircle2, Clock, PackageCheck, MapPin, Sparkles } from 'lucide-react';
 import { PhoneCaseMockup } from '../utils/productVisuals';
+import { SEO } from '../components/common/SEO';
 
 const TIMELINE_STEPS: OrderStatus[] = [
   'Placed',
@@ -52,6 +53,11 @@ export const TrackOrderPage: React.FC<TrackOrderPageProps> = ({ initialOrderId =
 
   return (
     <div className="py-10 sm:py-16">
+      <SEO
+        title="Track Your Order & Shipment Status"
+        description="Check real-time live shipping updates, dispatch status, courier partner details, and expected delivery timeline for your Divine's Eternity gift order."
+        keywords="track order, shipment status, courier tracking, gift dispatch, divine eternity"
+      />
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
         
         {/* Header */}

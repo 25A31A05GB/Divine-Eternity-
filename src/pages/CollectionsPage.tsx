@@ -3,6 +3,7 @@ import { Product, PhoneBrand } from '../types';
 import { ProductCard } from '../components/common/ProductCard';
 import { CATEGORIES } from '../data/products';
 import { PHONE_BRANDS } from '../data/phoneModels';
+import { SEO } from '../components/common/SEO';
 import { Filter, SlidersHorizontal, Sparkles, ChevronLeft, ChevronRight, X } from 'lucide-react';
 
 interface CollectionsPageProps {
@@ -80,8 +81,34 @@ export const CollectionsPage: React.FC<CollectionsPageProps> = ({
     setCurrentPage(1);
   };
 
+  const collectionStructuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: selectedCategory === 'All' ? 'All Luxury Phone Cases & Personalized Gifts' : `${selectedCategory} Collection`,
+    description: `Shop our exclusive ${selectedCategory} collection. Handcrafted luxury items, custom engravings, and timeless keepsakes.`,
+    url: typeof window !== 'undefined' ? window.location.href : 'https://divineseternity.com/collections',
+    mainEntity: {
+      '@type': 'ItemList',
+      numberOfItems: filteredProducts.length,
+      itemListElement: filteredProducts.slice(0, 12).map((p, idx) => ({
+        '@type': 'ListItem',
+        position: idx + 1,
+        name: p.name,
+        image: p.images[0] || '',
+        url: `${typeof window !== 'undefined' ? window.location.origin : 'https://divineseternity.com'}#product-${p.id}`,
+      })),
+    },
+  };
+
   return (
     <div className="py-8 sm:py-12">
+      <SEO
+        title={selectedCategory === 'All' ? 'Curated Gift Collections & Phone Cases' : `${selectedCategory} — Curated Gifts`}
+        description={`Explore handcrafted ${selectedCategory} at Divine's Eternity. High quality personalization, secure checkout, and express insured delivery across India.`}
+        keywords={`${selectedCategory}, phone cases, luxury gift hampers, divine eternity, custom jewelry, romantic gifts`}
+        structuredData={collectionStructuredData}
+      />
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Breadcrumb & Title */}

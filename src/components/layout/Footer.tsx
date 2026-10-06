@@ -186,7 +186,7 @@ export const Footer: React.FC<FooterProps> = ({ setCurrentView }) => {
             <p className="text-xs text-slate-400 leading-relaxed mb-3">
               Join 45,000+ girls who treat their phone like a luxury aesthetic accessory.
             </p>
-            <div className="bg-white/5 p-3 rounded-xl border border-white/10 space-y-2">
+            <div className="bg-white/5 p-3 rounded-xl border border-white/10 space-y-2 mb-3">
               <div className="flex items-center gap-1 text-[11px] text-[#FFD94A] font-semibold">
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>Special Promo Offer</span>
@@ -195,6 +195,13 @@ export const Footer: React.FC<FooterProps> = ({ setCurrentView }) => {
                 Use code <span className="text-[#F0508C] font-bold font-mono">FLAT849</span> to get any 2 luxury cases for ₹849!
               </p>
             </div>
+
+            <button
+              onClick={() => navigateTo('creator-club')}
+              className="w-full text-center py-2 px-3 rounded-xl bg-gradient-to-r from-[#F0508C] to-[#E11D48] text-white font-bold text-xs hover:opacity-90 transition-opacity flex items-center justify-center gap-1.5"
+            >
+              <span>Join Creator & Affiliate Club →</span>
+            </button>
           </div>
         </div>
 

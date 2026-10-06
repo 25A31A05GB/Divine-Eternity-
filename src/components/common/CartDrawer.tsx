@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Trash2, Sparkles, Tag, ArrowRight, ShoppingBag, ShieldCheck, Check } from 'lucide-react';
+import { X, Trash2, Sparkles, Tag, ArrowRight, ShoppingBag, ShieldCheck, Check, Gift, MessageSquare } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { PhoneCaseMockup } from '../../utils/productVisuals';
 
@@ -27,6 +27,11 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onProceedToCheckout, onE
     freeShippingThreshold,
     amountNeededForFreeShipping,
     availableCoupons,
+    isGiftWrapped,
+    giftWrappingFee,
+    giftNote,
+    toggleGiftWrapping,
+    setGiftNote,
   } = useCart();
 
   const [inputCoupon, setInputCoupon] = useState('');
@@ -211,6 +216,57 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onProceedToCheckout, onE
           {cart.length > 0 && (
             <div className="p-4 sm:p-5 border-t border-slate-100 dark:border-slate-800 bg-[#FFF8F4] dark:bg-black/40 space-y-3">
               
+              {/* Luxury Gift Wrapping Toggle Card */}
+              <div className="p-3 rounded-2xl bg-white dark:bg-[#1A1619] border border-pink-200/80 dark:border-pink-950/50 shadow-xs space-y-2.5 transition-all">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-lg bg-[#F0508C]/15 text-[#F0508C] flex items-center justify-center shrink-0">
+                      <Gift className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs font-bold text-slate-900 dark:text-white">
+                          Luxury Gift Packaging & Note
+                        </span>
+                        <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-[#FFD94A] text-[#231F20]">
+                          +₹99
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-slate-500 dark:text-slate-400 line-clamp-1">
+                        Blush velvet box, gold ribbon & custom card
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Toggle Switch */}
+                  <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                    <input
+                      type="checkbox"
+                      checked={isGiftWrapped}
+                      onChange={() => toggleGiftWrapping()}
+                      className="sr-only peer"
+                    />
+                    <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#F0508C]" />
+                  </label>
+                </div>
+
+                {/* Expandable Gift Note Input */}
+                {isGiftWrapped && (
+                  <div className="pt-2 border-t border-dashed border-pink-100 dark:border-slate-800 animate-in fade-in slide-in-from-top-1 duration-150 space-y-1">
+                    <label className="text-[10px] font-bold text-[#F0508C] uppercase tracking-wider flex items-center gap-1">
+                      <MessageSquare className="w-3 h-3" /> Personalized Gift Note Card:
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={giftNote}
+                      onChange={(e) => setGiftNote(e.target.value)}
+                      placeholder="Write your heartfelt note here (e.g., Happy Birthday Anya! Love you always 💖)..."
+                      className="w-full text-xs p-2 rounded-xl bg-[#FFF9F5] dark:bg-slate-900 border border-pink-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#F0508C] resize-none"
+                    />
+                  </div>
+                )}
+              </div>
+
               {/* Coupon Input & Preset Pills */}
               <div className="space-y-2">
                 <div className="flex gap-2">
@@ -278,6 +334,18 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onProceedToCheckout, onE
                     </span>
                     <span className="tabular-nums font-bold">
                       -₹{discountTotal}
+                    </span>
+                  </div>
+                )}
+
+                {isGiftWrapped && (
+                  <div className="flex justify-between items-center text-slate-600 dark:text-slate-400">
+                    <span className="flex items-center gap-1">
+                      <Gift className="w-3 h-3 text-[#F0508C]" />
+                      <span>Luxury Gift Packaging & Note</span>
+                    </span>
+                    <span className="font-semibold tabular-nums text-slate-900 dark:text-white">
+                      +₹{giftWrappingFee}
                     </span>
                   </div>
                 )}

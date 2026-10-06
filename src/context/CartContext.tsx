@@ -24,14 +24,23 @@ interface CartContextType {
   availableCoupons: Coupon[];
   freeShippingThreshold: number;
   amountNeededForFreeShipping: number;
+  // Gift Wrapping
+  isGiftWrapped: boolean;
+  giftWrappingFee: number;
+  giftNote: string;
+  toggleGiftWrapping: (enable?: boolean) => void;
+  setGiftNote: (note: string) => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 const STORAGE_KEY = 'divines_eternity_cart_v1';
 const COUPON_KEY = 'divines_eternity_coupon_v1';
+const GIFT_WRAP_KEY = 'divines_eternity_gift_wrap_v1';
+const GIFT_NOTE_KEY = 'divines_eternity_gift_note_v1';
 const FREE_SHIPPING_MIN = 499;
 const STANDARD_SHIPPING = 49;
+export const GIFT_WRAPPING_SURCHARGE = 99;
 
 export const AVAILABLE_COUPONS: Coupon[] = [
   {
@@ -86,6 +95,22 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   });
 
+  const [isGiftWrapped, setIsGiftWrapped] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem(GIFT_WRAP_KEY) === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const [giftNote, setGiftNote] = useState<string>(() => {
+    try {
+      return localStorage.getItem(GIFT_NOTE_KEY) || '';
+    } catch {
+      return '';
+    }
+  });
+
   const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
 
   useEffect(() => {
@@ -103,6 +128,26 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.error('Failed to save coupon', e);
     }
   }, [couponCode]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(GIFT_WRAP_KEY, isGiftWrapped.toString());
+    } catch (e) {
+      console.error('Failed to save gift wrapping option', e);
+    }
+  }, [isGiftWrapped]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(GIFT_NOTE_KEY, giftNote);
+    } catch (e) {
+      console.error('Failed to save gift note', e);
+    }
+  }, [giftNote]);
+
+  const toggleGiftWrapping = (enable?: boolean) => {
+    setIsGiftWrapped((prev) => (typeof enable === 'boolean' ? enable : !prev));
+  };
 
   const addToCart = (itemData: Omit<CartItem, 'id'>) => {
     const customKey = (itemData.customText || '').trim().toLowerCase();
@@ -242,7 +287,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const discountTotal = bestOffer ? bestOffer.discountAmount : 0;
   const taxableAmount = Math.max(0, subtotal - discountTotal);
   const shippingFee = cart.length === 0 || taxableAmount >= FREE_SHIPPING_MIN ? 0 : STANDARD_SHIPPING;
-  const totalAmount = cart.length === 0 ? 0 : taxableAmount + shippingFee;
+  const giftWrappingFee = isGiftWrapped && cart.length > 0 ? GIFT_WRAPPING_SURCHARGE : 0;
+  const totalAmount = cart.length === 0 ? 0 : taxableAmount + shippingFee + giftWrappingFee;
   const amountNeededForFreeShipping = Math.max(0, FREE_SHIPPING_MIN - taxableAmount);
 
   return (
@@ -270,6 +316,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         availableCoupons: AVAILABLE_COUPONS,
         freeShippingThreshold: FREE_SHIPPING_MIN,
         amountNeededForFreeShipping,
+        isGiftWrapped,
+        giftWrappingFee,
+        giftNote,
+        toggleGiftWrapping,
+        setGiftNote,
       }}
     >
       {children}

@@ -1,8 +1,10 @@
 import React, { useState, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useReviews } from '../context/ReviewsContext';
-import { Product, Order, Coupon, OrderStatus, PhoneBrand } from '../types';
+import { Product, Order, Coupon, OrderStatus, PhoneBrand, CreatorApplication, Campaign } from '../types';
 import { AVAILABLE_COUPONS } from '../context/CartContext';
+import { INITIAL_CREATOR_APPLICATIONS, INITIAL_CAMPAIGNS } from '../data/campaigns';
+import { SEO } from '../components/common/SEO';
 import {
   TrendingUp,
   Package,
@@ -56,6 +58,9 @@ import {
   XCircle,
   Activity,
   Zap,
+  Video,
+  Instagram,
+  Briefcase,
 } from 'lucide-react';
 import { PhoneCaseMockup } from '../utils/productVisuals';
 import confetti from 'canvas-confetti';
@@ -78,11 +83,56 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const { user, isAdmin, orders, updateOrderStatus } = useAuth();
   const { reviews, toggleVerifiedBadge, deleteReview } = useReviews();
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'orders' | 'products' | 'coupons' | 'reviews' | 'customers'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'orders' | 'products' | 'coupons' | 'reviews' | 'customers' | 'affiliates'>('overview');
   const [orderFilter, setOrderFilter] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [productViewMode, setProductViewMode] = useState<'table' | 'grid'>('table');
   const [selectedOrderForInvoice, setSelectedOrderForInvoice] = useState<Order | null>(null);
+
+  // Creator & Affiliate applications state
+  const [creatorApplications, setCreatorApplications] = useState<CreatorApplication[]>(() => {
+    try {
+      const stored = localStorage.getItem('de_creator_applications');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        return [...parsed, ...INITIAL_CREATOR_APPLICATIONS.filter((a) => !parsed.some((p: any) => p.id === a.id))];
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    return INITIAL_CREATOR_APPLICATIONS;
+  });
+
+  const [campaigns, setCampaigns] = useState<Campaign[]>(INITIAL_CAMPAIGNS);
+  const [selectedAppForPrModal, setSelectedAppForPrModal] = useState<CreatorApplication | null>(null);
+
+  const handleApproveApplication = (appId: string) => {
+    setCreatorApplications((prev) =>
+      prev.map((app) => {
+        if (app.id === appId) {
+          // Auto-generate affiliate coupon in coupon engine
+          const newAffiliateCoupon: Coupon = {
+            code: app.proposedCode,
+            type: 'percentage',
+            value: 15,
+            minOrderValue: 499,
+            description: `Exclusive 15% Creator Discount (${app.fullName})`,
+            isActive: true,
+          };
+          setCoupons((cPrev) => [newAffiliateCoupon, ...cPrev.filter((c) => c.code !== app.proposedCode)]);
+          confetti({ particleCount: 60, spread: 60, origin: { y: 0.6 } });
+          return { ...app, status: 'Approved' };
+        }
+        return app;
+      })
+    );
+  };
+
+  const handleDeclineApplication = (appId: string) => {
+    setCreatorApplications((prev) =>
+      prev.map((app) => (app.id === appId ? { ...app, status: 'Declined' } : app))
+    );
+  };
 
   // Product modal state
   const [isAddProductOpen, setIsAddProductOpen] = useState(false);
@@ -295,6 +345,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   return (
     <div className="min-h-screen bg-[#FDF8F5] dark:bg-[#0D0B0D] text-[#231F20] dark:text-[#F8F5F2]">
+      <SEO
+        title="Store Operations & Analytics Suite"
+        description="Divine's Eternity Executive Admin Control Panel for live inventory, orders, discount coupons, and influencer partner management."
+        noindex={true}
+      />
       {/* Top Luxury Executive Bar */}
       <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#151215]/95 backdrop-blur-md border-b border-[#F0E5DF] dark:border-[#262024] px-4 lg:px-8 py-3.5 transition-colors">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -344,6 +399,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             { id: 'coupons', label: 'Offers & Coupons', icon: Tag, count: coupons.length },
             { id: 'reviews', label: 'Reviews & Social Proof', icon: Star, count: allReviewsList.length },
             { id: 'customers', label: 'Customer Directory', icon: Users, count: customersList.length },
+            { id: 'affiliates', label: 'Affiliates & Creator Collabs', icon: Video, count: creatorApplications.length },
           ].map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -1396,6 +1452,201 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     ))}
                   </tbody>
                 </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ============================================================ */}
+        {/* TAB 7: AFFILIATES & CREATOR COLLABORATIONS */}
+        {/* ============================================================ */}
+        {activeTab === 'affiliates' && (
+          <div className="space-y-8 animate-fadeIn">
+            {/* Header & Stats */}
+            <div className="bg-white dark:bg-[#161215] p-6 rounded-3xl border border-[#EDE2DB] dark:border-[#2A2328] shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h3 className="font-serif font-bold text-xl text-[#231F20] dark:text-white flex items-center gap-2">
+                  <Video className="w-5 h-5 text-[#F0508C]" /> Influencer & Affiliate Partner Collective
+                </h3>
+                <p className="text-xs text-[#7A7276] dark:text-[#A8A0A5] mt-0.5">
+                  Audit registration applications, issue follower promo codes, and manage brand campaigns
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="text-right px-4 py-1.5 rounded-2xl bg-[#FFF8F4] dark:bg-[#201A1E] border border-[#EDE2DB] dark:border-[#2C242A]">
+                  <div className="text-[10px] uppercase font-bold text-[#7A7276]">Pending Review</div>
+                  <div className="font-serif text-lg font-bold text-[#F0508C]">
+                    {creatorApplications.filter((a) => a.status === 'Pending').length} Creators
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Applications Table with Zebra Striping & Badges */}
+            <div className="bg-white dark:bg-[#161215] rounded-3xl border border-[#EDE2DB] dark:border-[#2A2328] shadow-sm overflow-hidden">
+              <div className="p-5 border-b border-[#EDE2DB] dark:border-[#2A2328] flex items-center justify-between bg-gradient-to-r from-white to-[#FFF8F4] dark:from-[#161215] dark:to-[#1B1519]">
+                <h4 className="font-serif font-bold text-base text-[#231F20] dark:text-white flex items-center gap-2">
+                  <Users className="w-4 h-4 text-[#F0508C]" /> Creator Club Registration Applications
+                </h4>
+                <span className="text-xs font-mono text-gray-400">
+                  {creatorApplications.length} total submissions
+                </span>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="bg-[#FAF2EE] dark:bg-[#1C171A] text-[#7A7276] dark:text-[#A8A0A5] font-bold uppercase tracking-wider border-b border-[#EDE2DB] dark:border-[#2A2328]">
+                      <th className="py-3.5 px-4">Creator / Handles</th>
+                      <th className="py-3.5 px-4">Audience & Niche</th>
+                      <th className="py-3.5 px-4">Follower Promo Code</th>
+                      <th className="py-3.5 px-4">PR Package Address</th>
+                      <th className="py-3.5 px-4">Application Status</th>
+                      <th className="py-3.5 px-4 text-right">Approval Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#EDE2DB] dark:divide-[#2A2328]">
+                    {creatorApplications.map((app, idx) => (
+                      <tr
+                        key={app.id}
+                        className={`transition-colors hover:bg-[#FDF0F4] dark:hover:bg-[#221A20] ${
+                          idx % 2 === 0
+                            ? 'bg-white dark:bg-[#161215]'
+                            : 'bg-[#FAF5F2]/80 dark:bg-[#1A1519]/70'
+                        }`}
+                      >
+                        <td className="py-4 px-4 align-top">
+                          <div className="font-bold text-sm text-[#231F20] dark:text-white">
+                            {app.fullName}
+                          </div>
+                          <div className="text-[#F0508C] font-semibold text-[11px] flex items-center gap-1 mt-0.5">
+                            <Instagram className="w-3 h-3" /> {app.instagramHandle || app.tiktokHandle || 'Creator'}
+                          </div>
+                          <div className="text-[10px] text-gray-400 mt-0.5">{app.email}</div>
+                        </td>
+
+                        <td className="py-4 px-4 align-top">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
+                            {app.followerCount}
+                          </span>
+                          <div className="text-[#7A7276] text-[11px] mt-1 line-clamp-1">
+                            {app.primaryNiche}
+                          </div>
+                        </td>
+
+                        <td className="py-4 px-4 align-top">
+                          <div className="font-mono font-black text-xs text-[#F0508C] bg-[#F0508C]/10 px-2.5 py-1 rounded-lg w-fit">
+                            {app.proposedCode}
+                          </div>
+                          <div className="text-[10px] text-gray-400 mt-1">15% commission tier</div>
+                        </td>
+
+                        <td className="py-4 px-4 align-top">
+                          <div className="text-[11px] text-[#231F20] dark:text-white line-clamp-2">
+                            {app.prShippingAddress}
+                          </div>
+                          <div className="text-[10px] text-gray-400">
+                            {app.city}, {app.pincode}
+                          </div>
+                        </td>
+
+                        <td className="py-4 px-4 align-top">
+                          <span
+                            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold ${
+                              app.status === 'Approved'
+                                ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                                : app.status === 'Declined'
+                                ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200 dark:border-rose-800'
+                                : 'bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
+                            }`}
+                          >
+                            <span
+                              className={`w-1.5 h-1.5 rounded-full ${
+                                app.status === 'Approved'
+                                  ? 'bg-emerald-500 animate-pulse'
+                                  : app.status === 'Declined'
+                                  ? 'bg-rose-500'
+                                  : 'bg-amber-500 animate-pulse'
+                              }`}
+                            />
+                            {app.status}
+                          </span>
+                        </td>
+
+                        <td className="py-4 px-4 align-top text-right">
+                          <div className="flex items-center justify-end gap-1.5">
+                            {app.status !== 'Approved' && (
+                              <button
+                                onClick={() => handleApproveApplication(app.id)}
+                                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-[11px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition-all"
+                                title="Approve & Generate Code"
+                              >
+                                <Check className="w-3.5 h-3.5" /> Approve
+                              </button>
+                            )}
+                            {app.status !== 'Declined' && (
+                              <button
+                                onClick={() => handleDeclineApplication(app.id)}
+                                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-[11px] font-bold bg-gray-100 hover:bg-rose-100 text-gray-600 hover:text-rose-700 dark:bg-gray-800 dark:text-gray-300 transition-all"
+                                title="Decline Application"
+                              >
+                                <X className="w-3.5 h-3.5" /> Decline
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Active Campaigns Management */}
+            <div className="space-y-4">
+              <h4 className="font-serif font-bold text-lg text-[#231F20] dark:text-white flex items-center gap-2">
+                <Briefcase className="w-5 h-5 text-[#FFD94A]" /> Active Creator Campaigns & Briefs
+              </h4>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                {campaigns.map((camp) => (
+                  <div
+                    key={camp.id}
+                    className="bg-white dark:bg-[#161215] rounded-3xl border border-[#EDE2DB] dark:border-[#2A2328] p-5 shadow-xs flex flex-col justify-between"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-[10px] font-bold uppercase text-[#F0508C] bg-[#F0508C]/10 px-2 py-0.5 rounded-md">
+                          {camp.category}
+                        </span>
+                        <span className="text-xs font-bold text-emerald-600">
+                          ₹{camp.payoutPerReel} / Reel
+                        </span>
+                      </div>
+
+                      <h5 className="font-serif font-bold text-sm text-[#231F20] dark:text-white mb-1">
+                        {camp.title}
+                      </h5>
+
+                      <p className="text-xs text-[#7A7276] line-clamp-2 mb-3">
+                        {camp.description}
+                      </p>
+
+                      <div className="text-[11px] text-[#7A7276] space-y-1 mb-4">
+                        <div>Period: <strong>{camp.startDate} - {camp.endDate}</strong></div>
+                        <div>Slots Filled: <strong>{camp.slotsFilled} / {camp.slotsAvailable}</strong></div>
+                      </div>
+                    </div>
+
+                    <div className="w-full h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-[#F0508C] rounded-full"
+                        style={{ width: `${(camp.slotsFilled / camp.slotsAvailable) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>

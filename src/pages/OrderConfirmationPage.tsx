@@ -2,6 +2,7 @@ import React from 'react';
 import { Order } from '../types';
 import { CheckCircle2, PackageCheck, Truck, Sparkles, ArrowRight, Home } from 'lucide-react';
 import { PhoneCaseMockup } from '../utils/productVisuals';
+import { SEO } from '../components/common/SEO';
 
 interface OrderConfirmationPageProps {
   order: Order;
@@ -16,6 +17,11 @@ export const OrderConfirmationPage: React.FC<OrderConfirmationPageProps> = ({
 }) => {
   return (
     <div className="py-12 sm:py-16">
+      <SEO
+        title="Order Confirmed - Thank You"
+        description="Your Divine's Eternity personalized keepsake order has been received and is being prepared with love."
+        noindex={true}
+      />
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         
         {/* Celebration Header */}
@@ -117,6 +123,20 @@ export const OrderConfirmationPage: React.FC<OrderConfirmationPageProps> = ({
               </div>
             ))}
           </div>
+
+          {/* Gift Packaging & Note Card if selected */}
+          {order.isGiftWrapped && (
+            <div className="p-4 rounded-2xl bg-pink-50/70 dark:bg-pink-950/30 border border-pink-200 dark:border-pink-900/50 space-y-1.5 text-xs">
+              <div className="flex items-center gap-2 font-bold text-[#F0508C]">
+                <span>🎁 Luxury Gift Packaging & Card Included (+₹99)</span>
+              </div>
+              {order.giftNote && (
+                <div className="text-slate-700 dark:text-slate-300 italic pl-6">
+                  "{order.giftNote}"
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Delivery Address & Receipt Recap */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4 border-t border-slate-100 dark:border-slate-800 text-xs">

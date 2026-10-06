@@ -3,6 +3,7 @@ import { useWishlist } from '../context/WishlistContext';
 import { Product } from '../types';
 import { ProductCard } from '../components/common/ProductCard';
 import { Heart, Sparkles, ShoppingBag } from 'lucide-react';
+import { SEO } from '../components/common/SEO';
 
 interface WishlistPageProps {
   products: Product[];
@@ -23,6 +24,11 @@ export const WishlistPage: React.FC<WishlistPageProps> = ({
 
   return (
     <div className="py-10 sm:py-16">
+      <SEO
+        title={`Your Wishlist (${wishlistCount})`}
+        description="View your saved luxury phone cases, personalized necklaces, and custom gifts ready to order at Divine's Eternity."
+        noindex={true}
+      />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         
         {/* Header */}

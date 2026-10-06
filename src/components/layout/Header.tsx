@@ -244,6 +244,18 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, ope
           </div>
 
           <button
+            onClick={() => navigateTo('creator-club')}
+            className={`px-3.5 py-1.5 text-xs font-semibold rounded-full flex items-center gap-1.5 transition-all ${
+              currentView === 'creator-club'
+                ? 'bg-[#E11D48] text-white shadow-xs'
+                : 'text-[#231F20] dark:text-[#FDF9F7] hover:text-[#E11D48]'
+            }`}
+          >
+            <Sparkles className="w-3.5 h-3.5 text-[#FFD94A]" />
+            <span>Creator Club</span>
+          </button>
+
+          <button
             onClick={() => navigateTo('track-order')}
             className={`px-3.5 py-1.5 text-xs font-semibold rounded-full transition-all ${
               currentView === 'track-order'
@@ -375,6 +387,12 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, ope
               className="text-left px-3 py-2 rounded-xl bg-pink-50/60 dark:bg-slate-800/50 text-xs font-semibold text-[#231F20] dark:text-white"
             >
               💖 Wishlist ({wishlistCount})
+            </button>
+            <button
+              onClick={() => navigateTo('creator-club')}
+              className="text-left px-3 py-2 rounded-xl bg-pink-50/60 dark:bg-slate-800/50 text-xs font-semibold text-[#E11D48] flex items-center gap-1.5"
+            >
+              ✨ Creator Club
             </button>
             <button
               onClick={() => navigateTo('admin')}

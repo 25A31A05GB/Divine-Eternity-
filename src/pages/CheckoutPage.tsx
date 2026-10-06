@@ -3,7 +3,8 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { CustomerAddress, Order } from '../types';
 import { PhoneCaseMockup } from '../utils/productVisuals';
-import { ShieldCheck, Truck, Sparkles, CreditCard, QrCode, Banknote, Lock, ArrowLeft, Check, AlertCircle } from 'lucide-react';
+import { ShieldCheck, Truck, Sparkles, CreditCard, QrCode, Banknote, Lock, ArrowLeft, Check, AlertCircle, Gift, MessageSquare } from 'lucide-react';
+import { SEO } from '../components/common/SEO';
 import confetti from 'canvas-confetti';
 
 interface CheckoutPageProps {
@@ -21,6 +22,11 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onBackToCart, onOrde
     totalAmount,
     couponCode,
     clearCart,
+    isGiftWrapped,
+    giftWrappingFee,
+    giftNote,
+    toggleGiftWrapping,
+    setGiftNote,
   } = useCart();
   const { user, addOrder, updateAddress } = useAuth();
 
@@ -131,6 +137,9 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onBackToCart, onOrde
           subtotal,
           discountTotal,
           appliedOffer: appliedOffer || undefined,
+          isGiftWrapped,
+          giftWrappingFee,
+          giftNote: isGiftWrapped ? giftNote : undefined,
           shippingFee,
           totalAmount,
           paymentMethod,
@@ -176,6 +185,11 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onBackToCart, onOrde
 
   return (
     <div className="py-8 sm:py-12">
+      <SEO
+        title="Secure Checkout"
+        description="Complete your order securely with UPI, Credit Cards, or Cash on Delivery. 256-bit encrypted checkout with insured delivery."
+        noindex={true}
+      />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <div className="mb-6">
@@ -326,6 +340,60 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onBackToCart, onOrde
                   {errors.pincode && <p className="text-[10px] text-rose-600">{errors.pincode}</p>}
                 </div>
               </div>
+            </div>
+
+            {/* Luxury Gift Packaging & Personalized Note Card */}
+            <div className="bg-white dark:bg-[#1E1A1D] p-6 rounded-3xl border border-pink-200/80 dark:border-pink-950/50 shadow-xs space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-[#E11D48]/10 text-[#E11D48] flex items-center justify-center shrink-0">
+                    <Gift className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                        Luxury Gift Packaging & Card
+                      </h3>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#FFD94A] text-[#231F20]">
+                        +₹99
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      Signature blush velvet box, satin gold ribbon & customized handwritten note.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Toggle Switch */}
+                <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                  <input
+                    type="checkbox"
+                    checked={isGiftWrapped}
+                    onChange={() => toggleGiftWrapping()}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#E11D48]" />
+                </label>
+              </div>
+
+              {/* Expandable Gift Note Input */}
+              {isGiftWrapped && (
+                <div className="pt-3 border-t border-dashed border-pink-100 dark:border-slate-800 animate-in fade-in slide-in-from-top-2 duration-150 space-y-2">
+                  <label className="text-xs font-bold text-[#E11D48] uppercase tracking-wider flex items-center gap-1.5">
+                    <MessageSquare className="w-3.5 h-3.5" /> Handwritten Gift Note Message:
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={giftNote}
+                    onChange={(e) => setGiftNote(e.target.value)}
+                    placeholder="Write your heartfelt gift message here (e.g., Happy 2nd Anniversary love! Every day with you is pure magic 💖)..."
+                    className="w-full text-xs p-3 rounded-2xl bg-[#FFF9F5] dark:bg-slate-900 border border-pink-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#E11D48] resize-none"
+                  />
+                  <p className="text-[10px] text-slate-400">
+                    ✍️ Hand-inscribed on our luxury pearlescent gold-foil stationery card.
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* 2. Payment Options */}
@@ -489,6 +557,16 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onBackToCart, onOrde
                     <span>{appliedOffer.name}</span>
                   </span>
                   <span className="tabular-nums font-bold">-₹{discountTotal}</span>
+                </div>
+              )}
+
+              {isGiftWrapped && (
+                <div className="flex justify-between items-center text-slate-600 dark:text-slate-300">
+                  <span className="flex items-center gap-1">
+                    <Gift className="w-3.5 h-3.5 text-[#E11D48]" />
+                    <span>Luxury Gift Packaging & Note</span>
+                  </span>
+                  <span className="font-semibold tabular-nums text-slate-900 dark:text-white">+₹{giftWrappingFee}</span>
                 </div>
               )}
 

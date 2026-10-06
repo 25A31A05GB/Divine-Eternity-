@@ -3,19 +3,106 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Primary Page Titles & Descriptions -->
     <title>Divine's Eternity - Luxury Phone Cases & Personalized Gifts</title>
-    <meta name="description" content="Gifts that stay in hearts. Handcrafted luxury phone cases, bracelet cases, mirror cases, and custom personalized accessories." />
-    <meta property="og:title" content="Divine's Eternity - Luxury Phone Cases & Personalized Gifts" />
-    <meta property="og:description" content="Gifts that stay in hearts. Handcrafted luxury phone cases, bracelet cases, mirror cases, and custom personalized accessories." />
+    <meta
+      name="description"
+      content="Gifts that stay in hearts. Handcrafted luxury phone cases, bracelet cases, mirror cases, and custom personalized accessories."
+    />
+    <meta
+      name="keywords"
+      content="luxury phone cases, personalized gifts, custom name jewelry, preserved roses, acrylic song plaque, memory photo lamp, handcrafted cases"
+    />
+    <meta name="author" content="Divine's Eternity" />
+    <meta name="theme-color" content="#FFF8F4" />
+    <meta name="robots" content="index, follow" />
+
+    <!-- Open Graph / Facebook / WhatsApp -->
     <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Divine's Eternity" />
+    <meta property="og:title" content="Divine's Eternity - Luxury Phone Cases & Personalized Gifts" />
+    <meta
+      property="og:description"
+      content="Gifts that stay in hearts. Handcrafted luxury phone cases, bracelet cases, mirror cases, and custom personalized accessories."
+    />
+    <meta
+      property="og:image"
+      content="https://images.unsplash.com/photo-1586105251261-72a756497a11?auto=format&fit=crop&w=1200&q=80"
+    />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Twitter / X -->
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@divineseternity" />
+    <meta name="twitter:title" content="Divine's Eternity - Luxury Phone Cases & Personalized Gifts" />
+    <meta
+      name="twitter:description"
+      content="Gifts that stay in hearts. Handcrafted luxury phone cases, bracelet cases, mirror cases, and custom personalized accessories."
+    />
+    <meta
+      name="twitter:image"
+      content="https://images.unsplash.com/photo-1586105251261-72a756497a11?auto=format&fit=crop&w=1200&q=80"
+    />
+
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Sacramento&display=swap" rel="stylesheet">
+
+    <!-- Schema.org Organization & Store JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://divineseternity.com/#organization",
+          "name": "Divine's Eternity",
+          "url": "https://divineseternity.com",
+          "logo": "https://images.unsplash.com/photo-1586105251261-72a756497a11?auto=format&fit=crop&w=500&q=80",
+          "sameAs": [
+            "https://instagram.com/divineseternity",
+            "https://pinterest.com/divineseternity",
+            "https://twitter.com/divineseternity"
+          ],
+          "contactPoint": {
+            "@type": "ContactPoint",
+            "telephone": "+91-9876543210",
+            "contactType": "customer service",
+            "availableLanguage": ["English", "Hindi"]
+          }
+        },
+        {
+          "@type": "OnlineStore",
+          "@id": "https://divineseternity.com/#store",
+          "name": "Divine's Eternity",
+          "description": "Gifts that stay in hearts. Handcrafted luxury phone cases, bracelet cases, mirror cases, and custom personalized accessories.",
+          "url": "https://divineseternity.com",
+          "priceRange": "₹₹",
+          "paymentAccepted": "Cash, Credit Card, UPI, Net Banking",
+          "currenciesAccepted": "INR"
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://divineseternity.com/#website",
+          "url": "https://divineseternity.com",
+          "name": "Divine's Eternity",
+          "publisher": {
+            "@id": "https://divineseternity.com/#organization"
+          },
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://divineseternity.com/search?q={search_term_string}",
+            "query-input": "required name=search_term_string"
+          }
+        }
+      ]
+    }
+    </script>
   </head>
   <body class="bg-[#FFF8F4] text-[#231F20] antialiased selection:bg-[#F0508C] selection:text-white transition-colors duration-300">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
-

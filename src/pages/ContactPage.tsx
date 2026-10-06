@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Mail, Phone, MessageSquare, MapPin, Send, Check, ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
+import { SEO } from '../components/common/SEO';
 
 export const ContactPage: React.FC = () => {
   const [name, setName] = useState('');
@@ -40,8 +41,27 @@ export const ContactPage: React.FC = () => {
     }, 1000);
   };
 
+  const faqStructuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: FAQS.map((faq) => ({
+      '@type': 'Question',
+      name: faq.q,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: faq.a,
+      },
+    })),
+  };
+
   return (
     <div className="py-10 sm:py-16">
+      <SEO
+        title="Contact Us & Frequently Asked Questions"
+        description="Have questions regarding custom engravings, shipping times, or bulk hampers? Contact Divine's Eternity customer care."
+        keywords="contact divine eternity, customer support, gift FAQs, whatsapp assistance"
+        structuredData={faqStructuredData}
+      />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         
         {/* Header */}

@@ -8,6 +8,7 @@ import { PhoneCaseMockup } from '../utils/productVisuals';
 import { ProductCard } from '../components/common/ProductCard';
 import { SocialShare } from '../components/common/SocialShare';
 import { GiftPersonalizer } from '../components/personalization/GiftPersonalizer';
+import { SEO } from '../components/common/SEO';
 import {
   Star,
   ShieldCheck,
@@ -150,8 +151,67 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
     .filter((p) => p.id !== product.id && (p.category === product.category || p.isBestSeller))
     .slice(0, 4);
 
+  const productUrl = typeof window !== 'undefined' ? window.location.href : `https://divineseternity.com/#product-${product.id}`;
+
+  const productSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.name,
+    image: product.images,
+    description: product.description,
+    sku: product.slug || product.id,
+    brand: {
+      '@type': 'Brand',
+      name: "Divine's Eternity",
+    },
+    category: product.category,
+    offers: {
+      '@type': 'Offer',
+      url: productUrl,
+      priceCurrency: 'INR',
+      price: product.price,
+      priceValidUntil: '2027-12-31',
+      itemCondition: 'https://schema.org/NewCondition',
+      availability: 'https://schema.org/InStock',
+      seller: {
+        '@type': 'Organization',
+        name: "Divine's Eternity",
+      },
+    },
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: averageRating || product.rating || 5.0,
+      reviewCount: totalReviews || product.reviewCount || 1,
+      bestRating: '5',
+      worstRating: '1',
+    },
+    review: productReviews.slice(0, 5).map((r) => ({
+      '@type': 'Review',
+      reviewRating: {
+        '@type': 'Rating',
+        ratingValue: r.rating,
+        bestRating: '5',
+      },
+      author: {
+        '@type': 'Person',
+        name: r.author || 'Verified Customer',
+      },
+      datePublished: r.date || '2026-01-01',
+      reviewBody: r.comment,
+    })),
+  };
+
   return (
     <div className="py-8 sm:py-12">
+      <SEO
+        title={`${product.name} — Luxury Keepsake & Gift`}
+        description={product.description || `Buy ${product.name} for ₹${product.price} at Divine's Eternity. Personalized handcrafted gifts with free express delivery.`}
+        image={product.images[0]}
+        type="product"
+        keywords={`${product.name}, ${product.category}, personalized gift, luxury gift, divines eternity`}
+        structuredData={productSchema}
+      />
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         
         {/* Back Button & Breadcrumbs */}

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ShieldCheck, RefreshCw, Truck, FileText, Sparkles } from 'lucide-react';
+import { SEO } from '../components/common/SEO';
 
 interface PolicyPageProps {
   initialTab?: 'refund' | 'privacy' | 'shipping' | 'terms';
@@ -8,8 +9,20 @@ interface PolicyPageProps {
 export const PolicyPage: React.FC<PolicyPageProps> = ({ initialTab = 'refund' }) => {
   const [activeTab, setActiveTab] = useState<'refund' | 'privacy' | 'shipping' | 'terms'>(initialTab);
 
+  const titlesMap = {
+    refund: '7-Day Easy Replacement & Refund Policy',
+    shipping: 'Shipping & Delivery Timelines',
+    privacy: 'Privacy Policy & Data Security',
+    terms: 'Terms of Service',
+  };
+
   return (
     <div className="py-10 sm:py-16">
+      <SEO
+        title={titlesMap[activeTab]}
+        description="Read Divine's Eternity store policies including 7-day replacement guarantee, fast express shipping, and 256-bit secure checkout terms."
+        keywords="store policies, refund policy, replacement warranty, shipping terms, privacy guarantee"
+      />
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         
         {/* Header */}

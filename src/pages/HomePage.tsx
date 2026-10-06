@@ -10,6 +10,7 @@ import { MarqueeStrip } from '../components/layout/MarqueeStrip';
 import { ValueProps } from '../components/home/ValueProps';
 import { NewsletterSection } from '../components/home/NewsletterSection';
 import { ScrollToTop } from '../components/common/ScrollToTop';
+import { SEO } from '../components/common/SEO';
 import { Product } from '../types';
 
 interface HomePageProps {
@@ -25,8 +26,34 @@ export const HomePage: React.FC<HomePageProps> = ({
   onOpenDetail,
   onNavigateToCollection,
 }) => {
+  const homeStructuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    name: "Divine's Eternity - Handcrafted Luxury Phone Cases & Personalized Keepsakes",
+    description:
+      'Explore handcrafted luxury phone cases, personalized jewelry, preserved eternal roses, acrylic song plaques, and custom memory lamps.',
+    url: typeof window !== 'undefined' ? window.location.origin : 'https://divineseternity.com',
+    mainEntity: {
+      '@type': 'ItemList',
+      itemListElement: products.slice(0, 8).map((p, idx) => ({
+        '@type': 'ListItem',
+        position: idx + 1,
+        name: p.name,
+        image: p.images[0] || '',
+        url: `${typeof window !== 'undefined' ? window.location.origin : 'https://divineseternity.com'}#product-${p.id}`,
+      })),
+    },
+  };
+
   return (
     <div className="space-y-0">
+      <SEO
+        title="Gifts That Stay in Hearts"
+        description="Handcrafted luxury phone cases, custom pearl wristlets, personalized name necklaces, eternal preserved roses, and luminous photo lamps."
+        keywords="luxury phone cases, personalized gifts, custom jewelry, eternal roses, acrylic song plaque, gifts for her, valentine gifts"
+        structuredData={homeStructuredData}
+      />
+
       {/* 1. Hero Banner Carousel */}
       <HeroCarousel
         featuredProducts={products}
