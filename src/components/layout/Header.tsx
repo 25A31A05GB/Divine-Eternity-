@@ -387,27 +387,6 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, ope
                 </div>
               </div>
 
-              {/* Executive Secret Admin Access Banner (Top of Drawer) */}
-              <div className="my-4">
-                <button
-                  onClick={() => navigateTo('secret-admin-portal')}
-                  className="w-full p-3.5 rounded-2xl bg-[#151A24] border border-[#5B8CFF]/50 text-left text-white flex items-center justify-between shadow-lg active:scale-98 transition-all"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-9 h-9 rounded-xl bg-[#0C1220] border border-[#242C3D] text-[#22D3EE] flex items-center justify-center shrink-0">
-                      <Lock className="w-4.5 h-4.5" />
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold text-[#F7F4EC]">Executive Admin Studio</div>
-                      <div className="text-[10px] text-[#22D3EE]">Media & Slot Control Panel</div>
-                    </div>
-                  </div>
-                  <span className="text-[10px] font-mono font-bold gradient-blue-violet text-white px-2.5 py-1 rounded-md shadow-xs">
-                    PIN: 7788
-                  </span>
-                </button>
-              </div>
-
               {/* Search Input Box with Suggestions */}
               <div className="my-5">
                 <div className="relative">
@@ -517,20 +496,6 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, ope
                   </button>
                 ))}
               </div>
-            </div>
-
-            {/* Bottom Admin Link */}
-            <div className="pt-4 mt-6 border-t border-[#242C3D]">
-              <button
-                onClick={() => navigateTo('secret-admin-portal')}
-                className="w-full p-3 rounded-2xl bg-[#0C1220] border border-[#242C3D] text-left text-[#A7AFBD] hover:text-[#F7F4EC] flex items-center justify-between transition-colors"
-              >
-                <div className="flex items-center gap-2 text-xs">
-                  <ShieldCheck className="w-4 h-4 text-[#22D3EE]" />
-                  <span>Switch to Executive Admin Dashboard</span>
-                </div>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
             </div>
 
           </div>,

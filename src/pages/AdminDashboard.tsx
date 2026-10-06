@@ -457,7 +457,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   Divine's Eternity
                 </span>
                 <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold tracking-wider uppercase bg-[#5B8CFF]/15 text-[#22D3EE] border border-[#5B8CFF]/30 flex items-center gap-1 shrink-0">
-                  <Activity className="w-3 h-3 animate-pulse" /> Executive Suite
+                  <Activity className="w-3 h-3 animate-pulse" /> Control Suite
                 </span>
               </div>
               <p className="text-[11px] sm:text-xs text-[#A7AFBD] truncate">
@@ -563,7 +563,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     DE
                   </div>
                   <div>
-                    <div className="text-sm font-bold text-[#F7F4EC]">Executive Control Studio</div>
+                    <div className="text-sm font-bold text-[#F7F4EC]">Studio Control Center</div>
                     <div className="text-[10px] text-[#22D3EE]">Mobile Command Center</div>
                   </div>
                 </div>
@@ -580,7 +580,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               {/* Role Selection inside Drawer */}
               <div className="my-4 space-y-2">
                 <div className="text-[10px] font-bold uppercase tracking-widest text-[#5B8CFF] font-mono">
-                  Executive Access Role
+                  Access Role
                 </div>
                 <div className="grid grid-cols-3 gap-2">
                   <button

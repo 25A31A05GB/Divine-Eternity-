@@ -122,13 +122,13 @@ export const SecretAdminPortal: React.FC<SecretAdminPortalProps> = ({
             <div>
               <div className="text-[10px] font-bold tracking-widest text-[#D6B36A] uppercase mb-1 flex items-center justify-center gap-1">
                 <ShieldCheck className="w-3.5 h-3.5" />
-                <span>Executive Management Suite</span>
+                <span>Management Suite</span>
               </div>
               <h1 className="font-serif text-2xl sm:text-3xl font-bold text-white">
                 Secret Access Gate
               </h1>
               <p className="text-xs text-stone-400 mt-1">
-                Select your executive role and enter the Master PIN or Credentials to manage store visuals, videos, and orders.
+                Select your role and enter the Master PIN or Credentials to manage store visuals, videos, and orders.
               </p>
             </div>
 
