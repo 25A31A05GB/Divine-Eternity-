@@ -65,6 +65,12 @@ export const VideoShoppingRow: React.FC<VideoShoppingRowProps> = ({
                       muted
                       className="w-full h-full object-cover"
                     />
+                  ) : reel.posterImage ? (
+                    <img
+                      src={reel.posterImage}
+                      alt={reel.title}
+                      className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                    />
                   ) : (
                     <>
                       {/* Visual Poster Mockup or Image */}

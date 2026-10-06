@@ -19,6 +19,7 @@ import {
   Layers,
   ArrowRight,
   ShieldCheck,
+  X,
 } from 'lucide-react';
 import { Product, HeroSlideCMS, VideoReelCMS, AnnouncementCMS, BrandStoryCMS } from '../../types';
 import { useMediaCMS } from '../../context/MediaCMSContext';
@@ -893,9 +894,10 @@ export const MediaStudioCMS: React.FC<MediaStudioCMSProps> = ({ products }) => {
                   setIsAddSlideOpen(false);
                   setEditingSlide(null);
                 }}
-                className="p-1 rounded-full text-stone-400 hover:text-stone-600"
+                className="p-1.5 rounded-full text-stone-400 hover:text-stone-600 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+                aria-label="Close dialog"
               >
-                ✕
+                <X className="w-5 h-5" />
               </button>
             </div>
 
@@ -1019,9 +1021,10 @@ export const MediaStudioCMS: React.FC<MediaStudioCMSProps> = ({ products }) => {
                   setIsAddReelOpen(false);
                   setEditingReel(null);
                 }}
-                className="p-1 rounded-full text-stone-400 hover:text-stone-600"
+                className="p-1.5 rounded-full text-stone-400 hover:text-stone-600 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+                aria-label="Close dialog"
               >
-                ✕
+                <X className="w-5 h-5" />
               </button>
             </div>
 
@@ -1152,9 +1155,10 @@ export const MediaStudioCMS: React.FC<MediaStudioCMSProps> = ({ products }) => {
                   setIsAddAnnouncementOpen(false);
                   setEditingAnnouncement(null);
                 }}
-                className="p-1 rounded-full text-stone-400 hover:text-stone-600"
+                className="p-1.5 rounded-full text-stone-400 hover:text-stone-600 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+                aria-label="Close dialog"
               >
-                ✕
+                <X className="w-5 h-5" />
               </button>
             </div>
 

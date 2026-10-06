@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { Search, Heart, ShoppingBag, Menu, X, Sun, Moon, ChevronDown, Sparkles, ShieldCheck, ArrowRight, Star } from 'lucide-react';
+import { Search, Heart, ShoppingBag, Menu, X, Sun, Moon, ChevronDown, Sparkles, ShieldCheck, ArrowRight, Star, Lock, Package, User } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WishlistContext';
 import { useTheme } from '../../context/ThemeContext';
+import { useAuth } from '../../context/AuthContext';
 import { CATEGORIES, INITIAL_PRODUCTS } from '../../data/products';
 import { Product } from '../../types';
 import { PhoneCaseMockup } from '../../utils/productVisuals';
@@ -18,6 +19,7 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, ope
   const { totalItemsCount, openCart } = useCart();
   const { wishlistCount } = useWishlist();
   const { theme, toggleTheme } = useTheme();
+  const { user } = useAuth();
   
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isCollectionsHovered, setIsCollectionsHovered] = useState(false);
@@ -26,6 +28,18 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, ope
 
   const dropdownTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const searchContainerRef = useRef<HTMLDivElement | null>(null);
+
+  // Prevent page scroll when full-screen mobile menu is open
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isMobileMenuOpen]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -70,22 +84,22 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, ope
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-[#FAF7F2]/95 dark:bg-[#0F0D10]/95 backdrop-blur-md border-b border-[#EFE7DE] dark:border-[#282127] transition-colors">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 sm:h-20 flex items-center justify-between gap-4">
+    <header className="sticky top-0 z-40 w-full bg-[#FAF7F2]/95 dark:bg-[#0F0D10]/95 backdrop-blur-md border-b border-[#EFE7DE] dark:border-[#282127] transition-colors">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-14 sm:h-20 flex items-center justify-between gap-2 sm:gap-4">
         
-        {/* Zone 1: Single Element Brand Wordmark */}
-        <div className="flex items-center gap-3 shrink-0">
+        {/* Zone 1: Brand Wordmark */}
+        <div className="flex items-center gap-2 shrink-0 min-w-0">
           <button
             onClick={() => navigateTo('home')}
             className="flex flex-col text-left group focus:outline-none"
           >
-            <span className="font-serif text-2xl sm:text-3xl font-bold tracking-tight text-[#1C1917] dark:text-[#F5F0EB] group-hover:text-[#881337] dark:group-hover:text-[#FB7185] transition-colors whitespace-nowrap">
+            <span className="font-serif text-lg xs:text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-[#1C1917] dark:text-[#F5F0EB] group-hover:text-[#881337] dark:group-hover:text-[#FB7185] transition-colors whitespace-nowrap">
               Divine's Eternity
             </span>
           </button>
         </div>
 
-        {/* Live Search Input Bar */}
+        {/* Live Search Input Bar (Desktop) */}
         <div ref={searchContainerRef} className="hidden lg:block relative flex-1 max-w-xs xl:max-w-sm mx-2">
           <div className="relative flex items-center">
             <Search className="w-4 h-4 text-stone-400 absolute left-3 pointer-events-none" />
@@ -153,8 +167,8 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, ope
           )}
         </div>
 
-        {/* Zone 2: 4-6 Clean Text Navigation Links */}
-        <nav className="hidden md:flex items-center gap-5 lg:gap-7">
+        {/* Zone 2: Navigation Links (Desktop) */}
+        <nav className="hidden md:flex items-center gap-4 lg:gap-6">
           <button
             onClick={() => navigateTo('home')}
             className={`text-xs font-medium transition-colors hover:text-[#881337] dark:hover:text-[#FB7185] ${
@@ -166,7 +180,6 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, ope
             Home
           </button>
 
-          {/* Collections Dropdown Trigger */}
           <div
             className="relative"
             onMouseEnter={handleMouseEnter}
@@ -184,11 +197,8 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, ope
               <ChevronDown className={`w-3 h-3 transition-transform ${isCollectionsHovered ? 'rotate-180' : ''}`} />
             </button>
 
-            {/* Dropdown Menu */}
             {isCollectionsHovered && (
-              <div
-                className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-80 bg-white dark:bg-[#1A161A] rounded-2xl shadow-xl border border-[#EFE7DE] dark:border-[#2C242A] p-2 py-3 z-50 animate-in fade-in slide-in-from-top-2 duration-150"
-              >
+              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-80 bg-white dark:bg-[#1A161A] rounded-2xl shadow-xl border border-[#EFE7DE] dark:border-[#2C242A] p-2 py-3 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
                 <div className="px-3 py-1 text-[10px] font-bold tracking-widest text-[#881337] dark:text-[#FB7185] uppercase flex items-center justify-between border-b border-stone-100 dark:border-stone-800 pb-2 mb-1">
                   <span>Atelier Categories</span>
                   <Sparkles className="w-3 h-3 text-[#C5A059]" />
@@ -254,20 +264,20 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, ope
           </button>
         </nav>
 
-        {/* Zone 3: Primary Interactive Actions */}
-        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+        {/* Zone 3: Slim Main Header Interactive Actions */}
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           <button
             onClick={toggleTheme}
             aria-label="Toggle Theme"
-            className="p-2 text-stone-700 dark:text-stone-300 hover:text-[#881337] rounded-full hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+            className="p-1.5 sm:p-2 text-stone-700 dark:text-stone-300 hover:text-[#881337] rounded-full hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
           >
             {theme === 'dark' ? <Sun className="w-4 h-4 text-[#E5C378]" /> : <Moon className="w-4 h-4 text-stone-700" />}
           </button>
 
           <button
             onClick={openSearch}
-            aria-label="Search gifts and keepsakes"
-            className="p-2 text-stone-700 dark:text-stone-300 hover:text-[#881337] rounded-full hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+            aria-label="Search gifts"
+            className="p-1.5 sm:p-2 text-stone-700 dark:text-stone-300 hover:text-[#881337] rounded-full hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
           >
             <Search className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
@@ -275,7 +285,7 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, ope
           <button
             onClick={() => navigateTo('wishlist')}
             aria-label="Wishlist"
-            className="relative p-2 text-stone-700 dark:text-stone-300 hover:text-[#881337] rounded-full hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+            className="relative p-1.5 sm:p-2 text-stone-700 dark:text-stone-300 hover:text-[#881337] rounded-full hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
           >
             <Heart className="w-4 h-4 sm:w-5 sm:h-5" />
             {wishlistCount > 0 && (
@@ -285,10 +295,24 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, ope
             )}
           </button>
 
+          {/* Compact Bag button on Mobile, Expanded on Desktop */}
           <button
             onClick={openCart}
             aria-label="Open Shopping Bag"
-            className="flex items-center gap-2 bg-[#1C1917] dark:bg-white text-white dark:text-[#1C1917] hover:bg-[#881337] dark:hover:bg-[#BE123C] dark:hover:text-white px-4 py-2 rounded-xl font-bold text-xs sm:text-sm tracking-wide transition-all transform active:scale-95 shadow-sm"
+            className="sm:hidden relative p-2 bg-[#1C1917] dark:bg-white text-white dark:text-[#1C1917] rounded-xl flex items-center justify-center active:scale-95 transition-transform"
+          >
+            <ShoppingBag className="w-4 h-4" />
+            {totalItemsCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-[#C5A059] text-stone-950 text-[9px] font-extrabold w-4 h-4 rounded-full flex items-center justify-center shadow-xs">
+                {totalItemsCount}
+              </span>
+            )}
+          </button>
+
+          <button
+            onClick={openCart}
+            aria-label="Open Shopping Bag"
+            className="hidden sm:flex items-center gap-2 bg-[#1C1917] dark:bg-white text-white dark:text-[#1C1917] hover:bg-[#881337] dark:hover:bg-[#BE123C] dark:hover:text-white px-3.5 sm:px-4 py-2 rounded-xl font-bold text-xs sm:text-sm tracking-wide transition-all transform active:scale-95 shadow-sm"
           >
             <ShoppingBag className="w-4 h-4" />
             <span>Bag</span>
@@ -298,68 +322,183 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, ope
           </button>
 
           <button
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            onClick={() => setIsMobileMenuOpen(true)}
             aria-label="Toggle menu"
-            className="md:hidden p-2 text-stone-800 dark:text-stone-200 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800"
+            className="md:hidden p-1.5 sm:p-2 text-stone-800 dark:text-stone-200 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800"
           >
-            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            <Menu className="w-5 h-5 sm:w-6 sm:h-6" />
           </button>
         </div>
       </div>
 
+      {/* Full-Screen Slide-in Mobile Navigation Drawer */}
       {isMobileMenuOpen && (
-        <div className="md:hidden bg-white dark:bg-[#0F0D10] border-b border-[#EFE7DE] dark:border-[#282127] px-4 pt-3 pb-6 space-y-3 animate-in slide-in-from-top duration-200">
-          <div className="relative mb-3">
-            <Search className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              value={headerSearchQuery}
-              onChange={(e) => setHeaderSearchQuery(e.target.value)}
-              placeholder="Search gifts, jewelry, roses..."
-              className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl pl-9 pr-3 py-2 text-xs text-stone-900 dark:text-white"
-            />
+        <div className="md:hidden fixed inset-0 z-50 bg-[#FAF7F2] dark:bg-[#0F0D10] text-[#1C1917] dark:text-[#F5F0EB] flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right duration-300 p-5 sm:p-6 shadow-2xl">
+          
+          <div>
+            {/* Drawer Header Bar */}
+            <div className="flex items-center justify-between pb-4 border-b border-[#EFE7DE] dark:border-[#282127]">
+              <button
+                onClick={() => navigateTo('home')}
+                className="font-serif text-xl font-bold text-[#1C1917] dark:text-[#F5F0EB]"
+              >
+                Divine's Eternity
+              </button>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={toggleTheme}
+                  aria-label="Toggle Theme"
+                  className="p-2 rounded-full bg-stone-200 dark:bg-stone-800 text-stone-700 dark:text-stone-300"
+                >
+                  {theme === 'dark' ? <Sun className="w-4 h-4 text-[#E5C378]" /> : <Moon className="w-4 h-4 text-stone-700" />}
+                </button>
+
+                <button
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="p-2 rounded-full bg-[#1C1917] dark:bg-white text-white dark:text-[#1C1917] shadow-md"
+                  aria-label="Close menu"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Search Input Box with Suggestions */}
+            <div className="my-5">
+              <div className="relative">
+                <Search className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={headerSearchQuery}
+                  onChange={(e) => setHeaderSearchQuery(e.target.value)}
+                  placeholder="Search gifts, jewelry, roses..."
+                  className="w-full bg-white dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-2xl pl-10 pr-4 py-3 text-xs text-stone-900 dark:text-white placeholder-stone-400 focus:ring-2 focus:ring-[#881337] focus:outline-none shadow-xs"
+                />
+              </div>
+
+              {liveSuggestions.length > 0 && (
+                <div className="mt-2 bg-white dark:bg-[#1A161A] rounded-2xl border border-[#EFE7DE] dark:border-stone-800 p-2 space-y-1 shadow-md">
+                  {liveSuggestions.map((item) => (
+                    <div
+                      key={item.id}
+                      onClick={() => navigateTo('product-detail', { slug: item.slug })}
+                      className="p-2 rounded-xl hover:bg-[#FAF7F2] dark:hover:bg-stone-800 flex items-center gap-2.5 cursor-pointer"
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-stone-100 dark:bg-stone-800 shrink-0 flex items-center justify-center p-0.5">
+                        <PhoneCaseMockup product={item} className="w-full h-full" />
+                      </div>
+                      <div className="flex-1 min-w-0 text-left">
+                        <div className="text-xs font-bold text-stone-900 dark:text-white truncate">{item.name}</div>
+                        <div className="text-[10px] text-stone-400">₹{item.price}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* User Account & Quick Actions Card */}
+            <div className="bg-white dark:bg-[#1A161A] border border-[#EFE7DE] dark:border-[#2C242A] rounded-2xl p-4 mb-5 shadow-xs">
+              <div className="flex items-center justify-between pb-3 border-b border-stone-100 dark:border-stone-800 mb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-full bg-[#881337] text-white flex items-center justify-center font-bold text-xs shadow-xs">
+                    {user?.name ? user.name.charAt(0) : <User className="w-4 h-4" />}
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-stone-900 dark:text-white">
+                      {user?.name || 'Atelier Privilege Member'}
+                    </div>
+                    <div className="text-[10px] text-[#C5A059] font-medium">
+                      {user?.email || 'VIP Member Privileges'}
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => {
+                    openCart();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-[#881337] text-white font-bold text-xs flex items-center gap-1.5 shadow-xs"
+                >
+                  <ShoppingBag className="w-3.5 h-3.5" />
+                  <span>Bag ({totalItemsCount})</span>
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 text-xs font-semibold">
+                <button
+                  onClick={() => navigateTo('track-order')}
+                  className="p-2.5 rounded-xl bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 text-stone-800 dark:text-stone-200 flex items-center gap-2"
+                >
+                  <Package className="w-4 h-4 text-[#881337] dark:text-[#FB7185]" />
+                  <span>Track Orders</span>
+                </button>
+
+                <button
+                  onClick={() => navigateTo('wishlist')}
+                  className="p-2.5 rounded-xl bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 text-stone-800 dark:text-stone-200 flex items-center gap-2"
+                >
+                  <Heart className="w-4 h-4 text-[#881337] dark:text-[#FB7185]" />
+                  <span>Wishlist ({wishlistCount})</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Navigation Section */}
+            <div className="space-y-2">
+              <div className="text-[10px] font-bold uppercase tracking-widest text-[#881337] dark:text-[#FB7185] mb-2 font-serif">
+                Explore Atelier Collections
+              </div>
+
+              {[
+                { label: 'Home Page', view: 'home' },
+                { label: 'All Collections & Keepsakes', view: 'collections', params: { category: 'all' } },
+                { label: 'Personalized Name Jewelry', view: 'collections', params: { category: 'Personalized Name Jewelry' } },
+                { label: 'Preserved Eternal Roses', view: 'collections', params: { category: 'Preserved Eternal Roses & Dome Displays' } },
+                { label: 'Scannable Acrylic Song Plaques', view: 'collections', params: { category: 'Custom Acrylic Song Plaques & Photo Frames' } },
+                { label: 'Creator Ambassador Club', view: 'creator-club' },
+                { label: 'Concierge & Client Care', view: 'contact' },
+              ].map((item, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => navigateTo(item.view, item.params)}
+                  className="w-full text-left p-3 rounded-2xl bg-white dark:bg-[#1A161A] border border-[#EFE7DE] dark:border-[#2C242A] hover:border-[#881337] dark:hover:border-[#FB7185] transition-all flex items-center justify-between group shadow-2xs"
+                >
+                  <span className="text-xs font-bold text-stone-900 dark:text-white group-hover:text-[#881337] transition-colors">
+                    {item.label}
+                  </span>
+                  <ArrowRight className="w-3.5 h-3.5 text-stone-400 group-hover:text-[#881337] group-hover:translate-x-1 transition-all" />
+                </button>
+              ))}
+            </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-2">
+          {/* Executive Secret Admin Access Card */}
+          <div className="pt-4 mt-6 border-t border-[#EFE7DE] dark:border-[#282127]">
             <button
-              onClick={() => navigateTo('home')}
-              className="text-left px-3.5 py-2.5 rounded-xl bg-[#FAF7F2] dark:bg-stone-800/50 text-xs font-semibold text-stone-900 dark:text-white"
+              onClick={() => navigateTo('secret-admin-portal')}
+              className="w-full p-3.5 rounded-2xl bg-[#1C1917] dark:bg-stone-900 border border-stone-800 text-left text-white flex items-center justify-between shadow-md active:scale-98 transition-all"
             >
-              Home
-            </button>
-            <button
-              onClick={() => navigateTo('collections', { category: 'all' })}
-              className="text-left px-3.5 py-2.5 rounded-xl bg-[#FAF7F2] dark:bg-stone-800/50 text-xs font-semibold text-stone-900 dark:text-white"
-            >
-              All Collections
-            </button>
-            <button
-              onClick={() => navigateTo('track-order')}
-              className="text-left px-3.5 py-2.5 rounded-xl bg-[#FAF7F2] dark:bg-stone-800/50 text-xs font-semibold text-stone-900 dark:text-white"
-            >
-              Track Shipment
-            </button>
-            <button
-              onClick={() => navigateTo('contact')}
-              className="text-left px-3.5 py-2.5 rounded-xl bg-[#FAF7F2] dark:bg-stone-800/50 text-xs font-semibold text-stone-900 dark:text-white"
-            >
-              Client Care
-            </button>
-            <button
-              onClick={() => navigateTo('wishlist')}
-              className="text-left px-3.5 py-2.5 rounded-xl bg-[#FAF7F2] dark:bg-stone-800/50 text-xs font-semibold text-stone-900 dark:text-white"
-            >
-              Wishlist ({wishlistCount})
-            </button>
-            <button
-              onClick={() => navigateTo('creator-club')}
-              className="text-left px-3.5 py-2.5 rounded-xl bg-[#881337]/10 dark:bg-stone-800/50 text-xs font-semibold text-[#881337] dark:text-[#FB7185] flex items-center gap-1.5"
-            >
-              Creator Club
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-stone-800 border border-stone-700 text-[#E5C378] flex items-center justify-center shrink-0">
+                  <Lock className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-[#E5C378]">Executive Admin Studio</div>
+                  <div className="text-[10px] text-stone-400">Media Control & Slot Manager</div>
+                </div>
+              </div>
+              <span className="text-[10px] font-mono font-bold bg-[#881337] text-white px-2 py-0.5 rounded">
+                PIN: 7788
+              </span>
             </button>
           </div>
+
         </div>
       )}
     </header>
   );
 };
+
