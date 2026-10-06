@@ -108,7 +108,7 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, isOpen,
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[100] overflow-y-auto flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
       <div
         className="relative w-full max-w-4xl bg-white dark:bg-[#1E1A1D] rounded-3xl shadow-2xl border border-[#F5E6E8] dark:border-[#2D252A] overflow-hidden flex flex-col md:flex-row my-auto max-h-[92vh]"
         onClick={(e) => e.stopPropagation()}

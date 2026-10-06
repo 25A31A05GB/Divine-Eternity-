@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { Search, Heart, ShoppingBag, Menu, X, Sun, Moon, ChevronDown, Sparkles, ShieldCheck, ArrowRight, Star, Lock, Package, User } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WishlistContext';
@@ -351,194 +352,190 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, ope
         </div>
       </div>
 
-      {/* Full-Screen Slide-in Mobile Navigation Drawer */}
-      {isMobileMenuOpen && (
-        <div className="md:hidden fixed inset-0 z-[100] bg-[#08090B] text-[#F7F4EC] flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right duration-300 p-5 shadow-2xl">
-          
-          <div>
-            {/* Drawer Header Bar */}
-            <div className="flex items-center justify-between pb-4 border-b border-[#242C3D]">
-              <button
-                onClick={() => navigateTo('home')}
-                className="font-serif text-xl font-bold text-[#F7F4EC]"
-              >
-                Divine's Eternity
-              </button>
-
-              <div className="flex items-center gap-2">
+      {/* Full-Screen Slide-in Mobile Navigation Drawer Portal */}
+      {isMobileMenuOpen &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <div className="md:hidden fixed inset-0 z-[9999] w-full h-full h-[100dvh] bg-[#08090B] text-[#F7F4EC] flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right duration-300 p-5 shadow-2xl">
+            
+            <div>
+              {/* Drawer Header Bar */}
+              <div className="flex items-center justify-between pb-4 border-b border-[#242C3D]">
                 <button
-                  onClick={toggleTheme}
-                  aria-label="Toggle Theme"
-                  className="p-2 rounded-full bg-[#151A24] border border-[#242C3D] text-[#F7F4EC]"
+                  onClick={() => navigateTo('home')}
+                  className="font-serif text-xl font-bold text-[#F7F4EC]"
                 >
-                  {theme === 'dark' ? <Sun className="w-4 h-4 text-[#22D3EE]" /> : <Moon className="w-4 h-4 text-[#A7AFBD]" />}
+                  Divine's Eternity
                 </button>
 
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={toggleTheme}
+                    aria-label="Toggle Theme"
+                    className="p-2 rounded-full bg-[#151A24] border border-[#242C3D] text-[#F7F4EC]"
+                  >
+                    {theme === 'dark' ? <Sun className="w-4 h-4 text-[#22D3EE]" /> : <Moon className="w-4 h-4 text-[#A7AFBD]" />}
+                  </button>
+
+                  <button
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="p-2 rounded-full bg-[#151A24] border border-[#242C3D] text-[#F7F4EC] shadow-md"
+                    aria-label="Close menu"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Executive Secret Admin Access Banner (Top of Drawer) */}
+              <div className="my-4">
                 <button
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="p-2 rounded-full bg-[#151A24] border border-[#242C3D] text-[#F7F4EC] shadow-md"
-                  aria-label="Close menu"
+                  onClick={() => navigateTo('secret-admin-portal')}
+                  className="w-full p-3.5 rounded-2xl bg-[#151A24] border border-[#5B8CFF]/50 text-left text-white flex items-center justify-between shadow-lg active:scale-98 transition-all"
                 >
-                  <X className="w-5 h-5" />
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-9 h-9 rounded-xl bg-[#0C1220] border border-[#242C3D] text-[#22D3EE] flex items-center justify-center shrink-0">
+                      <Lock className="w-4.5 h-4.5" />
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-[#F7F4EC]">Executive Admin Studio</div>
+                      <div className="text-[10px] text-[#22D3EE]">Media & Slot Control Panel</div>
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-mono font-bold gradient-blue-violet text-white px-2.5 py-1 rounded-md shadow-xs">
+                    PIN: 7788
+                  </span>
                 </button>
+              </div>
+
+              {/* Search Input Box with Suggestions */}
+              <div className="my-5">
+                <div className="relative">
+                  <Search className="w-4 h-4 text-[#737C8C] absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    value={headerSearchQuery}
+                    onChange={(e) => setHeaderSearchQuery(e.target.value)}
+                    placeholder="Search gifts, jewelry, roses..."
+                    className="w-full bg-[#151A24] border border-[#242C3D] rounded-2xl pl-10 pr-4 py-3 text-xs text-[#F7F4EC] placeholder-[#737C8C] focus:ring-2 focus:ring-[#5B8CFF] focus:outline-none shadow-xs"
+                  />
+                </div>
+
+                {liveSuggestions.length > 0 && (
+                  <div className="mt-2 bg-[#151A24] rounded-2xl border border-[#242C3D] p-2 space-y-1 shadow-md">
+                    {liveSuggestions.map((item) => (
+                      <div
+                        key={item.id}
+                        onClick={() => navigateTo('product-detail', { slug: item.slug })}
+                        className="p-2 rounded-xl hover:bg-[#1B2230] flex items-center gap-2.5 cursor-pointer"
+                      >
+                        <div className="w-8 h-8 rounded-lg bg-[#0C1220] border border-[#242C3D] shrink-0 flex items-center justify-center p-0.5">
+                          <PhoneCaseMockup product={item} className="w-full h-full" />
+                        </div>
+                        <div className="flex-1 min-w-0 text-left">
+                          <div className="text-xs font-bold text-[#F7F4EC] truncate">{item.name}</div>
+                          <div className="text-[10px] text-[#A7AFBD]">₹{item.price}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* User Account & Quick Actions Card */}
+              <div className="bg-[#151A24] border border-[#242C3D] rounded-2xl p-4 mb-5 shadow-xs">
+                <div className="flex items-center justify-between pb-3 border-b border-[#242C3D] mb-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-9 h-9 rounded-full bg-gradient-to-r from-[#5B8CFF] to-[#8B5CF6] text-white flex items-center justify-center font-bold text-xs shadow-xs">
+                      {user?.name ? user.name.charAt(0) : <User className="w-4 h-4" />}
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-[#F7F4EC]">
+                        {user?.name || 'Atelier VIP Member'}
+                      </div>
+                      <div className="text-[10px] text-[#22D3EE] font-medium">
+                        {user?.email || 'VIP Member Access'}
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      openCart();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="px-3 py-1.5 rounded-xl gradient-blue-violet text-white font-bold text-xs flex items-center gap-1.5 shadow-xs"
+                  >
+                    <ShoppingBag className="w-3.5 h-3.5" />
+                    <span>Bag ({totalItemsCount})</span>
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 text-xs font-semibold">
+                  <button
+                    onClick={() => navigateTo('track-order')}
+                    className="p-2.5 rounded-xl bg-[#0C1220] border border-[#242C3D] text-[#F7F4EC] hover:bg-[#1B2230] flex items-center gap-2 transition-colors"
+                  >
+                    <Package className="w-4 h-4 text-[#22D3EE]" />
+                    <span>Track Orders</span>
+                  </button>
+
+                  <button
+                    onClick={() => navigateTo('wishlist')}
+                    className="p-2.5 rounded-xl bg-[#0C1220] border border-[#242C3D] text-[#F7F4EC] hover:bg-[#1B2230] flex items-center gap-2 transition-colors"
+                  >
+                    <Heart className="w-4 h-4 text-[#5B8CFF]" />
+                    <span>Wishlist ({wishlistCount})</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Navigation Section */}
+              <div className="space-y-2">
+                <div className="text-[10px] font-bold uppercase tracking-widest text-[#5B8CFF] mb-2 font-mono">
+                  Explore Atelier Collections
+                </div>
+
+                {[
+                  { label: 'Home Page', view: 'home' },
+                  { label: 'All Collections & Keepsakes', view: 'collections', params: { category: 'all' } },
+                  { label: 'Personalized Name Jewelry', view: 'collections', params: { category: 'Personalized Name Jewelry' } },
+                  { label: 'Preserved Eternal Roses', view: 'collections', params: { category: 'Preserved Eternal Roses & Dome Displays' } },
+                  { label: 'Scannable Acrylic Song Plaques', view: 'collections', params: { category: 'Custom Acrylic Song Plaques & Photo Frames' } },
+                  { label: 'Creator Ambassador Club', view: 'creator-club' },
+                  { label: 'Concierge & Client Care', view: 'contact' },
+                ].map((item, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => navigateTo(item.view, item.params)}
+                    className="w-full text-left p-3 rounded-2xl bg-[#151A24] border border-[#242C3D] hover:border-[#5B8CFF] hover:bg-[#1B2230] transition-all flex items-center justify-between group shadow-2xs"
+                  >
+                    <span className="text-xs font-semibold text-[#F7F4EC] group-hover:text-[#22D3EE] transition-colors">
+                      {item.label}
+                    </span>
+                    <ArrowRight className="w-3.5 h-3.5 text-[#737C8C] group-hover:text-[#5B8CFF] group-hover:translate-x-1 transition-all" />
+                  </button>
+                ))}
               </div>
             </div>
 
-            {/* Executive Secret Admin Access Banner (Top of Drawer) */}
-            <div className="my-4">
+            {/* Bottom Admin Link */}
+            <div className="pt-4 mt-6 border-t border-[#242C3D]">
               <button
                 onClick={() => navigateTo('secret-admin-portal')}
-                className="w-full p-3.5 rounded-2xl bg-[#151A24] border border-[#5B8CFF]/50 text-left text-white flex items-center justify-between shadow-lg active:scale-98 transition-all"
+                className="w-full p-3 rounded-2xl bg-[#0C1220] border border-[#242C3D] text-left text-[#A7AFBD] hover:text-[#F7F4EC] flex items-center justify-between transition-colors"
               >
-                <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-xl bg-[#0C1220] border border-[#242C3D] text-[#22D3EE] flex items-center justify-center shrink-0">
-                    <Lock className="w-4.5 h-4.5" />
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold text-[#F7F4EC]">Executive Admin Studio</div>
-                    <div className="text-[10px] text-[#22D3EE]">Media & Slot Control Panel</div>
-                  </div>
+                <div className="flex items-center gap-2 text-xs">
+                  <ShieldCheck className="w-4 h-4 text-[#22D3EE]" />
+                  <span>Switch to Executive Admin Dashboard</span>
                 </div>
-                <span className="text-[10px] font-mono font-bold gradient-blue-violet text-white px-2.5 py-1 rounded-md shadow-xs">
-                  PIN: 7788
-                </span>
+                <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
 
-            {/* Search Input Box with Suggestions */}
-            <div className="my-5">
-              <div className="relative">
-                <Search className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  value={headerSearchQuery}
-                  onChange={(e) => setHeaderSearchQuery(e.target.value)}
-                  placeholder="Search gifts, jewelry, roses..."
-                  className="w-full bg-white dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-2xl pl-10 pr-4 py-3 text-xs text-stone-900 dark:text-white placeholder-stone-400 focus:ring-2 focus:ring-[#881337] focus:outline-none shadow-xs"
-                />
-              </div>
-
-              {liveSuggestions.length > 0 && (
-                <div className="mt-2 bg-white dark:bg-[#1A161A] rounded-2xl border border-[#EFE7DE] dark:border-stone-800 p-2 space-y-1 shadow-md">
-                  {liveSuggestions.map((item) => (
-                    <div
-                      key={item.id}
-                      onClick={() => navigateTo('product-detail', { slug: item.slug })}
-                      className="p-2 rounded-xl hover:bg-[#FAF7F2] dark:hover:bg-stone-800 flex items-center gap-2.5 cursor-pointer"
-                    >
-                      <div className="w-8 h-8 rounded-lg bg-stone-100 dark:bg-stone-800 shrink-0 flex items-center justify-center p-0.5">
-                        <PhoneCaseMockup product={item} className="w-full h-full" />
-                      </div>
-                      <div className="flex-1 min-w-0 text-left">
-                        <div className="text-xs font-bold text-stone-900 dark:text-white truncate">{item.name}</div>
-                        <div className="text-[10px] text-stone-400">₹{item.price}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* User Account & Quick Actions Card */}
-            <div className="bg-white dark:bg-[#1A161A] border border-[#EFE7DE] dark:border-[#2C242A] rounded-2xl p-4 mb-5 shadow-xs">
-              <div className="flex items-center justify-between pb-3 border-b border-stone-100 dark:border-stone-800 mb-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-full bg-[#881337] text-white flex items-center justify-center font-bold text-xs shadow-xs">
-                    {user?.name ? user.name.charAt(0) : <User className="w-4 h-4" />}
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold text-stone-900 dark:text-white">
-                      {user?.name || 'Atelier Privilege Member'}
-                    </div>
-                    <div className="text-[10px] text-[#C5A059] font-medium">
-                      {user?.email || 'VIP Member Privileges'}
-                    </div>
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => {
-                    openCart();
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className="px-3 py-1.5 rounded-xl bg-[#881337] text-white font-bold text-xs flex items-center gap-1.5 shadow-xs"
-                >
-                  <ShoppingBag className="w-3.5 h-3.5" />
-                  <span>Bag ({totalItemsCount})</span>
-                </button>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2 text-xs font-semibold">
-                <button
-                  onClick={() => navigateTo('track-order')}
-                  className="p-2.5 rounded-xl bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 text-stone-800 dark:text-stone-200 flex items-center gap-2"
-                >
-                  <Package className="w-4 h-4 text-[#881337] dark:text-[#FB7185]" />
-                  <span>Track Orders</span>
-                </button>
-
-                <button
-                  onClick={() => navigateTo('wishlist')}
-                  className="p-2.5 rounded-xl bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 text-stone-800 dark:text-stone-200 flex items-center gap-2"
-                >
-                  <Heart className="w-4 h-4 text-[#881337] dark:text-[#FB7185]" />
-                  <span>Wishlist ({wishlistCount})</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Navigation Section */}
-            <div className="space-y-2">
-              <div className="text-[10px] font-bold uppercase tracking-widest text-[#881337] dark:text-[#FB7185] mb-2 font-serif">
-                Explore Atelier Collections
-              </div>
-
-              {[
-                { label: 'Home Page', view: 'home' },
-                { label: 'All Collections & Keepsakes', view: 'collections', params: { category: 'all' } },
-                { label: 'Personalized Name Jewelry', view: 'collections', params: { category: 'Personalized Name Jewelry' } },
-                { label: 'Preserved Eternal Roses', view: 'collections', params: { category: 'Preserved Eternal Roses & Dome Displays' } },
-                { label: 'Scannable Acrylic Song Plaques', view: 'collections', params: { category: 'Custom Acrylic Song Plaques & Photo Frames' } },
-                { label: 'Creator Ambassador Club', view: 'creator-club' },
-                { label: 'Concierge & Client Care', view: 'contact' },
-              ].map((item, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => navigateTo(item.view, item.params)}
-                  className="w-full text-left p-3 rounded-2xl bg-white dark:bg-[#1A161A] border border-[#EFE7DE] dark:border-[#2C242A] hover:border-[#881337] dark:hover:border-[#FB7185] transition-all flex items-center justify-between group shadow-2xs"
-                >
-                  <span className="text-xs font-bold text-stone-900 dark:text-white group-hover:text-[#881337] transition-colors">
-                    {item.label}
-                  </span>
-                  <ArrowRight className="w-3.5 h-3.5 text-stone-400 group-hover:text-[#881337] group-hover:translate-x-1 transition-all" />
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Executive Secret Admin Access Card */}
-          <div className="pt-4 mt-6 border-t border-[#EFE7DE] dark:border-[#282127]">
-            <button
-              onClick={() => navigateTo('secret-admin-portal')}
-              className="w-full p-3.5 rounded-2xl bg-[#1C1917] dark:bg-stone-900 border border-stone-800 text-left text-white flex items-center justify-between shadow-md active:scale-98 transition-all"
-            >
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-stone-800 border border-stone-700 text-[#E5C378] flex items-center justify-center shrink-0">
-                  <Lock className="w-4 h-4" />
-                </div>
-                <div>
-                  <div className="text-xs font-bold text-[#E5C378]">Executive Admin Studio</div>
-                  <div className="text-[10px] text-stone-400">Media Control & Slot Manager</div>
-                </div>
-              </div>
-              <span className="text-[10px] font-mono font-bold bg-[#881337] text-white px-2 py-0.5 rounded">
-                PIN: 7788
-              </span>
-            </button>
-          </div>
-
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
     </header>
   );
 };

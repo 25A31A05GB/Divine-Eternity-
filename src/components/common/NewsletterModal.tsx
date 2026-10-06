@@ -54,7 +54,7 @@ export const NewsletterModal: React.FC<NewsletterModalProps> = ({ delayMs = 1000
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#08090B]/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-300">
+    <div className="fixed inset-0 z-[100] bg-[#08090B]/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-300">
       <div className="bg-[#151A24] w-full max-w-lg rounded-2xl border border-[#242C3D] shadow-2xl p-6 sm:p-8 relative overflow-hidden text-left animate-in zoom-in-95 duration-200">
         
         {/* Ambient Subtle Background Glow */}
