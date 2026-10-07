@@ -212,30 +212,39 @@ export const Footer: React.FC<FooterProps> = ({ setCurrentView }) => {
           <div className="flex flex-wrap items-center justify-center gap-2.5 text-[11px]">
             <button
               onClick={() => navigateTo('policy', { tab: 'privacy' })}
-              className="hover:text-white transition-colors"
+              className="hover:text-white transition-colors cursor-pointer"
             >
               Privacy
             </button>
             <span>·</span>
             <button
               onClick={() => navigateTo('policy', { tab: 'terms' })}
-              className="hover:text-white transition-colors"
+              className="hover:text-white transition-colors cursor-pointer"
             >
               Terms
             </button>
             <span>·</span>
             <button
               onClick={() => navigateTo('policy', { tab: 'refund' })}
-              className="hover:text-white transition-colors"
+              className="hover:text-white transition-colors cursor-pointer"
             >
               Refunds
             </button>
             <span>·</span>
             <button
               onClick={() => navigateTo('policy', { tab: 'shipping' })}
-              className="hover:text-white transition-colors"
+              className="hover:text-white transition-colors cursor-pointer"
             >
               Shipping
+            </button>
+            <span>·</span>
+            <button
+              onClick={() => navigateTo('secret-admin-portal')}
+              className="hover:text-[#FF2E93] text-stone-400 flex items-center gap-1 transition-colors cursor-pointer"
+              title="Atelier Management Portal"
+            >
+              <Lock className="w-3 h-3 text-[#FF2E93]" />
+              <span>Admin Portal</span>
             </button>
           </div>
         </div>
