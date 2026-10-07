@@ -1,17 +1,21 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { UserProfile, CustomerAddress, Order } from '../types';
+import { UserProfile, CustomerAddress, Order, OrderStatus } from '../types';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { db } from '../lib/db';
 
 interface AuthContextType {
   user: UserProfile | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
+  isLoading: boolean;
   login: (email: string, name?: string) => Promise<{ success: boolean; message: string }>;
-  logout: () => void;
+  logout: () => Promise<void>;
   updateAddress: (address: CustomerAddress) => void;
   orders: Order[];
   addOrder: (order: Order) => void;
-  updateOrderStatus: (orderId: string, status: Order['status'], trackingNumber?: string) => void;
+  updateOrderStatus: (orderId: string, status: OrderStatus, trackingNumber?: string) => void;
   loginAsAdmin: () => void;
+  refreshOrders: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -82,6 +86,7 @@ const INITIAL_DEMO_ORDERS: Order[] = [
 ];
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<UserProfile | null>(() => {
     try {
       const saved = localStorage.getItem(AUTH_STORAGE_KEY);
@@ -118,6 +123,62 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   });
 
+  // Load orders from database on mount
+  useEffect(() => {
+    const initData = async () => {
+      try {
+        const { data: dbOrders } = await db.getOrders(user?.id);
+        if (dbOrders && dbOrders.length > 0) {
+          setOrders(dbOrders);
+        }
+      } catch (err) {
+        console.warn('DB orders init warning:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initData();
+  }, [user?.id]);
+
+  // Listen to Supabase Auth State Changes
+  useEffect(() => {
+    const client = supabase;
+    if (isSupabaseConfigured() && client) {
+      const { data: authListener } = client.auth.onAuthStateChange(
+        async (event, session) => {
+          if (session?.user) {
+            const { data: profile } = await client
+              .from('profiles')
+              .select('*')
+              .eq('id', session.user.id)
+              .maybeSingle();
+
+            const isAdminRole =
+              profile?.role === 'admin' ||
+              session.user.email?.toLowerCase().includes('admin') ||
+              false;
+
+            setUser({
+              id: session.user.id,
+              name: profile?.full_name || session.user.email?.split('@')[0] || 'Patron',
+              email: session.user.email || '',
+              phone: profile?.phone || '',
+              isAdmin: isAdminRole,
+              addresses: profile?.addresses || [],
+              wishlistProductIds: [],
+            });
+          }
+        }
+      );
+
+      return () => {
+        authListener.subscription.unsubscribe();
+      };
+    }
+  }, []);
+
+  // Local caching sync
   useEffect(() => {
     try {
       if (user) {
@@ -137,6 +198,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.error(e);
     }
   }, [orders]);
+
+  const refreshOrders = async () => {
+    const { data: fresh } = await db.getOrders(user?.id);
+    if (fresh) setOrders(fresh);
+  };
 
   const login = async (email: string, name?: string) => {
     const isAdminUser = email.toLowerCase().includes('admin');
@@ -165,7 +231,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
-  const logout = () => {
+  const logout = async () => {
+    if (isSupabaseConfigured() && supabase) {
+      try {
+        await supabase.auth.signOut();
+      } catch (e) {
+        console.warn('Supabase sign out error', e);
+      }
+    }
     setUser(null);
   };
 
@@ -179,9 +252,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const addOrder = (newOrder: Order) => {
     setOrders((prev) => [newOrder, ...prev]);
+    // Save to database layer
+    db.createOrder(newOrder, user?.id);
   };
 
-  const updateOrderStatus = (orderId: string, status: Order['status'], trackingNumber?: string) => {
+  const updateOrderStatus = (orderId: string, status: OrderStatus, trackingNumber?: string) => {
     setOrders((prev) =>
       prev.map((order) => {
         if (order.id !== orderId) return order;
@@ -190,7 +265,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           {
             status,
             timestamp: new Date().toISOString().replace('T', ' ').slice(0, 16),
-            location: 'Destiny Fulfillment Hub',
+            location: 'Divine Fulfillment Hub',
             description: `Status updated to ${status}`,
           },
         ];
@@ -202,6 +277,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         };
       })
     );
+
+    // Sync to database layer
+    db.updateOrderStatus(orderId, status, trackingNumber);
   };
 
   return (
@@ -210,6 +288,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user,
         isAuthenticated: !!user,
         isAdmin: !!user?.isAdmin,
+        isLoading,
         login,
         logout,
         updateAddress,
@@ -217,6 +296,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         addOrder,
         updateOrderStatus,
         loginAsAdmin,
+        refreshOrders,
       }}
     >
       {children}

@@ -111,6 +111,10 @@ export interface Product {
   personalizationConfig?: PersonalizationConfig;
   inStock?: boolean;
   stockStatus?: 'in_stock' | 'out_of_stock' | 'low_stock';
+  stockQuantity?: number;
+  tagline?: string;
+  customizable?: boolean;
+  themeColors?: string[];
 }
 
 export interface CartItem {
@@ -166,17 +170,24 @@ export interface Order {
   id: string; // e.g. DE-839201
   createdAt: string;
   customer: CustomerAddress;
+  shippingAddress?: CustomerAddress;
+  customerName?: string;
+  customerEmail?: string;
+  customerPhone?: string;
   items: CartItem[];
   subtotal: number;
-  discountTotal: number;
+  discountTotal?: number;
+  discountAmount?: number;
   appliedOffer?: AppliedOffer;
   isGiftWrapped?: boolean;
+  giftWrapping?: boolean;
   giftWrappingFee?: number;
   giftNote?: string;
   shippingFee: number;
   totalAmount: number;
-  paymentMethod: 'UPI' | 'Card' | 'Cash on Delivery' | 'Razorpay Simulated';
-  paymentStatus: 'Paid' | 'Pending COD Verification' | 'Failed';
+  total?: number;
+  paymentMethod: 'UPI' | 'Card' | 'Cash on Delivery' | 'Razorpay Simulated' | string;
+  paymentStatus: 'Paid' | 'Pending COD Verification' | 'Failed' | string;
   paymentId?: string;
   status: OrderStatus;
   trackingNumber: string;

@@ -76,6 +76,8 @@ import {
   Menu,
 } from 'lucide-react';
 import { PhoneCaseMockup } from '../utils/productVisuals';
+import { exportOrdersToCSV, exportProductsToCSV, exportCustomersToCSV } from '../utils/exportUtils';
+import { InvoiceModal } from '../components/common/InvoiceModal';
 import confetti from 'canvas-confetti';
 
 interface AdminDashboardProps {
@@ -1342,8 +1344,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 </div>
               </div>
 
-              <div className="text-xs text-stone-500">
-                Showing <strong className="text-stone-900 dark:text-white">{filteredOrders.length}</strong> orders
+              <div className="flex items-center gap-3">
+                <div className="text-xs text-stone-500">
+                  Showing <strong className="text-stone-900 dark:text-white">{filteredOrders.length}</strong> orders
+                </div>
+
+                <button
+                  onClick={() => {
+                    exportOrdersToCSV(orders);
+                    setBulkFeedbackToast('📥 Orders exported to CSV successfully!');
+                    setTimeout(() => setBulkFeedbackToast(null), 3500);
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-white dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 hover:border-[#FF2E93] text-stone-800 dark:text-white text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+                  title="Export all orders to CSV formatted for courier logistics"
+                >
+                  <Download className="w-3.5 h-3.5 text-[#FF2E93]" />
+                  <span>Export CSV</span>
+                </button>
               </div>
             </div>
 
@@ -1505,6 +1522,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       {selectedProductIds.length}
                     </span>
                   )}
+                </button>
+
+                <button
+                  onClick={() => {
+                    exportProductsToCSV(products);
+                    setBulkFeedbackToast('📥 Product catalog exported to CSV successfully!');
+                    setTimeout(() => setBulkFeedbackToast(null), 3500);
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold bg-white dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 hover:border-[#FF2E93] text-stone-800 dark:text-white transition-all shadow-2xs cursor-pointer"
+                  title="Export full product catalog inventory to CSV"
+                >
+                  <Download className="w-3.5 h-3.5 text-[#FF2E93]" />
+                  <span>Export CSV</span>
                 </button>
 
                 <button
@@ -3529,6 +3559,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           <span>Menu</span>
         </button>
       </nav>
+
+      {/* Invoice Modal */}
+      <InvoiceModal
+        order={selectedOrderForInvoice}
+        isOpen={Boolean(selectedOrderForInvoice)}
+        onClose={() => setSelectedOrderForInvoice(null)}
+      />
     </div>
   );
 };

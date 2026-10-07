@@ -152,31 +152,47 @@ export const Footer: React.FC<FooterProps> = ({ setCurrentView }) => {
           {/* Help & Policies Column */}
           <div>
             <h5 className="text-sm font-bold text-white mb-4">
-              Help & Support
+              Legal & Trust
             </h5>
-            <ul className="space-y-3 text-xs text-stone-300">
-              <li>
-                <button
-                  onClick={() => navigateTo('contact')}
-                  className="hover:text-[#FF2E93] transition-colors cursor-pointer"
-                >
-                  Contact & WhatsApp
-                </button>
-              </li>
+            <ul className="space-y-2.5 text-xs text-stone-300">
               <li>
                 <button
                   onClick={() => navigateTo('policy', { tab: 'privacy' })}
-                  className="hover:text-[#FF2E93] transition-colors cursor-pointer"
+                  className="hover:text-[#FF2E93] transition-colors cursor-pointer text-left"
                 >
                   Privacy Policy
                 </button>
               </li>
               <li>
                 <button
+                  onClick={() => navigateTo('policy', { tab: 'terms' })}
+                  className="hover:text-[#FF2E93] transition-colors cursor-pointer text-left"
+                >
+                  Terms & Conditions
+                </button>
+              </li>
+              <li>
+                <button
                   onClick={() => navigateTo('policy', { tab: 'refund' })}
-                  className="hover:text-[#FF2E93] transition-colors cursor-pointer"
+                  className="hover:text-[#FF2E93] transition-colors cursor-pointer text-left"
                 >
                   Refund & Cancellation
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => navigateTo('policy', { tab: 'shipping' })}
+                  className="hover:text-[#FF2E93] transition-colors cursor-pointer text-left"
+                >
+                  Shipping & Timelines
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => navigateTo('contact')}
+                  className="hover:text-[#FF2E93] transition-colors cursor-pointer text-left"
+                >
+                  Contact & Atelier Support
                 </button>
               </li>
             </ul>
@@ -193,26 +209,33 @@ export const Footer: React.FC<FooterProps> = ({ setCurrentView }) => {
             © {new Date().getFullYear()} Divine’s Eternity. Gifts that stay in hearts.
           </p>
 
-          <div className="flex items-center gap-3 text-[11px]">
+          <div className="flex flex-wrap items-center justify-center gap-2.5 text-[11px]">
             <button
               onClick={() => navigateTo('policy', { tab: 'privacy' })}
               className="hover:text-white transition-colors"
             >
-              Privacy Policy
+              Privacy
+            </button>
+            <span>·</span>
+            <button
+              onClick={() => navigateTo('policy', { tab: 'terms' })}
+              className="hover:text-white transition-colors"
+            >
+              Terms
             </button>
             <span>·</span>
             <button
               onClick={() => navigateTo('policy', { tab: 'refund' })}
               className="hover:text-white transition-colors"
             >
-              Refund Policy
+              Refunds
             </button>
             <span>·</span>
             <button
-              onClick={() => navigateTo('secret-admin-portal')}
-              className="text-stone-600 hover:text-stone-400 transition-colors"
+              onClick={() => navigateTo('policy', { tab: 'shipping' })}
+              className="hover:text-white transition-colors"
             >
-              Admin
+              Shipping
             </button>
           </div>
         </div>

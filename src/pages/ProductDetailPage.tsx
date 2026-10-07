@@ -371,13 +371,18 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
 
                 <button
                   onClick={handleAddToCart}
+                  disabled={product.inStock === false || product.stockQuantity === 0}
                   className={`flex-1 py-4 px-6 rounded-full font-bold text-xs sm:text-sm tracking-widest uppercase transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer ${
-                    addedSuccess
+                    product.inStock === false || product.stockQuantity === 0
+                      ? 'bg-stone-300 text-stone-500 cursor-not-allowed shadow-none'
+                      : addedSuccess
                       ? 'bg-emerald-600 text-white'
                       : 'bg-[#211D1C] hover:bg-[#FF2E93] text-white active:scale-98'
                   }`}
                 >
-                  {addedSuccess ? (
+                  {product.inStock === false || product.stockQuantity === 0 ? (
+                    <span>Currently Out of Stock</span>
+                  ) : addedSuccess ? (
                     <>
                       <Check className="w-4 h-4" />
                       <span>Added to Bag!</span>

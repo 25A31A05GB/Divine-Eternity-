@@ -5,6 +5,8 @@ import { CartProvider } from './context/CartContext';
 import { WishlistProvider } from './context/WishlistContext';
 import { ReviewsProvider } from './context/ReviewsContext';
 import { MediaCMSProvider } from './context/MediaCMSContext';
+import { ErrorBoundary } from './components/common/ErrorBoundary';
+import { AdminRouteGuard } from './components/admin/AdminRouteGuard';
 import { AnnouncementBar } from './components/layout/AnnouncementBar';
 import { Header } from './components/layout/Header';
 import { Footer } from './components/layout/Footer';
@@ -23,8 +25,25 @@ import { ContactPage } from './pages/ContactPage';
 import { CreatorCollabPage } from './pages/CreatorCollabPage';
 import { PolicyPage } from './pages/PolicyPage';
 import { SecretAdminPortal } from './pages/SecretAdminPortal';
+import { NotFoundPage } from './pages/NotFoundPage';
 import { INITIAL_PRODUCTS } from './data/products';
 import { Product, Order } from './types';
+import { db } from './lib/db';
+
+const VALID_VIEWS = new Set([
+  'home',
+  'collections',
+  'product-detail',
+  'checkout',
+  'order-confirmation',
+  'track-order',
+  'wishlist',
+  'contact',
+  'creator-club',
+  'policy',
+  'admin',
+  'secret-admin-portal',
+]);
 
 // Helper to parse current hash into view, params, and target product
 function parseHash(hash: string, productsList: Product[]) {
@@ -42,7 +61,26 @@ function parseHash(hash: string, productsList: Product[]) {
   }
 
   let view = routePart || 'home';
-  if (view === 'admin') view = 'secret-admin-portal';
+
+  // Admin aliases
+  if (view === 'admin' || view === 'secret-admin-portal') {
+    view = 'secret-admin-portal';
+  }
+
+  // Legal policy direct aliases
+  if (view === 'privacy-policy') {
+    view = 'policy';
+    params.tab = 'privacy';
+  } else if (view === 'terms-and-conditions' || view === 'terms') {
+    view = 'policy';
+    params.tab = 'terms';
+  } else if (view === 'refund-and-cancellation' || view === 'refund-policy') {
+    view = 'policy';
+    params.tab = 'refund';
+  } else if (view === 'shipping-and-delivery' || view === 'shipping-policy') {
+    view = 'policy';
+    params.tab = 'shipping';
+  }
 
   let foundProduct: Product | null = null;
   if (view === 'product-detail' && params.slug) {
@@ -66,26 +104,22 @@ function formatHash(view: string, params?: Record<string, string>) {
 }
 
 export function AppContent() {
-  const [products, setProducts] = useState<Product[]>(() => {
-    try {
-      const saved = localStorage.getItem('divines_eternity_products_v1');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      }
-    } catch (e) {
-      console.error('Failed to load products from storage', e);
-    }
-    return INITIAL_PRODUCTS;
-  });
+  const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
 
+  // Initialize and load products via Database Access Layer
   useEffect(() => {
-    try {
-      localStorage.setItem('divines_eternity_products_v1', JSON.stringify(products));
-    } catch (e) {
-      console.error('Failed to persist products to storage', e);
-    }
-  }, [products]);
+    const loadProducts = async () => {
+      try {
+        const { data } = await db.getProducts();
+        if (data && data.length > 0) {
+          setProducts(data);
+        }
+      } catch (e) {
+        console.warn('Failed to load products from db layer', e);
+      }
+    };
+    loadProducts();
+  }, []);
 
   const [currentView, setCurrentView] = useState<string>(() => {
     if (typeof window !== 'undefined' && window.location.hash) {
@@ -126,7 +160,6 @@ export function AppContent() {
       }
     };
 
-    // Sync state on initial load if hash is present
     if (window.location.hash) {
       handleHashChange();
     }
@@ -138,47 +171,23 @@ export function AppContent() {
       }
     };
 
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'divines_eternity_products_v1' && e.newValue) {
-        try {
-          const parsed = JSON.parse(e.newValue);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            setProducts(parsed);
-          }
-        } catch {
-          // ignore
-        }
-      }
-    };
-
     window.addEventListener('hashchange', handleHashChange);
     window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('storage', handleStorageChange);
     return () => {
       window.removeEventListener('hashchange', handleHashChange);
       window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('storage', handleStorageChange);
     };
   }, [products]);
 
+  // Navigate handler that updates both URL hash and state
   const handleNavigate = (view: string, params?: Record<string, string>) => {
+    const targetHash = formatHash(view, params);
+    if (window.location.hash !== targetHash) {
+      window.location.hash = targetHash;
+    }
     setCurrentView(view);
     setViewParams(params || {});
-
-    // Sync URL hash for browser history & back button support
-    if (typeof window !== 'undefined') {
-      const targetHash = formatHash(view, params);
-      if (window.location.hash !== targetHash) {
-        window.location.hash = targetHash;
-      }
-    }
-
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleOpenQuickView = (product: Product) => {
-    setSelectedProduct(product);
-    setIsQuickViewOpen(true);
   };
 
   const handleOpenDetail = (product: Product) => {
@@ -186,24 +195,36 @@ export function AppContent() {
     handleNavigate('product-detail', { slug: product.slug });
   };
 
-  const handleAddProduct = (newProd: Product) => {
-    setProducts((prev) => [newProd, ...prev]);
+  const handleOpenQuickView = (product: Product) => {
+    setSelectedProduct(product);
+    setIsQuickViewOpen(true);
   };
 
-  const handleUpdateProduct = (updated: Product) => {
-    setProducts((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
+  // Admin Catalog Update Handlers (saved to Database layer)
+  const handleAddProduct = (newProduct: Product) => {
+    setProducts((prev) => [newProduct, ...prev]);
+    db.saveProduct(newProduct);
+  };
+
+  const handleUpdateProduct = (updatedProduct: Product) => {
+    setProducts((prev) =>
+      prev.map((p) => (p.id === updatedProduct.id ? updatedProduct : p))
+    );
+    db.saveProduct(updatedProduct);
   };
 
   const handleBulkUpdateProducts = (updatedProducts: Product[]) => {
-    const map = new Map(updatedProducts.map((p) => [p.id, p]));
-    setProducts((prev) => prev.map((p) => map.get(p.id) || p));
+    setProducts(updatedProducts);
+    updatedProducts.forEach((p) => db.saveProduct(p));
   };
 
   const handleDeleteProduct = (productId: string) => {
     setProducts((prev) => prev.filter((p) => p.id !== productId));
+    db.deleteProduct(productId);
   };
 
   const isSecretAdminView = currentView === 'secret-admin-portal' || currentView === 'admin';
+  const isKnownView = VALID_VIEWS.has(currentView);
 
   return (
     <div className="min-h-screen w-full overflow-x-hidden flex flex-col justify-between bg-[#FFFDF8] text-[#211D1C] selection:bg-[#FF2E93] selection:text-white transition-colors duration-300">
@@ -297,14 +318,25 @@ export function AppContent() {
           <PolicyPage initialTab={(viewParams.tab as any) || 'refund'} />
         )}
 
+        {/* Protected Admin Route with Supabase Auth & RLS Guard */}
         {isSecretAdminView && (
-          <SecretAdminPortal
-            products={products}
-            onAddProduct={handleAddProduct}
-            onUpdateProduct={handleUpdateProduct}
-            onBulkUpdateProducts={handleBulkUpdateProducts}
-            onDeleteProduct={handleDeleteProduct}
-            onReturnToStore={() => handleNavigate('home')}
+          <AdminRouteGuard onReturnToStore={() => handleNavigate('home')}>
+            <SecretAdminPortal
+              products={products}
+              onAddProduct={handleAddProduct}
+              onUpdateProduct={handleUpdateProduct}
+              onBulkUpdateProducts={handleBulkUpdateProducts}
+              onDeleteProduct={handleDeleteProduct}
+              onReturnToStore={() => handleNavigate('home')}
+            />
+          </AdminRouteGuard>
+        )}
+
+        {/* 404 Fallback for Unrecognized Routes */}
+        {!isKnownView && (
+          <NotFoundPage
+            onReturnHome={() => handleNavigate('home')}
+            onExploreCollections={() => handleNavigate('collections', { category: 'all' })}
           />
         )}
       </main>
@@ -346,18 +378,20 @@ export function AppContent() {
 
 export default function App() {
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <WishlistProvider>
-          <ReviewsProvider>
-            <MediaCMSProvider>
-              <CartProvider>
-                <AppContent />
-              </CartProvider>
-            </MediaCMSProvider>
-          </ReviewsProvider>
-        </WishlistProvider>
-      </AuthProvider>
-    </ThemeProvider>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <AuthProvider>
+          <WishlistProvider>
+            <ReviewsProvider>
+              <MediaCMSProvider>
+                <CartProvider>
+                  <AppContent />
+                </CartProvider>
+              </MediaCMSProvider>
+            </ReviewsProvider>
+          </WishlistProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 }

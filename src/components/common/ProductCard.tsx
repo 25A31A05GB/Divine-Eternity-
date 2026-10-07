@@ -58,6 +58,16 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView, 
 
         {/* Editorial Text Badge */}
         <div className="absolute top-3 left-3 flex flex-col gap-1 z-20 pointer-events-none">
+          {product.inStock === false || product.stockQuantity === 0 ? (
+            <span className="bg-stone-900/90 text-stone-200 text-[10px] font-black px-2.5 py-0.5 rounded-full tracking-wider uppercase shadow-xs">
+              Sold Out
+            </span>
+          ) : product.stockQuantity && product.stockQuantity <= 5 ? (
+            <span className="bg-amber-600 text-white text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider w-fit shadow-xs">
+              Only {product.stockQuantity} Left
+            </span>
+          ) : null}
+
           {product.badge && (
             <span className="bg-[#FF2E93] text-white text-[10px] font-black px-2.5 py-0.5 rounded-full tracking-wider uppercase shadow-xs">
               {product.badge}

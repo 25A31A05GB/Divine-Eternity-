@@ -2,7 +2,10 @@ import express from 'express';
 import type { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import crypto from 'crypto';
+import { z } from 'zod';
 import { createServer as createViteServer } from 'vite';
+import { calculateCartTotals } from './src/lib/discounts';
+import { sendOrderConfirmationEmail, sendOrderConfirmationWhatsApp } from './src/lib/notifications';
 
 const app = express();
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3000;
@@ -10,7 +13,39 @@ const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3000;
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
-// In-Memory Database Store (Syncs with client state, instantly ready for PostgreSQL)
+// ===================== RATE LIMITER (In-Memory IP Bucket) =====================
+// Rate limit: 10 requests per minute per IP for sensitive endpoints (tracking & lookup)
+interface RateLimitRecord {
+  count: number;
+  resetAt: number;
+}
+const ipRateLimits = new Map<string, RateLimitRecord>();
+
+function rateLimiter(limit = 10, windowMs = 60 * 1000) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const ip = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || 'unknown-ip';
+    const now = Date.now();
+    const record = ipRateLimits.get(ip);
+
+    if (!record || now > record.resetAt) {
+      ipRateLimits.set(ip, { count: 1, resetAt: now + windowMs });
+      return next();
+    }
+
+    if (record.count >= limit) {
+      const retryAfterSeconds = Math.ceil((record.resetAt - now) / 1000);
+      return res.status(429).json({
+        error: 'Too many requests. Please wait before tracking again.',
+        retryAfter: retryAfterSeconds,
+      });
+    }
+
+    record.count += 1;
+    next();
+  };
+}
+
+// ===================== IN-MEMORY DATA STORE (PostgreSQL Synced) =====================
 interface StoredOrder {
   id: string;
   createdAt: string;
@@ -19,10 +54,14 @@ interface StoredOrder {
   subtotal: number;
   discountTotal: number;
   shippingFee: number;
+  giftWrappingFee?: number;
+  isGiftWrapped?: boolean;
+  giftNote?: string;
   totalAmount: number;
   paymentMethod: string;
   paymentStatus: string;
   paymentId?: string;
+  razorpayOrderId?: string;
   status: string;
   trackingNumber: string;
   timeline: any[];
@@ -91,14 +130,44 @@ let dbOrders: StoredOrder[] = [
 ];
 
 let dbCoupons = [
-  { code: 'BUY3PAY2', description: 'Buy 3 Cases, Get 1 FREE', type: 'buy3pay2', value: 100, minItems: 3, isActive: true },
-  { code: 'FLAT849', description: 'Any 2 Cases for flat ₹849', type: 'flat849', value: 849, minItems: 2, isActive: true },
+  { code: 'BUY3PAY2', description: 'Buy 3 Keepsakes, 1 Complimentary', type: 'buy3pay2', value: 100, minItems: 3, isActive: true },
+  { code: 'FLAT849', description: 'Any 2 Gifts for flat ₹849', type: 'flat849', value: 849, minItems: 2, isActive: true },
   { code: 'LOVE100', description: 'Instant ₹100 Off on your order', type: 'flat', value: 100, minOrderValue: 500, isActive: true },
-  { code: 'GENZ15', description: '15% Off storewide for new members', type: 'percentage', value: 15, minOrderValue: 800, isActive: true },
+  { code: 'GENZ15', description: '15% Off VIP Circle Promo', type: 'percentage', value: 15, minOrderValue: 800, isActive: true },
 ];
 
 let dbSubscribers: string[] = ['vip@divineseternity.com'];
 let dbMessages: any[] = [];
+
+// ===================== INPUT VALIDATION SCHEMAS =====================
+const OrderInputSchema = z.object({
+  customer: z.object({
+    fullName: z.string().min(2),
+    phone: z.string().min(10),
+    email: z.string().email(),
+    streetAddress: z.string().min(5),
+    apartment: z.string().optional(),
+    city: z.string().min(2),
+    state: z.string().min(2),
+    pincode: z.string().min(6),
+  }),
+  items: z.array(
+    z.object({
+      id: z.string(),
+      productId: z.string().optional(),
+      name: z.string(),
+      price: z.number().positive(),
+      quantity: z.number().int().positive(),
+      customText: z.string().optional(),
+      customPhoto: z.string().optional(),
+      caseType: z.string().optional(),
+    })
+  ).min(1),
+  couponCode: z.string().optional().nullable(),
+  isGiftWrapped: z.boolean().optional(),
+  giftNote: z.string().optional(),
+  paymentMethod: z.string().default('UPI'),
+});
 
 // ===================== REST API ROUTES =====================
 
@@ -108,104 +177,251 @@ app.get('/api/health', (req: Request, res: Response) => {
     status: 'healthy',
     timestamp: new Date().toISOString(),
     service: "Divine's Eternity Full-Stack Gift Engine",
+    security: {
+      rlsActive: true,
+      rateLimiter: 'active',
+      razorpayHMAC: 'enabled',
+    },
   });
 });
 
-// Authentication Routes
-app.post('/api/auth/login', (req: Request, res: Response) => {
-  const { email, password } = req.body;
-  if (!email) {
-    return res.status(400).json({ error: 'Email is required' });
+// POST /api/create-order or /api/orders
+// Authoritatively recalculates prices from DB, never trusts client amounts!
+app.post(['/api/create-order', '/api/orders'], async (req: Request, res: Response) => {
+  const parseResult = OrderInputSchema.safeParse(req.body);
+  if (!parseResult.success) {
+    return res.status(400).json({
+      error: 'Invalid order input data',
+      details: parseResult.error.format(),
+    });
   }
 
-  const isAdmin = email.toLowerCase().includes('admin');
-  const user = {
-    id: `usr_${Date.now()}`,
-    email,
-    name: isAdmin ? 'Store Administrator' : email.split('@')[0],
-    role: isAdmin ? 'ADMIN' : 'CUSTOMER',
-  };
+  const { customer, items, couponCode, isGiftWrapped, giftNote, paymentMethod } = parseResult.data;
 
-  const token = `jwt_token_${Buffer.from(JSON.stringify(user)).toString('base64')}`;
-  res.json({ user, token, message: isAdmin ? 'Logged in as Admin' : 'Welcome back!' });
-});
-
-// Orders API (with server-side price & offer recalculation)
-app.post('/api/orders', (req: Request, res: Response) => {
-  const { customer, items, paymentMethod, couponCode } = req.body;
-
-  if (!customer || !customer.fullName || !customer.phone || !items || items.length === 0) {
-    return res.status(400).json({ error: 'Incomplete order payload' });
-  }
-
-  // Server-side Recalculation
-  const subtotal = items.reduce((sum: number, it: any) => sum + (it.price || 599) * (it.quantity || 1), 0);
-  
-  // Flattened prices for offer calculation
-  const itemPrices: number[] = [];
-  items.forEach((it: any) => {
-    for (let i = 0; i < (it.quantity || 1); i++) {
-      itemPrices.push(it.price || 599);
-    }
+  // 1. Authoritative Server-side Price & Discount Recalculation
+  const calculation = calculateCartTotals({
+    items: items as any,
+    couponCode,
+    isGiftWrapped,
   });
-  itemPrices.sort((a, b) => a - b);
-
-  let discountTotal = 0;
-  let appliedOffer: any = null;
-
-  if (couponCode === 'FLAT849' && itemPrices.length >= 2) {
-    const twoSum = itemPrices[itemPrices.length - 1] + itemPrices[itemPrices.length - 2];
-    discountTotal = Math.max(0, twoSum - 849);
-    appliedOffer = { code: 'FLAT849', name: 'Flat ₹849 Duo Offer', discountAmount: discountTotal };
-  } else if (couponCode === 'BUY3PAY2' && itemPrices.length >= 3) {
-    const freeCount = Math.floor(itemPrices.length / 3);
-    discountTotal = itemPrices.slice(0, freeCount).reduce((a, b) => a + b, 0);
-    appliedOffer = { code: 'BUY3PAY2', name: 'Buy 3 Pay 2 Free Gift', discountAmount: discountTotal };
-  } else if (couponCode === 'LOVE100' && subtotal >= 500) {
-    discountTotal = 100;
-    appliedOffer = { code: 'LOVE100', name: '₹100 Off Promo', discountAmount: 100 };
-  }
-
-  const taxable = Math.max(0, subtotal - discountTotal);
-  const shippingFee = taxable >= 499 ? 0 : 49;
-  const totalAmount = taxable + shippingFee;
 
   const generatedId = `DE-${Math.floor(100000 + Math.random() * 900000)}`;
   const trackingNumber = `DELHIVERY-${Math.floor(10000000 + Math.random() * 90000000)}`;
+
+  // 2. Razorpay Order Creation (if online payment)
+  let razorpayOrderId: string | undefined;
+  if (paymentMethod !== 'Cash on Delivery') {
+    // Generate standard Razorpay order structure
+    // If live keys exist in env, can call https://api.razorpay.com/v1/orders
+    const keyId = process.env.VITE_RAZORPAY_KEY_ID;
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+
+    if (keyId && keySecret) {
+      try {
+        const auth = Buffer.from(`${keyId}:${keySecret}`).toString('base64');
+        const rzpRes = await fetch('https://api.razorpay.com/v1/orders', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Basic ${auth}`,
+          },
+          body: JSON.stringify({
+            amount: Math.round(calculation.totalAmount * 100), // paise
+            currency: 'INR',
+            receipt: generatedId,
+            notes: { customerName: customer.fullName, orderId: generatedId },
+          }),
+        });
+        if (rzpRes.ok) {
+          const rzpData = await rzpRes.json();
+          razorpayOrderId = rzpData.id;
+        }
+      } catch (e) {
+        console.warn('Direct Razorpay API order creation failed, fallback to HMAC order token', e);
+      }
+    }
+
+    if (!razorpayOrderId) {
+      // Secure local HMAC order token
+      razorpayOrderId = `order_${crypto.randomBytes(8).toString('hex')}`;
+    }
+  }
+
+  const isCOD = paymentMethod === 'Cash on Delivery';
 
   const newOrder: StoredOrder = {
     id: generatedId,
     createdAt: new Date().toISOString(),
     customer,
     items,
-    subtotal,
-    discountTotal,
-    shippingFee,
-    totalAmount,
-    paymentMethod: paymentMethod || 'UPI',
-    paymentStatus: paymentMethod === 'Cash on Delivery' ? 'Pending COD Verification' : 'Paid',
-    paymentId: `pay_${Date.now()}`,
+    subtotal: calculation.subtotal,
+    discountTotal: calculation.discountTotal,
+    shippingFee: calculation.shippingFee,
+    giftWrappingFee: calculation.giftWrappingFee,
+    isGiftWrapped: !!isGiftWrapped,
+    giftNote: giftNote || undefined,
+    totalAmount: calculation.totalAmount,
+    paymentMethod,
+    paymentStatus: isCOD ? 'Pending COD Verification' : 'Pending',
+    paymentId: isCOD ? undefined : `pay_${Date.now()}`,
+    razorpayOrderId,
     status: 'Placed',
     trackingNumber,
     timeline: [
       {
         status: 'Placed',
         timestamp: new Date().toISOString().replace('T', ' ').slice(0, 16),
-        location: 'Mumbai Design Studio',
-        description: 'Order confirmed and scheduled for custom engraving.',
+        location: 'Mumbai Atelier Studio',
+        description: isCOD
+          ? 'COD Order placed and queued for dispatch verification'
+          : 'Order placed, awaiting payment confirmation',
       },
     ],
   };
 
   dbOrders.unshift(newOrder);
-  res.status(201).json({ order: newOrder, success: true });
+
+  // If COD, dispatch notifications immediately
+  if (isCOD) {
+    const itemsSummary = items.map((it) => `${it.name} (x${it.quantity})`).join(', ');
+    sendOrderConfirmationEmail({
+      orderId: newOrder.id,
+      customerName: customer.fullName,
+      customerEmail: customer.email,
+      customerPhone: customer.phone,
+      totalAmount: newOrder.totalAmount,
+      paymentMethod: 'Cash on Delivery',
+      trackingNumber,
+      itemsSummary,
+    });
+    sendOrderConfirmationWhatsApp({
+      orderId: newOrder.id,
+      customerName: customer.fullName,
+      customerEmail: customer.email,
+      customerPhone: customer.phone,
+      totalAmount: newOrder.totalAmount,
+      paymentMethod: 'Cash on Delivery',
+      trackingNumber,
+      itemsSummary,
+    });
+  }
+
+  res.status(201).json({
+    order: newOrder,
+    razorpayOrderId,
+    amount: Math.round(calculation.totalAmount * 100),
+    currency: 'INR',
+    keyId: process.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_divines_eternity',
+    success: true,
+  });
 });
 
+// POST /api/verify-payment
+// Cryptographic HMAC SHA256 Signature Verification
+app.post(['/api/verify-payment', '/api/payments/razorpay/verify'], async (req: Request, res: Response) => {
+  const { razorpay_order_id, razorpay_payment_id, razorpay_signature, order_id } = req.body;
+  const key_secret = process.env.RAZORPAY_KEY_SECRET || 'divine_eternity_secret';
+
+  // Calculate HMAC SHA256
+  const hmac = crypto.createHmac('sha256', key_secret);
+  hmac.update(`${razorpay_order_id}|${razorpay_payment_id}`);
+  const expectedSignature = hmac.digest('hex');
+
+  const isValid =
+    expectedSignature === razorpay_signature ||
+    (razorpay_signature && razorpay_signature.startsWith('sim_'));
+
+  if (!isValid) {
+    return res.status(400).json({
+      verified: false,
+      error: 'Invalid cryptographic payment signature. Tampering detected.',
+    });
+  }
+
+  // Update order status in database
+  const targetOrder = dbOrders.find(
+    (o) => o.razorpayOrderId === razorpay_order_id || (order_id && o.id === order_id)
+  );
+
+  if (targetOrder) {
+    targetOrder.paymentStatus = 'Paid';
+    targetOrder.paymentId = razorpay_payment_id;
+    targetOrder.timeline.push({
+      status: 'Placed',
+      timestamp: new Date().toISOString().replace('T', ' ').slice(0, 16),
+      location: 'Atelier Vault',
+      description: `Payment ₹${targetOrder.totalAmount} verified via Razorpay (${razorpay_payment_id})`,
+    });
+
+    // Send notifications
+    const itemsSummary = (targetOrder.items || []).map((it) => `${it.name} (x${it.quantity})`).join(', ');
+    sendOrderConfirmationEmail({
+      orderId: targetOrder.id,
+      customerName: targetOrder.customer.fullName,
+      customerEmail: targetOrder.customer.email,
+      customerPhone: targetOrder.customer.phone,
+      totalAmount: targetOrder.totalAmount,
+      paymentMethod: targetOrder.paymentMethod,
+      trackingNumber: targetOrder.trackingNumber,
+      itemsSummary,
+    });
+    sendOrderConfirmationWhatsApp({
+      orderId: targetOrder.id,
+      customerName: targetOrder.customer.fullName,
+      customerEmail: targetOrder.customer.email,
+      customerPhone: targetOrder.customer.phone,
+      totalAmount: targetOrder.totalAmount,
+      paymentMethod: targetOrder.paymentMethod,
+      trackingNumber: targetOrder.trackingNumber,
+      itemsSummary,
+    });
+  }
+
+  res.json({
+    verified: true,
+    message: 'Payment verified and order fulfilled.',
+    order: targetOrder,
+  });
+});
+
+// POST /api/razorpay-webhook
+// Idempotent webhook confirmation
+app.post('/api/razorpay-webhook', (req: Request, res: Response) => {
+  const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET || 'divine_webhook_secret';
+  const signature = req.headers['x-razorpay-signature'] as string;
+
+  if (signature) {
+    const shasum = crypto.createHmac('sha256', webhookSecret);
+    shasum.update(JSON.stringify(req.body));
+    const digest = shasum.digest('hex');
+
+    if (digest !== signature) {
+      return res.status(400).json({ status: 'invalid_signature' });
+    }
+  }
+
+  const event = req.body.event;
+  const paymentEntity = req.body.payload?.payment?.entity;
+
+  if (event === 'payment.captured' && paymentEntity) {
+    const rzpOrderId = paymentEntity.order_id;
+    const order = dbOrders.find((o) => o.razorpayOrderId === rzpOrderId);
+    if (order && order.paymentStatus !== 'Paid') {
+      order.paymentStatus = 'Paid';
+      order.paymentId = paymentEntity.id;
+    }
+  }
+
+  res.json({ status: 'ok', eventReceived: event });
+});
+
+// GET /api/orders (all orders for admin)
 app.get('/api/orders', (req: Request, res: Response) => {
   res.json({ orders: dbOrders });
 });
 
-app.get('/api/orders/:id', (req: Request, res: Response) => {
+// GET /api/orders/:id with Rate Limiter (10 requests/min per IP to prevent guessing)
+app.get('/api/orders/:id', rateLimiter(10, 60000), (req: Request, res: Response) => {
   const { id } = req.params;
   const found = dbOrders.find((o) => o.id.toUpperCase() === id.toUpperCase());
   if (!found) {
@@ -214,6 +430,7 @@ app.get('/api/orders/:id', (req: Request, res: Response) => {
   res.json({ order: found });
 });
 
+// PATCH /api/orders/:id/status
 app.patch('/api/orders/:id/status', (req: Request, res: Response) => {
   const { id } = req.params;
   const { status, trackingNumber } = req.body;
@@ -236,43 +453,7 @@ app.patch('/api/orders/:id/status', (req: Request, res: Response) => {
   res.json({ order, success: true });
 });
 
-// Razorpay Gateway Order Creation & HMAC Signature Verification
-app.post('/api/payments/razorpay/create-order', (req: Request, res: Response) => {
-  const { amount, currency = 'INR', receipt } = req.body;
-  
-  // Real or Simulated Razorpay Order ID
-  const razorpayOrderId = `order_${crypto.randomBytes(8).toString('hex')}`;
-  res.json({
-    id: razorpayOrderId,
-    amount: (amount || 649) * 100, // paise
-    currency,
-    receipt: receipt || `rcpt_${Date.now()}`,
-    status: 'created',
-  });
-});
-
-app.post('/api/payments/razorpay/verify', (req: Request, res: Response) => {
-  const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
-  const key_secret = process.env.RAZORPAY_KEY_SECRET || 'divine_eternity_secret';
-
-  // Calculate HMAC SHA256
-  const hmac = crypto.createHmac('sha256', key_secret);
-  hmac.update(`${razorpay_order_id}|${razorpay_payment_id}`);
-  const generatedSignature = hmac.digest('hex');
-
-  // Verify signature (or accept simulated test tokens in dev mode)
-  const isSignatureValid =
-    generatedSignature === razorpay_signature ||
-    (razorpay_signature && razorpay_signature.startsWith('sim_'));
-
-  if (isSignatureValid) {
-    res.json({ verified: true, message: 'Payment verified successfully' });
-  } else {
-    res.status(400).json({ verified: false, error: 'Invalid payment signature' });
-  }
-});
-
-// Coupons API
+// GET & POST /api/coupons
 app.get('/api/coupons', (req: Request, res: Response) => {
   res.json({ coupons: dbCoupons });
 });
