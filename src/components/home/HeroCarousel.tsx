@@ -98,100 +98,100 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
     'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=1600&q=80';
 
   return (
-    <section aria-label="Hero Banner Carousel" className="relative overflow-hidden py-3 sm:py-5 bg-[#FFFDF8]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* Full Image Banner Slide Container */}
-        <div
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-          onClick={handleSlideClick}
-          className="relative w-full h-[280px] xs:h-[340px] sm:h-[440px] md:h-[500px] lg:h-[580px] rounded-3xl overflow-hidden shadow-2xl bg-stone-900 cursor-pointer group select-none border border-stone-200/60 transition-all"
-        >
-          {/* Custom Full-Cover Video if configured */}
-          {slide.customVideoUrl ? (
-            <video
-              ref={videoRef}
-              src={slide.customVideoUrl}
-              autoPlay
-              loop
-              muted
-              playsInline
-              className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+    <section aria-label="Hero Banner Carousel" className="relative w-full overflow-hidden bg-[#FFFDF8]">
+      
+      {/* Full Screen Edge-to-Edge Banner Slide Container */}
+      <div
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onClick={handleSlideClick}
+        className="relative w-full h-[60vh] sm:h-[72vh] md:h-[80vh] lg:h-[86vh] xl:h-[90vh] min-h-[400px] max-h-[920px] overflow-hidden bg-stone-950 cursor-pointer group select-none shadow-xl"
+      >
+        {/* Custom Full-Cover Video if configured */}
+        {slide.customVideoUrl ? (
+          <video
+            ref={videoRef}
+            src={slide.customVideoUrl}
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+          />
+        ) : (
+          <div className="relative w-full h-full overflow-hidden bg-stone-950 flex items-center justify-center">
+            {/* Ambient Blurred Background for Ultra Luxury Visual Depth */}
+            <img
+              src={slideImageUrl}
+              alt=""
+              aria-hidden="true"
+              className="absolute inset-0 w-full h-full object-cover blur-3xl opacity-30 scale-110 pointer-events-none"
             />
-          ) : (
-            <div className="relative w-full h-full overflow-hidden bg-stone-950 flex items-center justify-center">
-              {/* Blurred Ambient Glow Halo in the background for ultra-luxury depth */}
-              <img
-                src={slideImageUrl}
-                alt=""
-                aria-hidden="true"
-                className="absolute inset-0 w-full h-full object-cover blur-2xl opacity-40 scale-110 pointer-events-none"
-              />
-              
-              {/* Full Image Occupying The Entire Slide Completely */}
-              <img
-                src={slideImageUrl}
-                alt="Banner Slide"
-                className="relative z-10 w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-700 ease-out"
-                onError={(e) => {
-                  (e.currentTarget as HTMLImageElement).src =
-                    'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=1600&q=80';
+            
+            {/* Full Screen Edge-to-Edge High-Fidelity Banner Image */}
+            <img
+              src={slideImageUrl}
+              alt="Hero Banner Slide"
+              className="relative z-10 w-full h-full object-cover group-hover:scale-[1.015] transition-transform duration-700 ease-out"
+              onError={(e) => {
+                (e.currentTarget as HTMLImageElement).src =
+                  'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=2000&q=85';
+              }}
+            />
+          </div>
+        )}
+
+        {/* Previous & Next Navigation Arrows */}
+        {activeSlides.length > 1 && (
+          <>
+            <button
+              type="button"
+              onClick={prevSlide}
+              className="absolute left-4 sm:left-8 top-1/2 -translate-y-1/2 z-20 w-11 h-11 sm:w-14 sm:h-14 rounded-full bg-black/40 hover:bg-black/75 text-white backdrop-blur-md flex items-center justify-center shadow-2xl transition-all transform hover:scale-110 active:scale-95 cursor-pointer opacity-80 sm:opacity-0 sm:group-hover:opacity-100 border border-white/20"
+              aria-label="Previous slide"
+            >
+              <ChevronLeft className="w-6 h-6 sm:w-7 sm:h-7" />
+            </button>
+            <button
+              type="button"
+              onClick={nextSlide}
+              className="absolute right-4 sm:right-8 top-1/2 -translate-y-1/2 z-20 w-11 h-11 sm:w-14 sm:h-14 rounded-full bg-black/40 hover:bg-black/75 text-white backdrop-blur-md flex items-center justify-center shadow-2xl transition-all transform hover:scale-110 active:scale-95 cursor-pointer opacity-80 sm:opacity-0 sm:group-hover:opacity-100 border border-white/20"
+              aria-label="Next slide"
+            >
+              <ChevronRight className="w-6 h-6 sm:w-7 sm:h-7" />
+            </button>
+          </>
+        )}
+
+        {/* Bottom Dot Indicators */}
+        {activeSlides.length > 1 && (
+          <div className="absolute bottom-5 sm:bottom-7 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 bg-black/60 backdrop-blur-md px-4 py-2 rounded-full shadow-2xl border border-white/10">
+            {activeSlides.map((_, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setCurrentSlide(idx);
                 }}
+                className={`rounded-full transition-all duration-300 cursor-pointer ${
+                  currentSlide === idx
+                    ? 'w-7 h-2.5 bg-[#FF2E93] shadow-md'
+                    : 'w-2.5 h-2.5 bg-white/40 hover:bg-white/80'
+                }`}
+                aria-label={`Go to slide ${idx + 1}`}
               />
-            </div>
-          )}
+            ))}
+          </div>
+        )}
+      </div>
 
-          {/* Previous & Next Navigation Arrows */}
-          {activeSlides.length > 1 && (
-            <>
-              <button
-                type="button"
-                onClick={prevSlide}
-                className="absolute left-3 sm:left-5 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-md flex items-center justify-center shadow-lg transition-all transform hover:scale-105 active:scale-95 cursor-pointer opacity-80 sm:opacity-0 sm:group-hover:opacity-100"
-                aria-label="Previous slide"
-              >
-                <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
-              </button>
-              <button
-                type="button"
-                onClick={nextSlide}
-                className="absolute right-3 sm:right-5 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-md flex items-center justify-center shadow-lg transition-all transform hover:scale-105 active:scale-95 cursor-pointer opacity-80 sm:opacity-0 sm:group-hover:opacity-100"
-                aria-label="Next slide"
-              >
-                <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
-              </button>
-            </>
-          )}
-
-          {/* Bottom Dot Indicators */}
-          {activeSlides.length > 1 && (
-            <div className="absolute bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 bg-black/50 backdrop-blur-md px-3 py-1.5 rounded-full shadow-lg">
-              {activeSlides.map((_, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setCurrentSlide(idx);
-                  }}
-                  className={`rounded-full transition-all duration-300 cursor-pointer ${
-                    currentSlide === idx
-                      ? 'w-6 h-2 bg-[#FF2E93] shadow-xs'
-                      : 'w-2 h-2 bg-white/50 hover:bg-white/90'
-                  }`}
-                  aria-label={`Go to slide ${idx + 1}`}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* 5 Value Pillars Navigation Row Below Hero Banner */}
-        <div className="pt-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-3">
+      {/* 5 Value Pillars Navigation Row Below Full-Screen Hero Banner */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-3.5">
           {[
             { id: 'products', icon: '🎁', label: 'Bespoke Gifts', sub: 'Names & Jewellery' },
             { id: 'personalization', icon: '✨', label: 'Personalization', sub: 'WhatsApp Direct' },
@@ -202,22 +202,22 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
             <button
               key={pillar.id}
               onClick={() => onShopNow(pillar.id)}
-              className="bg-white hover:bg-stone-50/90 backdrop-blur-md px-3.5 py-2.5 rounded-2xl border border-[#F3E8E2] shadow-2xs hover:shadow-xs transition-all flex items-center gap-2.5 text-left cursor-pointer group"
+              className="bg-white hover:bg-[#FFF5F8] backdrop-blur-md px-4 py-3 rounded-2xl border border-[#F3E8E2] shadow-xs hover:shadow-md transition-all flex items-center gap-3 text-left cursor-pointer group"
             >
-              <span className="text-xl group-hover:scale-110 transition-transform">{pillar.icon}</span>
+              <span className="text-2xl group-hover:scale-110 transition-transform">{pillar.icon}</span>
               <div className="min-w-0">
-                <div className="text-[12px] font-extrabold text-[#211D1C] group-hover:text-[#FF2E93] transition-colors truncate">
+                <div className="text-[13px] font-extrabold text-[#211D1C] group-hover:text-[#FF2E93] transition-colors truncate">
                   {pillar.label}
                 </div>
-                <div className="text-[10px] text-stone-500 font-medium truncate">
+                <div className="text-[11px] text-stone-500 font-medium truncate">
                   {pillar.sub}
                 </div>
               </div>
             </button>
           ))}
         </div>
-
       </div>
+
     </section>
   );
 };
