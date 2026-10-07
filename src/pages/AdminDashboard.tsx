@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { useAuth } from '../context/AuthContext';
 import { useReviews } from '../context/ReviewsContext';
 import { useMediaCMS } from '../context/MediaCMSContext';
-import { Product, Order, Coupon, OrderStatus, PhoneBrand, CreatorApplication, Campaign, HeroSlideCMS, VideoReelCMS, AdminRole } from '../types';
+import { Product, Order, Coupon, OrderStatus, PhoneBrand, CreatorApplication, Campaign, HeroSlideCMS, VideoReelCMS, AdminRole, GiftCategory } from '../types';
 import { AVAILABLE_COUPONS } from '../context/CartContext';
 import { INITIAL_CREATOR_APPLICATIONS, INITIAL_CAMPAIGNS } from '../data/campaigns';
 import { SEO } from '../components/common/SEO';
@@ -58,6 +58,9 @@ import {
   Table as TableIcon,
   LayoutGrid,
   CheckSquare,
+  Square,
+  CheckCheck,
+  SlidersHorizontal,
   XCircle,
   Activity,
   Zap,
@@ -67,18 +70,19 @@ import {
   Play,
   Film,
   Image as ImageIcon,
+  ImagePlus,
+  Clipboard,
   Sliders,
   Menu,
-  Upload,
-  FolderPlus,
-  SlidersHorizontal,
 } from 'lucide-react';
+import { PhoneCaseMockup } from '../utils/productVisuals';
 import confetti from 'canvas-confetti';
 
 interface AdminDashboardProps {
   products: Product[];
   onAddProduct: (product: Product) => void;
   onUpdateProduct: (product: Product) => void;
+  onBulkUpdateProducts?: (products: Product[]) => void;
   onDeleteProduct: (productId: string) => void;
   onReturnToStore: () => void;
   initialRole?: AdminRole;
@@ -88,6 +92,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   products,
   onAddProduct,
   onUpdateProduct,
+  onBulkUpdateProducts,
   onDeleteProduct,
   onReturnToStore,
   initialRole = 'director',
@@ -183,35 +188,120 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     );
   };
 
-  // Product modal state & rich editing
-  const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+  // Product modal state
+  const [isAddProductOpen, setIsAddProductOpen] = useState(false);
+  const [newProductName, setNewProductName] = useState('');
+  const [newProductCategory, setNewProductCategory] = useState<Product['category']>('Personalized Name Jewelry');
+  const [newProductPrice, setNewProductPrice] = useState(849);
+  const [newProductMrp, setNewProductMrp] = useState(1899);
+  const [newProductPattern, setNewProductPattern] = useState<Product['designPattern']>('jewelry_necklace');
+  const [newProductTheme, setNewProductTheme] = useState('#FAF4EC');
+  const [newProductSecondary, setNewProductSecondary] = useState('#881337');
+  const [newProductDesc, setNewProductDesc] = useState('');
+  const [newProductBadge, setNewProductBadge] = useState('Atelier Special');
+  const [newProductCustomImage, setNewProductCustomImage] = useState<string>('');
+
+  // Single Product Edit State
+  const [isEditProductOpen, setIsEditProductOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [editProductName, setEditProductName] = useState('');
+  const [editProductCategory, setEditProductCategory] = useState<Product['category']>('Personalized Jewellery');
+  const [editProductPrice, setEditProductPrice] = useState(849);
+  const [editProductMrp, setEditProductMrp] = useState(1899);
+  const [editProductDesc, setEditProductDesc] = useState('');
+  const [editProductBadge, setEditProductBadge] = useState('');
+  const [editProductImage, setEditProductImage] = useState<string>('');
+  const [editProductStock, setEditProductStock] = useState<'in_stock' | 'out_of_stock' | 'low_stock'>('in_stock');
 
-  const [formProductName, setFormProductName] = useState('');
-  const [formProductCategory, setFormProductCategory] = useState<string>('Customize Your Gift');
-  const [formProductCustomCategory, setFormProductCustomCategory] = useState('');
-  const [formProductPrice, setFormProductPrice] = useState<number>(849);
-  const [formProductMrp, setFormProductMrp] = useState<number>(1899);
-  const [formProductDesc, setFormProductDesc] = useState('');
-  const [formProductBadge, setFormProductBadge] = useState('Purely Gold Plated ✨💖');
-  const [formProductImages, setFormProductImages] = useState<string[]>([]);
-  const [formImageUrlInput, setFormImageUrlInput] = useState('');
-  const [formFeatures, setFormFeatures] = useState<string[]>([
-    '18k Anti-tarnish Gold Plating',
-    'Water & Sweat Resistant',
-    'Hypoallergenic & Nickel-Free',
-    'Luxury Suede Gifting Box',
-  ]);
-  const [newFeatureInput, setNewFeatureInput] = useState('');
-  const [formAllowsText, setFormAllowsText] = useState(true);
-  const [formTextLabel, setFormTextLabel] = useState('Custom Name / Monogram');
-  const [formTextPlaceholder, setFormTextPlaceholder] = useState('e.g. Aurelia, Sophia, 14.02');
-  const [formAllowsGiftMessage, setFormAllowsGiftMessage] = useState(true);
-  const [formAllowsPhotoUpload, setFormAllowsPhotoUpload] = useState(false);
+  // Clipboard Image Paste Helper
+  const handlePasteImageFromClipboard = async (setter: (url: string) => void) => {
+    try {
+      if (navigator.clipboard && navigator.clipboard.read) {
+        const items = await navigator.clipboard.read();
+        for (const item of items) {
+          const imageType = item.types.find((t) => t.startsWith('image/'));
+          if (imageType) {
+            const blob = await item.getType(imageType);
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              if (e.target?.result) {
+                setter(e.target.result as string);
+                setBulkFeedbackToast('📋 Image pasted from clipboard!');
+                setTimeout(() => setBulkFeedbackToast(null), 3000);
+              }
+            };
+            reader.readAsDataURL(blob);
+            return;
+          }
+        }
+      }
+      if (navigator.clipboard && navigator.clipboard.readText) {
+        const text = await navigator.clipboard.readText();
+        if (text && (text.startsWith('http') || text.startsWith('data:') || text.startsWith('/'))) {
+          setter(text.trim());
+          setBulkFeedbackToast('📋 Image URL pasted from clipboard!');
+          setTimeout(() => setBulkFeedbackToast(null), 3000);
+          return;
+        }
+      }
+      setBulkFeedbackToast('ℹ️ Copy an image first, then click Paste (or press Ctrl+V).');
+      setTimeout(() => setBulkFeedbackToast(null), 3500);
+    } catch (err) {
+      console.warn('Clipboard read failed:', err);
+      setBulkFeedbackToast('ℹ️ Press Ctrl+V inside the input or click Upload Image.');
+      setTimeout(() => setBulkFeedbackToast(null), 3500);
+    }
+  };
 
+  const handleContainerPaste = (e: React.ClipboardEvent, setter: (url: string) => void) => {
+    const items = e.clipboardData?.items;
+    if (items) {
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf('image') !== -1) {
+          const file = items[i].getAsFile();
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+              if (evt.target?.result) {
+                setter(evt.target.result as string);
+                setBulkFeedbackToast('📋 Image pasted from clipboard!');
+                setTimeout(() => setBulkFeedbackToast(null), 3000);
+              }
+            };
+            reader.readAsDataURL(file);
+            e.preventDefault();
+            return;
+          }
+        }
+      }
+    }
+    const text = e.clipboardData?.getData('text');
+    if (text && (text.startsWith('http') || text.startsWith('data:') || text.startsWith('/'))) {
+      setter(text.trim());
+      setBulkFeedbackToast('📋 Image URL pasted!');
+      setTimeout(() => setBulkFeedbackToast(null), 3000);
+    }
+  };
+
+  // Bulk Editing Mode State
+  const [isBulkEditMode, setIsBulkEditMode] = useState(false);
+  const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
+  const [productCategoryFilter, setProductCategoryFilter] = useState<string>('All');
+  const [productStockFilter, setProductStockFilter] = useState<'All' | 'in_stock' | 'out_of_stock' | 'low_stock'>('All');
   const [productSearchQuery, setProductSearchQuery] = useState('');
-  const [productCategoryFilter, setProductCategoryFilter] = useState('All');
-  const [productSuccessToast, setProductSuccessToast] = useState<string | null>(null);
+  const [isBulkEditModalOpen, setIsBulkEditModalOpen] = useState(false);
+  const [bulkFeedbackToast, setBulkFeedbackToast] = useState<string | null>(null);
+
+  // Bulk Edit Modal Inputs State
+  const [bulkPriceAction, setBulkPriceAction] = useState<'keep' | 'fixed' | 'percent_discount' | 'percent_increase' | 'flat_discount' | 'flat_increase'>('keep');
+  const [bulkPriceValue, setBulkPriceValue] = useState<number>(0);
+  const [bulkUpdateMrp, setBulkUpdateMrp] = useState<boolean>(false);
+  const [bulkMrpValue, setBulkMrpValue] = useState<number>(0);
+
+  const [bulkCategoryAction, setBulkCategoryAction] = useState<'keep' | 'set'>('keep');
+  const [bulkTargetCategory, setBulkTargetCategory] = useState<GiftCategory>('Names on Gifts');
+
+  const [bulkStockAction, setBulkStockAction] = useState<'keep' | 'in_stock' | 'out_of_stock' | 'low_stock'>('keep');
 
   // Coupon state with persistent store synchronization
   const [coupons, setCoupons] = useState<Coupon[]>(() => {
@@ -300,199 +390,257 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     return Array.from(map.values());
   }, [orders]);
 
-  const openAddProductModal = () => {
-    setEditingProduct(null);
-    setFormProductName('');
-    setFormProductCategory('Customize Your Gift');
-    setFormProductCustomCategory('');
-    setFormProductPrice(849);
-    setFormProductMrp(1899);
-    setFormProductDesc('Jewellery made personal, for moments that mean everything.\nPurely gold plated.✨💖');
-    setFormProductBadge('Purely Gold Plated ✨💖');
-    setFormProductImages([]);
-    setFormImageUrlInput('');
-    setFormFeatures([
-      '18k Anti-tarnish Gold Plating',
-      'Water & Sweat Resistant',
-      'Hypoallergenic & Nickel-Free',
-      'Luxury Suede Gifting Box',
-    ]);
-    setNewFeatureInput('');
-    setFormAllowsText(true);
-    setFormTextLabel('Custom Name / Monogram');
-    setFormTextPlaceholder('e.g. Aurelia, Sophia, 14.02');
-    setFormAllowsGiftMessage(true);
-    setFormAllowsPhotoUpload(false);
-    setIsProductModalOpen(true);
-  };
-
-  const openEditProductModal = (prod: Product) => {
-    setEditingProduct(prod);
-    setFormProductName(prod.name);
-    setFormProductCategory(prod.category);
-    setFormProductCustomCategory('');
-    setFormProductPrice(prod.price);
-    setFormProductMrp(prod.mrp);
-    setFormProductDesc(prod.description || '');
-    setFormProductBadge(prod.badge || '');
-    setFormProductImages(prod.images && prod.images.length > 0 ? [...prod.images] : []);
-    setFormImageUrlInput('');
-    setFormFeatures(
-      prod.features && prod.features.length > 0
-        ? [...prod.features]
-        : [
-            '18k Anti-tarnish Gold Plating',
-            'Water & Sweat Resistant',
-            'Hypoallergenic & Nickel-Free',
-            'Luxury Suede Gifting Box',
-          ]
-    );
-    setNewFeatureInput('');
-    setFormAllowsText(prod.personalizationConfig?.allowsText ?? true);
-    setFormTextLabel(prod.personalizationConfig?.textLabel || 'Custom Name / Monogram');
-    setFormTextPlaceholder(prod.personalizationConfig?.textPlaceholder || 'e.g. Aurelia, Sophia, 14.02');
-    setFormAllowsGiftMessage(prod.personalizationConfig?.allowsGiftMessage ?? true);
-    setFormAllowsPhotoUpload(prod.personalizationConfig?.allowsPhoto ?? false);
-    setIsProductModalOpen(true);
-  };
-
-  const handleDuplicateProduct = (prod: Product) => {
-    const duplicated: Product = {
-      ...prod,
-      id: `jewel-copy-${Date.now()}`,
-      slug: `${prod.slug}-copy-${Math.floor(Math.random() * 1000)}`,
-      name: `${prod.name} (Copy)`,
-      badge: 'New Arrival',
-    };
-    onAddProduct(duplicated);
-    setProductSuccessToast(`✓ Created duplicate of "${prod.name}"`);
-    confetti({ particleCount: 40, spread: 50, origin: { y: 0.6 } });
-    setTimeout(() => setProductSuccessToast(null), 4000);
-  };
-
-  const handleImageFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-
-    Array.from(files).forEach((file) => {
-      const reader = new FileReader();
-      reader.onload = (evt) => {
-        if (evt.target?.result && typeof evt.target.result === 'string') {
-          const resultStr = evt.target.result;
-          setFormProductImages((prev) => [...prev, resultStr]);
-        }
-      };
-      reader.readAsDataURL(file);
-    });
-    e.target.value = '';
-  };
-
-  const handleAddImageUrl = () => {
-    if (!formImageUrlInput.trim()) return;
-    setFormProductImages((prev) => [...prev, formImageUrlInput.trim()]);
-    setFormImageUrlInput('');
-  };
-
-  const handleRemoveImage = (indexToRemove: number) => {
-    setFormProductImages((prev) => prev.filter((_, idx) => idx !== indexToRemove));
-  };
-
-  const handleMakePrimaryImage = (indexToPrimary: number) => {
-    setFormProductImages((prev) => {
-      const item = prev[indexToPrimary];
-      const rest = prev.filter((_, idx) => idx !== indexToPrimary);
-      return [item, ...rest];
-    });
-  };
-
-  const handleAddFeature = () => {
-    if (!newFeatureInput.trim()) return;
-    setFormFeatures((prev) => [...prev, newFeatureInput.trim()]);
-    setNewFeatureInput('');
-  };
-
-  const handleRemoveFeature = (idxToRemove: number) => {
-    setFormFeatures((prev) => prev.filter((_, idx) => idx !== idxToRemove));
-  };
-
-  const handleSaveProduct = (e: React.FormEvent) => {
+  const handleCreateProduct = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formProductName.trim()) return;
+    if (!newProductName.trim()) return;
 
-    const finalCategory =
-      formProductCategory === '__custom__' && formProductCustomCategory.trim()
-        ? formProductCustomCategory.trim()
-        : formProductCategory;
+    const newProd: Product = {
+      id: `custom-prod-${Date.now()}`,
+      slug: newProductName.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+      name: newProductName.trim(),
+      category: newProductCategory,
+      price: Number(newProductPrice),
+      mrp: Number(newProductMrp),
+      rating: 5.0,
+      reviewCount: 1,
+      description: newProductDesc || 'Handcrafted bespoke gift made with fine craftsmanship and custom engraving.',
+      features: ['18k Vermeil Laser Plating', 'Custom Engraving Included', 'Archival Box Packaging'],
+      images: newProductCustomImage ? [newProductCustomImage, 'case_front'] : ['case_front', 'case_angle'],
+      badge: newProductBadge || 'New Arrival',
+      isBestSeller: true,
+      isNew: true,
+      themeColor: newProductTheme,
+      secondaryColor: newProductSecondary,
+      designPattern: newProductPattern,
+      allowsPersonalization: true,
+      supportedBrands: ['Apple', 'Samsung', 'OnePlus', 'Google'],
+      personalizationConfig: {
+        allowsText: true,
+        textLabel: 'Custom Name / Monogram',
+        textPlaceholder: 'e.g. Aurelia, Sophia, 14.02',
+        textMaxLength: 16,
+        allowsGiftMessage: true,
+      },
+    };
 
-    const finalImages =
-      formProductImages.length > 0
-        ? formProductImages
-        : ['/src/assets/images/jewel_evil_eye_1791316200000.jpg'];
+    onAddProduct(newProd);
+    setIsAddProductOpen(false);
+    confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
+    setBulkFeedbackToast(`✓ New product "${newProd.name}" added & synced to Home page!`);
+    setTimeout(() => setBulkFeedbackToast(null), 3000);
+  };
 
-    if (editingProduct) {
-      const updatedProd: Product = {
-        ...editingProduct,
-        name: formProductName.trim(),
-        slug: formProductName.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-        category: finalCategory,
-        price: Number(formProductPrice),
-        mrp: Number(formProductMrp),
-        description: formProductDesc.trim(),
-        badge: formProductBadge.trim() || undefined,
-        images: finalImages,
-        features: formFeatures.filter((f) => f.trim().length > 0),
-        allowsPersonalization: formAllowsText || formAllowsGiftMessage || formAllowsPhotoUpload,
-        personalizationConfig: {
-          allowsText: formAllowsText,
-          textLabel: formTextLabel,
-          textPlaceholder: formTextPlaceholder,
-          textMaxLength: 20,
-          allowsGiftMessage: formAllowsGiftMessage,
-          allowsPhoto: formAllowsPhotoUpload,
-        },
-      };
-      onUpdateProduct(updatedProd);
-      setProductSuccessToast(`✓ Updated "${updatedProd.name}". Changes are live on the main page!`);
+  const handleOpenEditProduct = (p: Product) => {
+    setEditingProduct(p);
+    setEditProductName(p.name);
+    setEditProductCategory(p.category);
+    setEditProductPrice(p.price);
+    setEditProductMrp(p.mrp);
+    setEditProductDesc(p.description || '');
+    setEditProductBadge(p.badge || '');
+    setEditProductImage(p.images?.[0] || '');
+    setEditProductStock(p.stockStatus || (p.inStock === false ? 'out_of_stock' : 'in_stock'));
+    setIsEditProductOpen(true);
+  };
+
+  const handleSaveEditedProduct = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingProduct || !editProductName.trim()) return;
+
+    const updated: Product = {
+      ...editingProduct,
+      name: editProductName.trim(),
+      category: editProductCategory,
+      price: Number(editProductPrice),
+      mrp: Number(editProductMrp),
+      description: editProductDesc.trim(),
+      badge: editProductBadge.trim() || undefined,
+      images: editProductImage
+        ? [editProductImage, ...(editingProduct.images?.slice(1) || ['case_front'])]
+        : (editingProduct.images || ['case_front']),
+      inStock: editProductStock === 'in_stock' || editProductStock === 'low_stock',
+      stockStatus: editProductStock,
+    };
+
+    onUpdateProduct(updated);
+    if (onBulkUpdateProducts) {
+      onBulkUpdateProducts([updated]);
+    }
+    setIsEditProductOpen(false);
+    setEditingProduct(null);
+    confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
+    setBulkFeedbackToast(`✓ Product "${updated.name}" updated & synced to Home page!`);
+    setTimeout(() => setBulkFeedbackToast(null), 3500);
+  };
+
+  const SEVEN_COLLECTIONS: GiftCategory[] = [
+    'Names on Gifts',
+    'Personalized Jewellery',
+    'Customize Your Caricature or Miniature',
+    'Personalize Your Bouquets',
+    'Special Hampers',
+    'Hair Accessories',
+    'Paradise of Jewels',
+  ];
+
+  const filteredProducts = useMemo(() => {
+    return products.filter((p) => {
+      // Category filter
+      if (productCategoryFilter !== 'All' && p.category !== productCategoryFilter) {
+        return false;
+      }
+      // Stock status filter
+      if (productStockFilter !== 'All') {
+        const isInStock = p.inStock !== false && p.stockStatus !== 'out_of_stock';
+        if (productStockFilter === 'in_stock' && !isInStock) return false;
+        if (productStockFilter === 'out_of_stock' && isInStock) return false;
+        if (productStockFilter === 'low_stock' && p.stockStatus !== 'low_stock') return false;
+      }
+      // Search query
+      if (productSearchQuery.trim()) {
+        const q = productSearchQuery.toLowerCase();
+        const matchesName = p.name.toLowerCase().includes(q);
+        const matchesCat = p.category.toLowerCase().includes(q);
+        const matchesSlug = p.slug.toLowerCase().includes(q);
+        if (!matchesName && !matchesCat && !matchesSlug) return false;
+      }
+      return true;
+    });
+  }, [products, productCategoryFilter, productStockFilter, productSearchQuery]);
+
+  const allFilteredSelected =
+    filteredProducts.length > 0 && filteredProducts.every((p) => selectedProductIds.includes(p.id));
+
+  const handleToggleSelectAll = () => {
+    if (allFilteredSelected) {
+      const filteredIds = new Set(filteredProducts.map((p) => p.id));
+      setSelectedProductIds((prev) => prev.filter((id) => !filteredIds.has(id)));
     } else {
-      const newProd: Product = {
-        id: `prod-${Date.now()}`,
-        name: formProductName.trim(),
-        slug:
-          formProductName.toLowerCase().replace(/[^a-z0-9]+/g, '-') +
-          `-${Math.floor(Math.random() * 1000)}`,
-        category: finalCategory,
-        price: Number(formProductPrice),
-        mrp: Number(formProductMrp),
-        rating: 5.0,
-        reviewCount: 1,
-        description:
-          formProductDesc.trim() ||
-          'Jewellery made personal, for moments that mean everything.\nPurely gold plated.✨💖',
-        badge: formProductBadge.trim() || 'New Arrival',
-        isBestSeller: true,
-        isNew: true,
-        themeColor: '#FFFDF8',
-        secondaryColor: '#D4AF37',
-        designPattern: 'jewelry_necklace',
-        images: finalImages,
-        features: formFeatures.filter((f) => f.trim().length > 0),
-        allowsPersonalization: formAllowsText || formAllowsGiftMessage || formAllowsPhotoUpload,
-        personalizationConfig: {
-          allowsText: formAllowsText,
-          textLabel: formTextLabel,
-          textPlaceholder: formTextPlaceholder,
-          textMaxLength: 20,
-          allowsGiftMessage: formAllowsGiftMessage,
-          allowsPhoto: formAllowsPhotoUpload,
-        },
-      };
-      onAddProduct(newProd);
-      setProductSuccessToast(`✓ Added "${newProd.name}". Now live on the main page!`);
+      const newSelected = new Set([...selectedProductIds, ...filteredProducts.map((p) => p.id)]);
+      setSelectedProductIds(Array.from(newSelected));
+    }
+  };
+
+  const handleToggleSelectProduct = (productId: string) => {
+    setSelectedProductIds((prev) =>
+      prev.includes(productId) ? prev.filter((id) => id !== productId) : [...prev, productId]
+    );
+  };
+
+  const handleSingleStockToggle = (product: Product) => {
+    const isCurrentlyInStock = product.inStock !== false && product.stockStatus !== 'out_of_stock';
+    const nextStatus = isCurrentlyInStock ? 'out_of_stock' : 'in_stock';
+    const updated: Product = {
+      ...product,
+      inStock: !isCurrentlyInStock,
+      stockStatus: nextStatus,
+    };
+    onUpdateProduct(updated);
+    if (onBulkUpdateProducts) {
+      onBulkUpdateProducts([updated]);
+    }
+    setBulkFeedbackToast(`Updated "${product.name}" to ${nextStatus === 'in_stock' ? 'In Stock' : 'Out of Stock'}`);
+    setTimeout(() => setBulkFeedbackToast(null), 3000);
+  };
+
+  const handleQuickStockUpdate = (status: 'in_stock' | 'out_of_stock' | 'low_stock') => {
+    if (selectedProductIds.length === 0) return;
+
+    const updatedList: Product[] = [];
+    products.forEach((p) => {
+      if (selectedProductIds.includes(p.id)) {
+        const updated: Product = {
+          ...p,
+          inStock: status === 'in_stock' || status === 'low_stock',
+          stockStatus: status,
+        };
+        updatedList.push(updated);
+        onUpdateProduct(updated);
+      }
+    });
+
+    if (onBulkUpdateProducts && updatedList.length > 0) {
+      onBulkUpdateProducts(updatedList);
     }
 
-    setIsProductModalOpen(false);
-    confetti({ particleCount: 60, spread: 70, origin: { y: 0.6 } });
-    setTimeout(() => setProductSuccessToast(null), 5000);
+    confetti({ particleCount: 40, spread: 60, origin: { y: 0.7 } });
+    const label = status === 'in_stock' ? 'In Stock' : status === 'out_of_stock' ? 'Out of Stock' : 'Low Stock';
+    setBulkFeedbackToast(`Updated ${selectedProductIds.length} products to "${label}"`);
+    setTimeout(() => setBulkFeedbackToast(null), 4000);
+  };
+
+  const handleApplyBulkUpdate = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (selectedProductIds.length === 0) return;
+
+    const updatedList: Product[] = [];
+    products.forEach((p) => {
+      if (selectedProductIds.includes(p.id)) {
+        let newPrice = p.price;
+        let newMrp = p.mrp;
+        let newCategory = p.category;
+        let newInStock = p.inStock;
+        let newStockStatus = p.stockStatus;
+
+        // Apply Price
+        if (bulkPriceAction === 'fixed') {
+          if (bulkPriceValue > 0) newPrice = Math.round(bulkPriceValue);
+        } else if (bulkPriceAction === 'percent_discount') {
+          if (bulkPriceValue > 0) newPrice = Math.max(1, Math.round(p.price * (1 - bulkPriceValue / 100)));
+        } else if (bulkPriceAction === 'percent_increase') {
+          if (bulkPriceValue > 0) newPrice = Math.round(p.price * (1 + bulkPriceValue / 100));
+        } else if (bulkPriceAction === 'flat_discount') {
+          if (bulkPriceValue > 0) newPrice = Math.max(1, Math.round(p.price - bulkPriceValue));
+        } else if (bulkPriceAction === 'flat_increase') {
+          if (bulkPriceValue > 0) newPrice = Math.round(p.price + bulkPriceValue);
+        }
+
+        if (bulkUpdateMrp && bulkMrpValue > 0) {
+          newMrp = Math.round(bulkMrpValue);
+        } else if (newPrice > newMrp) {
+          newMrp = Math.round(newPrice * 1.5);
+        }
+
+        // Apply Category
+        if (bulkCategoryAction === 'set') {
+          newCategory = bulkTargetCategory;
+        }
+
+        // Apply Stock
+        if (bulkStockAction === 'in_stock') {
+          newInStock = true;
+          newStockStatus = 'in_stock';
+        } else if (bulkStockAction === 'out_of_stock') {
+          newInStock = false;
+          newStockStatus = 'out_of_stock';
+        } else if (bulkStockAction === 'low_stock') {
+          newInStock = true;
+          newStockStatus = 'low_stock';
+        }
+
+        const updatedProduct: Product = {
+          ...p,
+          price: newPrice,
+          mrp: newMrp,
+          category: newCategory,
+          inStock: newInStock,
+          stockStatus: newStockStatus,
+        };
+
+        updatedList.push(updatedProduct);
+        onUpdateProduct(updatedProduct);
+      }
+    });
+
+    if (onBulkUpdateProducts && updatedList.length > 0) {
+      onBulkUpdateProducts(updatedList);
+    }
+
+    confetti({ particleCount: 70, spread: 70, origin: { y: 0.6 } });
+    setBulkFeedbackToast(`Successfully bulk updated ${updatedList.length} products!`);
+    setTimeout(() => setBulkFeedbackToast(null), 4500);
+
+    setIsBulkEditModalOpen(false);
   };
 
   const handleCreateCoupon = (e: React.FormEvent) => {
@@ -1163,58 +1311,81 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         )}
 
         {/* ============================================================ */}
-        {/* TAB 3: CATALOG STUDIO */}
+        {/* TAB 3: CATALOG STUDIO & BULK EDITING MODE */}
         {/* ============================================================ */}
         {activeTab === 'products' && (
-          <div className="space-y-6 animate-in fade-in duration-150">
-            {/* Live feedback toast */}
-            {productSuccessToast && (
-              <div className="bg-emerald-600 text-white px-5 py-3.5 rounded-2xl flex items-center justify-between shadow-xl animate-in slide-in-from-top-2 duration-200">
-                <div className="flex items-center gap-3 font-bold text-xs sm:text-sm">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-200 shrink-0" />
-                  <span>{productSuccessToast}</span>
-                </div>
-                <button
-                  onClick={() => setProductSuccessToast(null)}
-                  className="text-white/80 hover:text-white p-1"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-            )}
-
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-[#181418] p-5 sm:p-6 rounded-2xl border border-[#EFE7DE] dark:border-[#2C242A] shadow-xs">
+          <div className="space-y-6 animate-in fade-in duration-150 relative pb-16">
+            {/* Top Toolbar */}
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white dark:bg-[#181418] p-5 sm:p-6 rounded-2xl border border-[#EFE7DE] dark:border-[#2C242A] shadow-xs">
               <div>
-                <h3 className="font-serif font-bold text-lg sm:text-xl text-stone-900 dark:text-white flex items-center gap-2">
-                  <Package className="w-5 h-5 text-[#881337] dark:text-[#FB7185]" /> Product Catalog Studio
-                </h3>
-                <p className="text-xs text-stone-500 mt-1">
-                  Upload custom product photos, edit live selling prices & MRP, update titles & descriptions. Changes update the main page in real-time.
-                </p>
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-[#881337]/10 dark:bg-[#FF2E93]/15 text-[#881337] dark:text-[#FF2E93] flex items-center justify-center">
+                    <Package className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-serif font-bold text-lg sm:text-xl text-stone-900 dark:text-white flex items-center gap-2">
+                      <span>Product Catalog Studio</span>
+                      {isBulkEditMode && (
+                        <span className="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-[#FF2E93] text-white shadow-xs tracking-wider animate-pulse">
+                          ⚡ Bulk Mode ON
+                        </span>
+                      )}
+                    </h3>
+                    <p className="text-xs text-stone-500">
+                      Manage live prices, collections, inventory status, and execute simultaneous bulk updates
+                    </p>
+                  </div>
+                </div>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2.5">
+                {/* Bulk Editing Mode Toggle Button */}
                 <button
-                  onClick={openAddProductModal}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold bg-[#881337] text-white hover:bg-[#700f2d] transition-all shadow-md active:scale-95"
+                  type="button"
+                  onClick={() => {
+                    const nextMode = !isBulkEditMode;
+                    setIsBulkEditMode(nextMode);
+                    if (!nextMode) {
+                      setSelectedProductIds([]);
+                    }
+                  }}
+                  className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer border ${
+                    isBulkEditMode
+                      ? 'bg-[#FF2E93] text-white border-[#FF2E93] ring-2 ring-[#FF2E93]/30 shadow-md'
+                      : 'bg-white dark:bg-stone-900 text-stone-700 dark:text-stone-200 border-[#EFE7DE] dark:border-stone-800 hover:border-[#FF2E93] hover:text-[#FF2E93]'
+                  }`}
+                >
+                  <Zap className={`w-4 h-4 ${isBulkEditMode ? 'text-[#FFD94A]' : 'text-stone-400'}`} />
+                  <span>{isBulkEditMode ? 'Exit Bulk Edit Mode' : '⚡ Enable Bulk Edit Mode'}</span>
+                  {selectedProductIds.length > 0 && (
+                    <span className="ml-1 px-1.5 py-0.2 rounded-full bg-white text-[#FF2E93] text-[10px] font-mono font-bold">
+                      {selectedProductIds.length}
+                    </span>
+                  )}
+                </button>
+
+                <button
+                  onClick={() => setIsAddProductOpen(true)}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-[#881337] dark:bg-[#FF2E93] text-white hover:bg-[#700f2d] dark:hover:bg-[#e02680] transition-all shadow-xs cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
-                  <span>Add New Product</span>
+                  <span>Add New Keepsake</span>
                 </button>
               </div>
             </div>
 
             {/* Filter & Search Bar */}
             <div className="bg-white dark:bg-[#181418] p-4 rounded-2xl border border-[#EFE7DE] dark:border-[#2C242A] shadow-xs space-y-3">
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-                <div className="relative flex-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3 items-center">
+                {/* Search */}
+                <div className="lg:col-span-5 relative">
                   <Search className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
                     type="text"
                     value={productSearchQuery}
                     onChange={(e) => setProductSearchQuery(e.target.value)}
-                    placeholder="Search products by title, description, or category..."
-                    className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl pl-9 pr-4 py-2 text-xs text-stone-900 dark:text-white placeholder-stone-400 outline-none focus:border-[#881337]"
+                    placeholder="Search by product name, slug, or category..."
+                    className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl pl-10 pr-3.5 py-2.5 text-xs text-stone-900 dark:text-white placeholder-stone-500 focus:ring-2 focus:ring-[#FF2E93] focus:outline-none"
                   />
                   {productSearchQuery && (
                     <button
@@ -1226,211 +1397,355 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   )}
                 </div>
 
-                <div className="text-xs font-medium text-stone-500 shrink-0">
-                  Total Products:{' '}
-                  <strong className="text-stone-900 dark:text-white font-mono font-bold">
-                    {products.length}
-                  </strong>
+                {/* Category Filter Dropdown */}
+                <div className="lg:col-span-4">
+                  <select
+                    value={productCategoryFilter}
+                    onChange={(e) => setProductCategoryFilter(e.target.value)}
+                    className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2.5 text-xs font-semibold text-stone-800 dark:text-stone-200 focus:ring-2 focus:ring-[#FF2E93] focus:outline-none"
+                  >
+                    <option value="All">All 7 Collections & Gifts ({products.length})</option>
+                    {SEVEN_COLLECTIONS.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Stock Status Filter */}
+                <div className="lg:col-span-3">
+                  <select
+                    value={productStockFilter}
+                    onChange={(e) => setProductStockFilter(e.target.value as any)}
+                    className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2.5 text-xs font-semibold text-stone-800 dark:text-stone-200 focus:ring-2 focus:ring-[#FF2E93] focus:outline-none"
+                  >
+                    <option value="All">All Stock Levels</option>
+                    <option value="in_stock">🟢 In Stock Only</option>
+                    <option value="low_stock">🟡 Low Stock Only</option>
+                    <option value="out_of_stock">🔴 Out of Stock Only</option>
+                  </select>
                 </div>
               </div>
 
-              {/* Category Pills */}
-              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-[11px] scrollbar-none">
-                {[
-                  'All',
-                  'Customize Your Gift',
-                  'Personalized Jewellery',
-                  'Names on Gifts',
-                  'Customize Your Caricature or Miniature',
-                  'Personalize Your Bouquets',
-                  'Special Hampers',
-                  'Hair Accessories',
-                  'Paradise of Jewels',
-                ].map((cat) => {
-                  const isSelected = productCategoryFilter === cat;
-                  return (
+              {/* Sub-bar with selection counter and quick select-all button */}
+              <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[#F3E8E2] dark:border-stone-800/80 text-xs">
+                <div className="flex items-center gap-2 text-stone-500">
+                  <span>
+                    Showing <strong className="text-stone-900 dark:text-white font-bold">{filteredProducts.length}</strong> of{' '}
+                    <strong className="text-stone-900 dark:text-white font-bold">{products.length}</strong> items
+                  </span>
+                  {selectedProductIds.length > 0 && (
+                    <span className="px-2.5 py-0.5 rounded-full bg-[#FFF0F3] text-[#FF2E93] font-bold text-[11px] border border-[#FF2E93]/30">
+                      {selectedProductIds.length} Selected
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleToggleSelectAll}
+                    className="text-xs font-bold text-stone-600 dark:text-stone-300 hover:text-[#FF2E93] transition-colors cursor-pointer flex items-center gap-1.5 px-2 py-1 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800"
+                  >
+                    <CheckSquare className="w-3.5 h-3.5 text-[#FF2E93]" />
+                    <span>{allFilteredSelected ? 'Deselect All Filtered' : `Select All Filtered (${filteredProducts.length})`}</span>
+                  </button>
+
+                  {selectedProductIds.length > 0 && (
                     <button
-                      key={cat}
-                      onClick={() => setProductCategoryFilter(cat)}
-                      className={`px-3 py-1.5 rounded-lg whitespace-nowrap font-bold transition-colors ${
-                        isSelected
-                          ? 'bg-[#881337] text-white'
-                          : 'bg-[#FAF7F2] dark:bg-stone-900 text-stone-600 dark:text-stone-400 hover:bg-[#F3ECE4]'
-                      }`}
+                      type="button"
+                      onClick={() => setSelectedProductIds([])}
+                      className="text-xs font-bold text-rose-600 hover:underline cursor-pointer"
                     >
-                      {cat}
+                      Clear Selection
                     </button>
-                  );
-                })}
+                  )}
+                </div>
               </div>
             </div>
 
-            {/* Products Table */}
+            {/* Bulk Mode Active Guide Banner */}
+            {isBulkEditMode && (
+              <div className="p-4 rounded-2xl bg-gradient-to-r from-[#FFF0F5] via-[#FFF9EB] to-[#FFF0F5] border border-[#FF2E93]/30 text-xs text-stone-800 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-start sm:items-center gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-[#FF2E93] text-white flex items-center justify-center shrink-0 shadow-xs">
+                    <Zap className="w-4 h-4 text-[#FFD94A]" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-stone-900 flex items-center gap-2">
+                      Bulk Editing Mode Active
+                    </h4>
+                    <p className="text-stone-600 text-[11px]">
+                      Check the boxes beside the products you want to modify, then click <strong>Bulk Edit</strong> or the quick stock buttons to apply simultaneous updates to price, category, or inventory.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={handleToggleSelectAll}
+                    className="px-3 py-1.5 rounded-xl bg-white border border-[#FF2E93]/40 text-stone-800 hover:text-[#FF2E93] font-bold text-xs shadow-xs cursor-pointer"
+                  >
+                    {allFilteredSelected ? 'Deselect All' : `Select All (${filteredProducts.length})`}
+                  </button>
+                  {selectedProductIds.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setIsBulkEditModalOpen(true)}
+                      className="px-4 py-1.5 rounded-xl bg-[#FF2E93] hover:bg-[#e02680] text-white font-bold text-xs shadow-xs cursor-pointer flex items-center gap-1.5"
+                    >
+                      <SlidersHorizontal className="w-3.5 h-3.5" />
+                      <span>Edit {selectedProductIds.length} Items</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Products Catalog Table with Checkboxes */}
             <div className="bg-white dark:bg-[#181418] rounded-2xl border border-[#EFE7DE] dark:border-[#2C242A] shadow-xs overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
                     <tr className="bg-[#FAF7F2] dark:bg-[#1C181C] text-stone-500 uppercase font-semibold text-[10px] tracking-wider border-b border-[#EFE7DE] dark:border-[#2C242A]">
-                      <th className="py-3.5 px-4">Product & Image</th>
-                      <th className="py-3.5 px-4">Category</th>
+                      <th className="py-3.5 px-4 w-12 text-center">
+                        <input
+                          type="checkbox"
+                          checked={allFilteredSelected && filteredProducts.length > 0}
+                          onChange={handleToggleSelectAll}
+                          aria-label="Select all products"
+                          className="w-4 h-4 rounded text-[#FF2E93] focus:ring-[#FF2E93] cursor-pointer"
+                        />
+                      </th>
+                      <th className="py-3.5 px-4">Item & Category</th>
                       <th className="py-3.5 px-4">Price & MRP</th>
-                      <th className="py-3.5 px-4">Rating</th>
-                      <th className="py-3.5 px-4">Personalization</th>
+                      <th className="py-3.5 px-4">Stock Status</th>
+                      <th className="py-3.5 px-4">Rating & Proof</th>
                       <th className="py-3.5 px-4 text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#EFE7DE] dark:divide-[#282127]">
-                    {products
-                      .filter((p) => {
-                        if (
-                          productCategoryFilter !== 'All' &&
-                          p.category.toLowerCase() !== productCategoryFilter.toLowerCase()
-                        ) {
-                          return false;
-                        }
-                        if (productSearchQuery.trim()) {
-                          const q = productSearchQuery.toLowerCase();
-                          return (
-                            p.name.toLowerCase().includes(q) ||
-                            (p.description && p.description.toLowerCase().includes(q)) ||
-                            p.category.toLowerCase().includes(q)
-                          );
-                        }
-                        return true;
-                      })
-                      .map((p, idx) => {
-                        const coverImg = p.images && p.images.length > 0 ? p.images[0] : null;
-                        const discountPct = p.mrp > p.price ? Math.round(((p.mrp - p.price) / p.mrp) * 100) : 0;
+                    {filteredProducts.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="py-12 text-center text-stone-400">
+                          <Package className="w-10 h-10 mx-auto mb-2 opacity-40" />
+                          <p className="font-bold text-sm">No products matched your filters</p>
+                          <p className="text-xs mt-1">Try resetting the category or search query.</p>
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredProducts.map((p, idx) => {
+                        const isSelected = selectedProductIds.includes(p.id);
+                        const isInStock = p.inStock !== false && p.stockStatus !== 'out_of_stock';
+                        const isLowStock = p.stockStatus === 'low_stock';
+
                         return (
                           <tr
                             key={p.id}
-                            className={`hover:bg-[#FAF7F2] dark:hover:bg-stone-900/60 transition-colors ${
-                              idx % 2 === 0 ? 'bg-white dark:bg-[#181418]' : 'bg-[#FAF7F2]/40 dark:bg-stone-950/30'
+                            className={`transition-colors ${
+                              isSelected
+                                ? 'bg-[#FFF0F5] dark:bg-[#321323]/50 border-l-4 border-l-[#FF2E93]'
+                                : idx % 2 === 0
+                                ? 'bg-white dark:bg-[#181418] hover:bg-[#FAF7F2] dark:hover:bg-stone-900/60'
+                                : 'bg-[#FAF7F2]/40 dark:bg-stone-950/30 hover:bg-[#FAF7F2] dark:hover:bg-stone-900/60'
                             }`}
                           >
-                            <td className="py-3.5 px-4 align-middle">
-                              <div className="flex items-center gap-3">
-                                <div className="w-14 h-14 rounded-xl overflow-hidden bg-stone-100 dark:bg-stone-800 border border-[#EFE7DE] dark:border-stone-700 shrink-0 relative group">
-                                  {coverImg ? (
+                            {/* Checkbox */}
+                            <td className="py-4 px-4 text-center align-middle">
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={() => handleToggleSelectProduct(p.id)}
+                                aria-label={`Select ${p.name}`}
+                                className="w-4 h-4 rounded text-[#FF2E93] focus:ring-[#FF2E93] cursor-pointer"
+                              />
+                            </td>
+
+                            {/* Item & Category */}
+                            <td className="py-4 px-4 align-top">
+                              <div className="flex items-start gap-3">
+                                <div className="w-12 h-12 rounded-xl bg-stone-100 border border-[#EFE7DE] overflow-hidden shrink-0 flex items-center justify-center relative shadow-xs">
+                                  {p.images && p.images[0] && (p.images[0].startsWith('http') || p.images[0].startsWith('data:') || p.images[0].startsWith('/') || p.images[0].startsWith('blob:')) ? (
                                     <img
-                                      src={coverImg}
+                                      src={p.images[0]}
                                       alt={p.name}
-                                      referrerPolicy="no-referrer"
-                                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                                      className="w-full h-full object-cover"
+                                      onError={(e) => {
+                                        (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=300&q=80';
+                                      }}
                                     />
                                   ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-stone-400">
-                                      <ImageIcon className="w-5 h-5" />
+                                    <div className="w-full h-full flex items-center justify-center p-0.5 bg-[#FFFDF8]">
+                                      <PhoneCaseMockup product={p} className="w-full h-full scale-90" />
                                     </div>
                                   )}
-                                  {p.images && p.images.length > 1 && (
-                                    <span className="absolute bottom-0.5 right-0.5 bg-black/75 text-[9px] font-bold text-white px-1 rounded">
-                                      +{p.images.length - 1}
-                                    </span>
-                                  )}
                                 </div>
-                                <div className="min-w-0">
-                                  <div className="font-bold text-sm text-stone-900 dark:text-white truncate max-w-xs">
+                                <div className="space-y-1">
+                                  <div className="font-bold text-sm text-stone-900 dark:text-white leading-tight">
                                     {p.name}
                                   </div>
-                                  {p.badge && (
-                                    <span className="inline-block mt-0.5 px-2 py-0.5 text-[9px] font-bold uppercase rounded-md bg-[#881337]/10 text-[#881337] dark:text-[#FB7185]">
-                                      {p.badge}
+                                  <div className="flex flex-wrap items-center gap-1.5">
+                                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#FF2E93]/10 text-[#FF2E93] border border-[#FF2E93]/20">
+                                      {p.category}
                                     </span>
-                                  )}
-                                  {p.description && (
-                                    <p className="text-[11px] text-stone-500 truncate max-w-sm mt-0.5">
-                                      {p.description}
-                                    </p>
-                                  )}
+                                    {p.badge && (
+                                      <span className="px-1.5 py-0.2 rounded-md text-[9px] font-bold bg-[#FFD94A]/20 text-stone-800 dark:text-[#FFD94A]">
+                                        {p.badge}
+                                      </span>
+                                    )}
+                                  </div>
                                 </div>
                               </div>
                             </td>
 
-                            <td className="py-3.5 px-4 align-middle">
-                              <span className="inline-block px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 text-stone-700 dark:text-stone-300">
-                                {p.category}
-                              </span>
-                            </td>
-
-                            <td className="py-3.5 px-4 align-middle">
-                              <div className="flex items-baseline gap-1.5">
-                                <span className="font-bold text-sm text-stone-900 dark:text-white tabular-nums">
-                                  ₹{p.price}
+                            {/* Price & MRP */}
+                            <td className="py-4 px-4 align-top">
+                              <div className="font-mono font-bold text-sm text-stone-900 dark:text-white tabular-nums">
+                                ₹{p.price.toLocaleString('en-IN')}
+                              </div>
+                              <div className="flex items-center gap-1.5 mt-0.5">
+                                <span className="text-[10px] text-stone-400 line-through font-mono tabular-nums">
+                                  ₹{p.mrp.toLocaleString('en-IN')}
                                 </span>
                                 {p.mrp > p.price && (
-                                  <span className="text-[10px] text-stone-400 line-through tabular-nums">
-                                    ₹{p.mrp}
+                                  <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400">
+                                    {Math.round(((p.mrp - p.price) / p.mrp) * 100)}% OFF
                                   </span>
                                 )}
                               </div>
-                              {discountPct > 0 && (
-                                <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
-                                  {discountPct}% OFF
-                                </span>
-                              )}
                             </td>
 
-                            <td className="py-3.5 px-4 align-middle">
+                            {/* Stock Status with 1-Click Toggle */}
+                            <td className="py-4 px-4 align-top">
+                              <button
+                                type="button"
+                                onClick={() => handleSingleStockToggle(p)}
+                                title="Click to toggle stock status"
+                                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold transition-all cursor-pointer border ${
+                                  !isInStock
+                                    ? 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-900/60'
+                                    : isLowStock
+                                    ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-900/60'
+                                    : 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-900/60'
+                                }`}
+                              >
+                                <span className="w-1.5 h-1.5 rounded-full bg-current" />
+                                <span>
+                                  {!isInStock ? 'Out of Stock' : isLowStock ? 'Low Stock' : 'In Stock'}
+                                </span>
+                                <span className="text-[9px] opacity-70 underline ml-0.5">toggle</span>
+                              </button>
+                            </td>
+
+                            {/* Rating & Proof */}
+                            <td className="py-4 px-4 align-top">
                               <div className="flex items-center gap-1 font-bold text-stone-800 dark:text-stone-200">
                                 <Star className="w-3.5 h-3.5 text-[#C5A059] fill-[#C5A059]" />
                                 <span>{p.rating}</span>
                                 <span className="text-stone-400 font-normal">({p.reviewCount})</span>
                               </div>
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-bold bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 mt-1">
+                                <Check className="w-2.5 h-2.5 text-emerald-600" /> Bespoke
+                              </span>
                             </td>
 
-                            <td className="py-3.5 px-4 align-middle">
-                              <div className="flex flex-col gap-1">
-                                {p.personalizationConfig?.allowsText !== false && (
-                                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 dark:text-emerald-300">
-                                    <Check className="w-3 h-3" /> Laser Engraving
-                                  </span>
-                                )}
-                                {p.personalizationConfig?.allowsGiftMessage && (
-                                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-purple-700 dark:text-purple-300">
-                                    <Check className="w-3 h-3" /> Gift Card
-                                  </span>
-                                )}
-                              </div>
-                            </td>
-
-                            <td className="py-3.5 px-4 align-middle text-right">
-                              <div className="flex items-center justify-end gap-1.5">
-                                <button
-                                  onClick={() => openEditProductModal(p)}
-                                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-stone-100 dark:bg-stone-800 hover:bg-[#881337] hover:text-white text-stone-700 dark:text-stone-300 font-bold transition-all shadow-2xs"
-                                  title="Edit Product Details & Images"
-                                >
-                                  <Edit3 className="w-3.5 h-3.5" />
-                                  <span>Edit</span>
-                                </button>
-                                <button
-                                  onClick={() => handleDuplicateProduct(p)}
-                                  className="p-1.5 rounded-lg text-stone-500 hover:bg-stone-200 dark:hover:bg-stone-800 transition-colors"
-                                  title="Duplicate / Copy Product"
-                                >
-                                  <Copy className="w-3.5 h-3.5" />
-                                </button>
-                                <button
-                                  onClick={() => {
-                                    if (confirm(`Are you sure you want to delete "${p.name}"?`)) {
-                                      onDeleteProduct(p.id);
-                                    }
-                                  }}
-                                  className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
-                                  title="Delete Product"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </button>
-                              </div>
+                            {/* Actions */}
+                            <td className="py-4 px-4 align-top text-right space-x-1">
+                              <button
+                                onClick={() => handleOpenEditProduct(p)}
+                                className="p-1.5 rounded-lg text-stone-700 hover:text-[#FF2E93] hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer inline-flex items-center gap-1 font-bold text-xs"
+                                title="Edit Product & Photos"
+                              >
+                                <Edit3 className="w-4 h-4 text-[#FF2E93]" />
+                                <span className="hidden sm:inline text-[11px]">Edit</span>
+                              </button>
+                              <button
+                                onClick={() => onDeleteProduct(p.id)}
+                                className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer"
+                                title="Delete Product"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
                             </td>
                           </tr>
                         );
-                      })}
+                      })
+                    )}
                   </tbody>
                 </table>
               </div>
             </div>
+
+            {/* STICKY FLOATING BULK ACTIONS BAR (When products are selected) */}
+            {selectedProductIds.length > 0 && (
+              <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-3xl bg-[#171413]/95 backdrop-blur-xl border border-stone-700/80 text-white p-3.5 sm:px-6 rounded-2xl shadow-2xl flex flex-wrap items-center justify-between gap-3 animate-in fade-in slide-in-from-bottom-5 duration-200">
+                <div className="flex items-center gap-2.5">
+                  <span className="w-7 h-7 rounded-lg bg-[#FF2E93] text-white font-bold text-xs flex items-center justify-center font-mono">
+                    {selectedProductIds.length}
+                  </span>
+                  <div>
+                    <div className="text-xs font-bold text-white leading-tight">
+                      {selectedProductIds.length} Keepsakes Selected
+                    </div>
+                    <div className="text-[10px] text-[#FFD94A]">Ready for simultaneous update</div>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  {/* Quick Stock Status Buttons */}
+                  <div className="hidden sm:flex items-center gap-1 bg-stone-900/90 border border-stone-800 rounded-xl p-1 text-[11px]">
+                    <button
+                      type="button"
+                      onClick={() => handleQuickStockUpdate('in_stock')}
+                      className="px-2.5 py-1 rounded-lg hover:bg-emerald-950 text-emerald-400 font-bold transition-colors cursor-pointer flex items-center gap-1"
+                      title="Set all selected to In Stock"
+                    >
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                      <span>In Stock</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleQuickStockUpdate('out_of_stock')}
+                      className="px-2.5 py-1 rounded-lg hover:bg-rose-950 text-rose-400 font-bold transition-colors cursor-pointer flex items-center gap-1"
+                      title="Set all selected to Out of Stock"
+                    >
+                      <span className="w-1.5 h-1.5 rounded-full bg-rose-400" />
+                      <span>Out of Stock</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleQuickStockUpdate('low_stock')}
+                      className="px-2.5 py-1 rounded-lg hover:bg-amber-950 text-amber-400 font-bold transition-colors cursor-pointer flex items-center gap-1"
+                      title="Set all selected to Low Stock"
+                    >
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                      <span>Low Stock</span>
+                    </button>
+                  </div>
+
+                  {/* Primary Comprehensive Bulk Edit Modal Trigger */}
+                  <button
+                    type="button"
+                    onClick={() => setIsBulkEditModalOpen(true)}
+                    className="px-4 py-2 rounded-xl bg-[#FF2E93] hover:bg-[#e02680] text-white text-xs font-bold transition-all shadow-md flex items-center gap-1.5 active:scale-95 cursor-pointer"
+                  >
+                    <SlidersHorizontal className="w-3.5 h-3.5" />
+                    <span>⚡ Bulk Edit Mode</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setSelectedProductIds([])}
+                    className="p-2 rounded-xl text-stone-400 hover:text-white hover:bg-stone-800 transition-colors"
+                    title="Clear selection"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -1996,358 +2311,479 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       )}
 
       {/* ============================================================ */}
-      {/* MODAL: ADD / EDIT PRODUCT */}
+      {/* MODAL: ADD NEW PRODUCT */}
       {/* ============================================================ */}
-      {isProductModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-          <div className="bg-white dark:bg-[#181418] w-full max-w-2xl rounded-3xl border border-[#EFE7DE] dark:border-[#2C242A] shadow-2xl p-5 sm:p-7 space-y-5 animate-in fade-in duration-150 my-auto max-h-[92vh] flex flex-col">
-            <div className="flex items-center justify-between pb-3 border-b border-[#EFE7DE] dark:border-[#282127] shrink-0">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl bg-[#881337]/10 text-[#881337] dark:text-[#FB7185] flex items-center justify-center">
-                  <Package className="w-4 h-4" />
-                </div>
-                <div>
-                  <h3 className="font-serif font-bold text-base sm:text-lg text-stone-900 dark:text-white">
-                    {editingProduct ? `Edit Product: ${editingProduct.name}` : 'Add New Personalized Keepsake'}
-                  </h3>
-                  <p className="text-[11px] text-stone-500">
-                    {editingProduct
-                      ? 'Update pricing, upload new photos, and edit description.'
-                      : 'Create a new product listing. Changes are live on the main page immediately.'}
-                  </p>
-                </div>
-              </div>
+      {isAddProductOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-[#181418] w-full max-w-xl rounded-3xl border border-[#EFE7DE] dark:border-[#2C242A] shadow-2xl p-6 sm:p-8 space-y-5 animate-in fade-in duration-150">
+            <div className="flex items-center justify-between pb-3 border-b border-[#EFE7DE] dark:border-[#282127]">
+              <h3 className="font-serif font-bold text-lg text-stone-900 dark:text-white">
+                Add New Personalized Keepsake
+              </h3>
               <button
-                onClick={() => setIsProductModalOpen(false)}
-                className="p-1.5 rounded-full text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+                onClick={() => setIsAddProductOpen(false)}
+                className="p-1 rounded-full text-stone-400 hover:text-stone-600"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleSaveProduct} className="space-y-4 text-xs overflow-y-auto pr-1 flex-1">
-              {/* Product Name */}
+            <form onSubmit={handleCreateProduct} className="space-y-4 text-xs">
               <div className="space-y-1">
-                <label className="font-bold text-stone-700 dark:text-stone-300 flex items-center justify-between">
-                  <span>Product Title / Name *</span>
-                  <span className="text-[10px] text-stone-400 font-normal">Displayed prominently across store</span>
-                </label>
+                <label className="font-bold text-stone-700 dark:text-stone-300">Product Name *</label>
                 <input
                   type="text"
                   required
-                  value={formProductName}
-                  onChange={(e) => setFormProductName(e.target.value)}
-                  placeholder="e.g. 18k Gold Plated Personalized Evil Eye Initial Pendant Necklace"
-                  className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3.5 py-2.5 text-stone-900 dark:text-white font-semibold text-sm outline-none focus:border-[#881337]"
+                  value={newProductName}
+                  onChange={(e) => setNewProductName(e.target.value)}
+                  placeholder="e.g. 18k Rose Gold Handwriting Script Locket"
+                  className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 text-stone-900 dark:text-white font-semibold"
                 />
               </div>
 
-              {/* Category & Badge */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="font-bold text-stone-700 dark:text-stone-300">Category *</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300">Collection / Category *</label>
                   <select
-                    value={formProductCategory}
-                    onChange={(e) => setFormProductCategory(e.target.value)}
-                    className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 text-stone-900 dark:text-white font-semibold outline-none focus:border-[#881337]"
+                    value={newProductCategory}
+                    onChange={(e) => setNewProductCategory(e.target.value as any)}
+                    className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 text-stone-900 dark:text-white font-semibold"
                   >
-                    <option value="Customize Your Gift">Customize Your Gift</option>
-                    <option value="Personalized Jewellery">Personalized Jewellery</option>
-                    <option value="Names on Gifts">Names on Gifts</option>
-                    <option value="Customize Your Caricature or Miniature">Customize Your Caricature or Miniature</option>
-                    <option value="Personalize Your Bouquets">Personalize Your Bouquets</option>
-                    <option value="Special Hampers">Special Hampers</option>
-                    <option value="Hair Accessories">Hair Accessories</option>
-                    <option value="Paradise of Jewels">Paradise of Jewels</option>
-                    <option value="__custom__">+ Add Custom Category...</option>
+                    <optgroup label="🌟 7 Official Store Collections">
+                      {SEVEN_COLLECTIONS.map((cat) => (
+                        <option key={cat} value={cat}>
+                          {cat}
+                        </option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Bespoke Specialties">
+                      <option value="Personalized Name Jewelry">Personalized Name Jewelry</option>
+                      <option value="Preserved Eternal Roses & Dome Displays">Preserved Eternal Roses & Dome Displays</option>
+                      <option value="Custom Acrylic Song Plaques & Photo Frames">Custom Acrylic Song Plaques & Photo Frames</option>
+                      <option value="Memory Photo Lamps & Crystal Cubes">Memory Photo Lamps & Crystal Cubes</option>
+                      <option value="Engraved Wooden Gift Boxes & Keepsakes">Engraved Wooden Gift Boxes & Keepsakes</option>
+                      <option value="Romantic Couple Hampers & Scented Candle Sets">Romantic Couple Hampers & Scented Candle Sets</option>
+                      <option value="Personalized Phone Cases & Pocket Accessories">Personalized Phone Cases & Pocket Accessories</option>
+                    </optgroup>
                   </select>
-                  {formProductCategory === '__custom__' && (
-                    <input
-                      type="text"
-                      required
-                      value={formProductCustomCategory}
-                      onChange={(e) => setFormProductCustomCategory(e.target.value)}
-                      placeholder="Type new category name..."
-                      className="w-full mt-1.5 bg-[#FAF7F2] dark:bg-stone-900 border border-[#881337] rounded-xl px-3 py-2 text-stone-900 dark:text-white text-xs font-semibold"
-                    />
-                  )}
                 </div>
 
                 <div className="space-y-1">
                   <label className="font-bold text-stone-700 dark:text-stone-300">Promotional Badge</label>
                   <input
                     type="text"
-                    value={formProductBadge}
-                    onChange={(e) => setFormProductBadge(e.target.value)}
-                    placeholder="e.g. Purely Gold Plated ✨💖, Best Seller, New Arrival"
-                    className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 text-stone-900 dark:text-white outline-none focus:border-[#881337]"
+                    value={newProductBadge}
+                    onChange={(e) => setNewProductBadge(e.target.value)}
+                    placeholder="e.g. Best Seller, Atelier Special, Limited"
+                    className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 text-stone-900 dark:text-white"
                   />
                 </div>
               </div>
 
-              {/* Price & MRP */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-[#FAF7F2] dark:bg-stone-900/50 p-3.5 rounded-2xl border border-[#EFE7DE] dark:border-stone-800">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="font-bold text-stone-700 dark:text-stone-300 flex items-center justify-between">
-                    <span>Selling Price (₹) *</span>
-                    <span className="text-[10px] text-emerald-600 font-bold">Customer pays this</span>
-                  </label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300">Selling Price (₹) *</label>
                   <input
                     type="number"
                     required
-                    min={1}
-                    value={formProductPrice}
-                    onChange={(e) => setFormProductPrice(Number(e.target.value))}
-                    className="w-full bg-white dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 font-mono font-bold text-stone-900 dark:text-white text-sm outline-none focus:border-[#881337]"
+                    value={newProductPrice}
+                    onChange={(e) => setNewProductPrice(Number(e.target.value))}
+                    className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 font-mono text-stone-900 dark:text-white font-bold"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="font-bold text-stone-700 dark:text-stone-300 flex items-center justify-between">
-                    <span>Original MRP (₹) *</span>
-                    {formProductMrp > formProductPrice && (
-                      <span className="text-[10px] font-bold text-[#881337] dark:text-[#FB7185]">
-                        {Math.round(((formProductMrp - formProductPrice) / formProductMrp) * 100)}% Discount
-                      </span>
-                    )}
-                  </label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300">MRP / List Price (₹) *</label>
                   <input
                     type="number"
                     required
-                    min={1}
-                    value={formProductMrp}
-                    onChange={(e) => setFormProductMrp(Number(e.target.value))}
-                    className="w-full bg-white dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 font-mono text-stone-900 dark:text-white text-sm outline-none focus:border-[#881337]"
+                    value={newProductMrp}
+                    onChange={(e) => setNewProductMrp(Number(e.target.value))}
+                    className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 font-mono text-stone-900 dark:text-white"
                   />
                 </div>
               </div>
 
-              {/* Product Images Upload & Management */}
-              <div className="space-y-2 bg-[#FFFDF8] dark:bg-[#1E191E] p-4 rounded-2xl border-2 border-dashed border-[#E8DDD5] dark:border-[#382E36]">
+              {/* Product Image Paste & Upload Suite */}
+              <div className="space-y-2 p-3.5 rounded-2xl bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800">
                 <div className="flex items-center justify-between">
                   <label className="font-bold text-stone-800 dark:text-stone-200 flex items-center gap-1.5">
-                    <ImageIcon className="w-4 h-4 text-[#881337] dark:text-[#FB7185]" />
-                    <span>Product Images & Photos</span>
+                    <ImageIcon className="w-4 h-4 text-[#FF2E93]" />
+                    <span>Product Image (Paste or Upload)</span>
                   </label>
-                  <span className="text-[10px] text-stone-500">
-                    {formProductImages.length} image{formProductImages.length === 1 ? '' : 's'} attached
-                  </span>
+                  <span className="text-[10px] text-stone-500 font-medium">Auto-syncs to Home Page</span>
                 </div>
 
-                {/* Upload Buttons */}
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                  <label className="px-4 py-2.5 rounded-xl bg-[#881337] hover:bg-[#700f2d] text-white text-xs font-bold cursor-pointer text-center flex items-center justify-center gap-2 shadow-xs transition-colors shrink-0">
-                    <Upload className="w-4 h-4" />
-                    <span>📁 Upload from Computer / Phone</span>
+                {/* Quick Action Buttons */}
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handlePasteImageFromClipboard(setNewProductCustomImage)}
+                    className="px-3 py-1.5 rounded-xl bg-[#FF2E93] hover:bg-[#e02680] text-white font-bold text-xs flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors"
+                  >
+                    <Clipboard className="w-3.5 h-3.5" />
+                    <span>📋 Paste from Clipboard</span>
+                  </button>
+
+                  <label className="px-3 py-1.5 rounded-xl bg-[#211D1C] hover:bg-black text-white text-xs font-bold shrink-0 cursor-pointer flex items-center gap-1.5 shadow-xs transition-colors">
+                    <ImagePlus className="w-3.5 h-3.5" />
+                    <span>📁 Upload from Device</span>
                     <input
                       type="file"
-                      multiple
                       accept="image/*"
                       className="hidden"
-                      onChange={handleImageFileUpload}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onload = (evt) => {
+                            if (evt.target?.result) {
+                              setNewProductCustomImage(evt.target.result as string);
+                              setBulkFeedbackToast('📁 Image file uploaded!');
+                              setTimeout(() => setBulkFeedbackToast(null), 3000);
+                            }
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
                     />
                   </label>
 
-                  <div className="flex items-center gap-1.5 flex-1">
-                    <input
-                      type="text"
-                      value={formImageUrlInput}
-                      onChange={(e) => setFormImageUrlInput(e.target.value)}
-                      placeholder="Or paste web image link (URL / path)..."
-                      className="flex-1 bg-white dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 text-stone-900 dark:text-white text-xs"
-                    />
+                  {newProductCustomImage && (
                     <button
                       type="button"
-                      onClick={handleAddImageUrl}
-                      className="px-3 py-2 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-200 font-bold shrink-0 text-xs"
+                      onClick={() => setNewProductCustomImage('')}
+                      className="px-2.5 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300 font-bold text-xs flex items-center gap-1 transition-colors cursor-pointer"
                     >
-                      Add URL
+                      <X className="w-3 h-3" />
+                      <span>Remove</span>
                     </button>
-                  </div>
+                  )}
                 </div>
 
-                {/* Attached Images Grid */}
-                {formProductImages.length > 0 ? (
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-2">
-                    {formProductImages.map((imgSrc, imgIdx) => (
-                      <div
-                        key={imgIdx}
-                        className="relative group rounded-xl overflow-hidden border border-[#EFE7DE] dark:border-stone-700 bg-stone-100 dark:bg-stone-900 aspect-square"
-                      >
-                        <img
-                          src={imgSrc}
-                          alt={`Product photo ${imgIdx + 1}`}
-                          referrerPolicy="no-referrer"
-                          className="w-full h-full object-cover"
-                        />
-                        {imgIdx === 0 ? (
-                          <span className="absolute top-1.5 left-1.5 bg-[#881337] text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow-sm">
-                            ★ Cover Photo
-                          </span>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => handleMakePrimaryImage(imgIdx)}
-                            className="absolute top-1.5 left-1.5 bg-black/70 hover:bg-[#881337] text-white text-[9px] font-bold px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
-                          >
-                            Set Cover
-                          </button>
-                        )}
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveImage(imgIdx)}
-                          className="absolute top-1.5 right-1.5 bg-rose-600 hover:bg-rose-700 text-white p-1 rounded-full opacity-90 group-hover:opacity-100 transition-opacity shadow-sm"
-                          title="Remove Photo"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
+                {/* Direct Image URL or Ctrl+V Paste Drop Box */}
+                <div
+                  onPaste={(e) => handleContainerPaste(e, setNewProductCustomImage)}
+                  className="relative"
+                >
+                  <input
+                    type="text"
+                    value={newProductCustomImage}
+                    onChange={(e) => setNewProductCustomImage(e.target.value)}
+                    onPaste={(e) => handleContainerPaste(e, setNewProductCustomImage)}
+                    placeholder="Click here & press Ctrl+V to paste image, or enter image link..."
+                    className="w-full bg-white dark:bg-stone-950 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 text-stone-900 dark:text-white text-xs placeholder:text-stone-400"
+                  />
+                </div>
+
+                {/* Live Preview Card */}
+                {newProductCustomImage ? (
+                  <div className="flex items-center gap-3 p-2.5 rounded-xl bg-white dark:bg-stone-950 border border-emerald-200 dark:border-emerald-900/50">
+                    <div className="w-16 h-16 rounded-xl overflow-hidden border border-[#EFE7DE] bg-stone-100 shrink-0 shadow-xs">
+                      <img
+                        src={newProductCustomImage}
+                        alt="Product Preview"
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=300&q=80';
+                        }}
+                      />
+                    </div>
+                    <div className="space-y-0.5 flex-1">
+                      <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-bold text-xs">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span>Image Attached Successfully</span>
                       </div>
-                    ))}
+                      <p className="text-[11px] text-stone-500">
+                        This photo will render across all Home Page grids, category sliders, and product details.
+                      </p>
+                    </div>
                   </div>
                 ) : (
-                  <div className="py-4 text-center text-stone-400 text-xs bg-[#FAF7F2] dark:bg-stone-900/40 rounded-xl border border-dashed border-[#EFE7DE] dark:border-stone-800">
-                    No custom images added yet. Click &ldquo;Upload from Computer / Phone&rdquo; above to add your photos.
+                  <div className="text-[11px] text-stone-500 italic">
+                    💡 Tip: You can copy any photo in your browser or screenshot, click "Paste from Clipboard" or press Ctrl+V to attach it.
                   </div>
                 )}
               </div>
 
-              {/* Description & Story */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <label className="font-bold text-stone-700 dark:text-stone-300">
-                    Product Description & Note *
-                  </label>
-                  <div className="flex items-center gap-1">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setFormProductDesc(
-                          'Jewellery made personal, for moments that mean everything.\nPurely gold plated.✨💖'
-                        )
-                      }
-                      className="text-[10px] text-[#881337] dark:text-[#FB7185] hover:underline font-semibold"
-                    >
-                      Use Standard Signature Note
-                    </button>
-                  </div>
-                </div>
+              <div className="space-y-1">
+                <label className="font-bold text-stone-700 dark:text-stone-300">Description</label>
                 <textarea
-                  rows={3}
-                  required
-                  value={formProductDesc}
-                  onChange={(e) => setFormProductDesc(e.target.value)}
-                  placeholder="Enter detailed description, styling ideas, materials, and occasion suggestions..."
-                  className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 text-stone-900 dark:text-white outline-none focus:border-[#881337]"
+                  rows={2}
+                  value={newProductDesc}
+                  onChange={(e) => setNewProductDesc(e.target.value)}
+                  placeholder="Handcrafted luxury keepsake customized with laser precision..."
+                  className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 text-stone-900 dark:text-white"
                 />
               </div>
 
-              {/* Specifications / Highlights */}
-              <div className="space-y-2">
-                <label className="font-bold text-stone-700 dark:text-stone-300">
-                  Key Specifications & Features
-                </label>
-                <div className="space-y-1.5">
-                  {formFeatures.map((feat, fIdx) => (
-                    <div key={fIdx} className="flex items-center gap-2">
-                      <span className="text-stone-400 text-xs">✦</span>
-                      <input
-                        type="text"
-                        value={feat}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          setFormFeatures((prev) =>
-                            prev.map((item, idx) => (idx === fIdx ? val : item))
-                          );
-                        }}
-                        className="flex-1 bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-lg px-2.5 py-1.5 text-xs text-stone-900 dark:text-white"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveFeature(fIdx)}
-                        className="text-stone-400 hover:text-rose-500 p-1"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  ))}
-                  <div className="flex items-center gap-2 pt-1">
-                    <input
-                      type="text"
-                      value={newFeatureInput}
-                      onChange={(e) => setNewFeatureInput(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          handleAddFeature();
-                        }
-                      }}
-                      placeholder="Add another highlight (e.g. Hypoallergenic, Water Resistant)..."
-                      className="flex-1 bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-lg px-2.5 py-1.5 text-xs text-stone-900 dark:text-white"
-                    />
-                    <button
-                      type="button"
-                      onClick={handleAddFeature}
-                      className="px-3 py-1.5 rounded-lg bg-stone-200 dark:bg-stone-800 text-stone-700 dark:text-stone-300 font-bold text-xs hover:bg-stone-300"
-                    >
-                      + Add
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Personalization Options */}
-              <div className="space-y-2 pt-2 border-t border-[#EFE7DE] dark:border-[#282127]">
-                <label className="font-bold text-stone-700 dark:text-stone-300 block">
-                  Customer Personalization Controls
-                </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                  <label className="flex items-center gap-2 p-2.5 rounded-xl border border-[#EFE7DE] dark:border-stone-800 bg-[#FAF7F2] dark:bg-stone-900/40 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={formAllowsText}
-                      onChange={(e) => setFormAllowsText(e.target.checked)}
-                      className="rounded text-[#881337] focus:ring-[#881337]"
-                    />
-                    <div>
-                      <span className="font-bold text-stone-800 dark:text-stone-200 block">
-                        Custom Text / Laser Engraving
-                      </span>
-                      <span className="text-[10px] text-stone-500">Allows name/initials input</span>
-                    </div>
-                  </label>
-
-                  <label className="flex items-center gap-2 p-2.5 rounded-xl border border-[#EFE7DE] dark:border-stone-800 bg-[#FAF7F2] dark:bg-stone-900/40 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={formAllowsGiftMessage}
-                      onChange={(e) => setFormAllowsGiftMessage(e.target.checked)}
-                      className="rounded text-[#881337] focus:ring-[#881337]"
-                    />
-                    <div>
-                      <span className="font-bold text-stone-800 dark:text-stone-200 block">
-                        Complimentary Gift Card Message
-                      </span>
-                      <span className="text-[10px] text-stone-500">Include wax-sealed note</span>
-                    </div>
-                  </label>
-                </div>
-              </div>
-
-              {/* Modal Footer */}
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#EFE7DE] dark:border-[#282127] shrink-0">
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#EFE7DE] dark:border-[#282127]">
                 <button
                   type="button"
-                  onClick={() => setIsProductModalOpen(false)}
-                  className="px-4 py-2.5 rounded-xl font-bold bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-200 transition-colors"
+                  onClick={() => setIsAddProductOpen(false)}
+                  className="px-4 py-2 rounded-xl font-bold bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2.5 rounded-xl font-bold bg-[#881337] text-white hover:bg-[#700f2d] transition-all shadow-md active:scale-95 flex items-center gap-2"
+                  className="px-6 py-2 rounded-xl font-bold bg-[#881337] hover:bg-[#700f2d] text-white transition-colors shadow-sm cursor-pointer"
                 >
-                  <Sparkles className="w-4 h-4" />
-                  <span>{editingProduct ? 'Save & Publish Changes' : 'Create Product & Publish'}</span>
+                  Create & Publish Product
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* MODAL: EDIT SINGLE PRODUCT (NAME, PRICE, CATEGORY, IMAGE PASTE/UPLOAD) */}
+      {/* ============================================================ */}
+      {isEditProductOpen && editingProduct && (
+        <div className="fixed inset-0 z-50 bg-black/65 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
+          <div className="bg-white dark:bg-[#181418] w-full max-w-lg rounded-3xl border border-[#EFE7DE] dark:border-[#2C242A] shadow-2xl p-6 sm:p-8 space-y-5 animate-in fade-in duration-150 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-[#EFE7DE] dark:border-[#282127]">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-[#FF2E93] text-white flex items-center justify-center shadow-xs">
+                  <Edit3 className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="font-serif font-bold text-lg text-stone-900 dark:text-white">
+                    Edit Product & Photos
+                  </h3>
+                  <p className="text-[11px] text-stone-500">ID: {editingProduct.id}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setIsEditProductOpen(false);
+                  setEditingProduct(null);
+                }}
+                className="p-1 rounded-full text-stone-400 hover:text-stone-600 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEditedProduct} className="space-y-4 text-xs">
+              <div className="space-y-1">
+                <label className="font-bold text-stone-700 dark:text-stone-300">Product Name *</label>
+                <input
+                  type="text"
+                  required
+                  value={editProductName}
+                  onChange={(e) => setEditProductName(e.target.value)}
+                  placeholder="Product name"
+                  className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 text-stone-900 dark:text-white font-semibold"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="font-bold text-stone-700 dark:text-stone-300">Collection / Category *</label>
+                  <select
+                    value={editProductCategory}
+                    onChange={(e) => setEditProductCategory(e.target.value as any)}
+                    className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 text-stone-900 dark:text-white font-semibold"
+                  >
+                    <optgroup label="🌟 7 Official Store Collections">
+                      {SEVEN_COLLECTIONS.map((cat) => (
+                        <option key={cat} value={cat}>
+                          {cat}
+                        </option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Bespoke Specialties">
+                      <option value="Personalized Name Jewelry">Personalized Name Jewelry</option>
+                      <option value="Preserved Eternal Roses & Dome Displays">Preserved Eternal Roses & Dome Displays</option>
+                      <option value="Custom Acrylic Song Plaques & Photo Frames">Custom Acrylic Song Plaques & Photo Frames</option>
+                      <option value="Memory Photo Lamps & Crystal Cubes">Memory Photo Lamps & Crystal Cubes</option>
+                      <option value="Engraved Wooden Gift Boxes & Keepsakes">Engraved Wooden Gift Boxes & Keepsakes</option>
+                      <option value="Romantic Couple Hampers & Scented Candle Sets">Romantic Couple Hampers & Scented Candle Sets</option>
+                      <option value="Personalized Phone Cases & Pocket Accessories">Personalized Phone Cases & Pocket Accessories</option>
+                    </optgroup>
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-bold text-stone-700 dark:text-stone-300">Stock Status</label>
+                  <select
+                    value={editProductStock}
+                    onChange={(e) => setEditProductStock(e.target.value as any)}
+                    className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 text-stone-900 dark:text-white font-semibold"
+                  >
+                    <option value="in_stock">🟢 In Stock</option>
+                    <option value="low_stock">🟡 Low Stock</option>
+                    <option value="out_of_stock">🔴 Out of Stock</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="font-bold text-stone-700 dark:text-stone-300">Selling Price (₹) *</label>
+                  <input
+                    type="number"
+                    required
+                    value={editProductPrice}
+                    onChange={(e) => setEditProductPrice(Number(e.target.value))}
+                    className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 font-mono text-stone-900 dark:text-white font-bold"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-bold text-stone-700 dark:text-stone-300">MRP / List Price (₹) *</label>
+                  <input
+                    type="number"
+                    required
+                    value={editProductMrp}
+                    onChange={(e) => setEditProductMrp(Number(e.target.value))}
+                    className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 font-mono text-stone-900 dark:text-white"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-bold text-stone-700 dark:text-stone-300">Promotional Badge</label>
+                <input
+                  type="text"
+                  value={editProductBadge}
+                  onChange={(e) => setEditProductBadge(e.target.value)}
+                  placeholder="e.g. Best Seller, New Arrival, Handcrafted"
+                  className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 text-stone-900 dark:text-white"
+                />
+              </div>
+
+              {/* Product Image Paste & Upload Section */}
+              <div className="space-y-2 p-3.5 rounded-2xl bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800">
+                <div className="flex items-center justify-between">
+                  <label className="font-bold text-stone-800 dark:text-stone-200 flex items-center gap-1.5">
+                    <ImageIcon className="w-4 h-4 text-[#FF2E93]" />
+                    <span>Product Photo (Paste or Upload)</span>
+                  </label>
+                  <span className="text-[10px] text-stone-500 font-medium">Instant Home Page Sync</span>
+                </div>
+
+                {/* Buttons */}
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handlePasteImageFromClipboard(setEditProductImage)}
+                    className="px-3 py-1.5 rounded-xl bg-[#FF2E93] hover:bg-[#e02680] text-white font-bold text-xs flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors"
+                  >
+                    <Clipboard className="w-3.5 h-3.5" />
+                    <span>📋 Paste from Clipboard</span>
+                  </button>
+
+                  <label className="px-3 py-1.5 rounded-xl bg-[#211D1C] hover:bg-black text-white text-xs font-bold shrink-0 cursor-pointer flex items-center gap-1.5 shadow-xs transition-colors">
+                    <ImagePlus className="w-3.5 h-3.5" />
+                    <span>📁 Upload from Device</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onload = (evt) => {
+                            if (evt.target?.result) {
+                              setEditProductImage(evt.target.result as string);
+                              setBulkFeedbackToast('📁 New photo attached!');
+                              setTimeout(() => setBulkFeedbackToast(null), 3000);
+                            }
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                    />
+                  </label>
+
+                  {editProductImage && (
+                    <button
+                      type="button"
+                      onClick={() => setEditProductImage('')}
+                      className="px-2.5 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300 font-bold text-xs flex items-center gap-1 transition-colors cursor-pointer"
+                    >
+                      <X className="w-3 h-3" />
+                      <span>Remove</span>
+                    </button>
+                  )}
+                </div>
+
+                {/* Input & Paste area */}
+                <div
+                  onPaste={(e) => handleContainerPaste(e, setEditProductImage)}
+                  className="relative"
+                >
+                  <input
+                    type="text"
+                    value={editProductImage}
+                    onChange={(e) => setEditProductImage(e.target.value)}
+                    onPaste={(e) => handleContainerPaste(e, setEditProductImage)}
+                    placeholder="Paste image URL or press Ctrl+V to paste image from clipboard..."
+                    className="w-full bg-white dark:bg-stone-950 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 text-stone-900 dark:text-white text-xs placeholder:text-stone-400"
+                  />
+                </div>
+
+                {/* Preview */}
+                {editProductImage ? (
+                  <div className="flex items-center gap-3 p-2.5 rounded-xl bg-white dark:bg-stone-950 border border-emerald-200 dark:border-emerald-900/50">
+                    <div className="w-16 h-16 rounded-xl overflow-hidden border border-[#EFE7DE] bg-stone-100 shrink-0 shadow-xs">
+                      <img
+                        src={editProductImage}
+                        alt="Preview"
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=300&q=80';
+                        }}
+                      />
+                    </div>
+                    <div className="space-y-0.5 flex-1">
+                      <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-bold text-xs">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span>Product Photo Updated</span>
+                      </div>
+                      <p className="text-[11px] text-stone-500">
+                        Will appear on the storefront instantly when saved.
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-[11px] text-stone-500 italic">
+                    No custom photo set. Uses default luxury packaging visual.
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-bold text-stone-700 dark:text-stone-300">Description</label>
+                <textarea
+                  rows={2}
+                  value={editProductDesc}
+                  onChange={(e) => setEditProductDesc(e.target.value)}
+                  placeholder="Product description..."
+                  className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 text-stone-900 dark:text-white"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#EFE7DE] dark:border-[#282127]">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsEditProductOpen(false);
+                    setEditingProduct(null);
+                  }}
+                  className="px-4 py-2 rounded-xl font-bold bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-6 py-2 rounded-xl font-bold bg-[#FF2E93] hover:bg-[#e02680] text-white transition-colors shadow-sm cursor-pointer"
+                >
+                  Save & Sync to Store
                 </button>
               </div>
             </form>
@@ -2505,6 +2941,298 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* MODAL: BULK EDITING SUITE (PRICE, CATEGORY, STOCK) */}
+      {/* ============================================================ */}
+      {isBulkEditModalOpen && (
+        <div className="fixed inset-0 z-[60] bg-black/70 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
+          <div className="bg-white dark:bg-[#181418] w-full max-w-2xl rounded-3xl border border-[#EFE7DE] dark:border-[#2C242A] shadow-2xl p-6 sm:p-8 space-y-6 animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="flex items-start justify-between pb-4 border-b border-[#EFE7DE] dark:border-[#282127]">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-[#FF2E93] text-white flex items-center justify-center shadow-xs">
+                  <SlidersHorizontal className="w-5 h-5 text-[#FFD94A]" />
+                </div>
+                <div>
+                  <h3 className="font-serif font-bold text-xl text-stone-900 dark:text-white">
+                    Bulk Edit Products
+                  </h3>
+                  <p className="text-xs text-stone-500">
+                    Updating <strong className="text-[#FF2E93]">{selectedProductIds.length}</strong> selected products simultaneously
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsBulkEditModalOpen(false)}
+                className="p-1.5 rounded-full text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Selected Products Preview Chips */}
+            <div className="p-3.5 rounded-2xl bg-[#FAF7F2] dark:bg-stone-900/60 border border-[#EFE7DE] dark:border-stone-800 space-y-1.5">
+              <span className="text-[10px] uppercase font-bold tracking-wider text-stone-500 block">
+                Target Keepsakes:
+              </span>
+              <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto pr-1">
+                {selectedProductIds.map((id) => {
+                  const p = products.find((prod) => prod.id === id);
+                  if (!p) return null;
+                  return (
+                    <span
+                      key={id}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-800 dark:text-stone-200 shadow-2xs"
+                    >
+                      <span className="truncate max-w-[150px]">{p.name}</span>
+                      <span className="text-stone-400 font-mono text-[10px]">₹{p.price}</span>
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
+
+            <form onSubmit={handleApplyBulkUpdate} className="space-y-6 text-xs">
+              {/* SECTION 1: PRICE & MRP UPDATE */}
+              <div className="p-4 sm:p-5 rounded-2xl bg-[#FFFDF8] dark:bg-stone-900/40 border border-[#F3E8E2] dark:border-stone-800 space-y-3">
+                <div className="flex items-center gap-2">
+                  <DollarSign className="w-4 h-4 text-[#FF2E93]" />
+                  <h4 className="font-bold text-sm text-stone-900 dark:text-white">
+                    1. Price & MRP Modification
+                  </h4>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="font-bold text-stone-700 dark:text-stone-300 block">
+                      Price Action
+                    </label>
+                    <select
+                      value={bulkPriceAction}
+                      onChange={(e) => setBulkPriceAction(e.target.value as any)}
+                      className="w-full bg-white dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 font-semibold text-stone-900 dark:text-white"
+                    >
+                      <option value="keep">Keep Current Selling Prices</option>
+                      <option value="fixed">Set Exact Selling Price (₹)</option>
+                      <option value="percent_discount">Apply Percentage Discount (-%)</option>
+                      <option value="percent_increase">Apply Percentage Increase (+%)</option>
+                      <option value="flat_discount">Apply Flat Discount (-₹)</option>
+                      <option value="flat_increase">Apply Flat Increase (+₹)</option>
+                    </select>
+                  </div>
+
+                  {bulkPriceAction !== 'keep' && (
+                    <div className="space-y-1 animate-in fade-in">
+                      <label className="font-bold text-stone-700 dark:text-stone-300 block">
+                        {bulkPriceAction === 'fixed'
+                          ? 'New Selling Price (₹) *'
+                          : bulkPriceAction.startsWith('percent')
+                          ? 'Percentage (%) *'
+                          : 'Flat Amount (₹) *'}
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        required
+                        value={bulkPriceValue || ''}
+                        onChange={(e) => setBulkPriceValue(Number(e.target.value))}
+                        placeholder={bulkPriceAction === 'fixed' ? 'e.g. 799' : 'e.g. 15'}
+                        className="w-full bg-white dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 font-mono text-stone-900 dark:text-white"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* Optional MRP override */}
+                <div className="pt-2 border-t border-stone-100 dark:border-stone-800 flex flex-wrap items-center gap-3">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={bulkUpdateMrp}
+                      onChange={(e) => setBulkUpdateMrp(e.target.checked)}
+                      className="w-4 h-4 rounded text-[#FF2E93] focus:ring-[#FF2E93]"
+                    />
+                    <span className="font-semibold text-stone-700 dark:text-stone-300">
+                      Also set new MRP / List Price
+                    </span>
+                  </label>
+
+                  {bulkUpdateMrp && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-stone-400">₹</span>
+                      <input
+                        type="number"
+                        min="1"
+                        value={bulkMrpValue || ''}
+                        onChange={(e) => setBulkMrpValue(Number(e.target.value))}
+                        placeholder="e.g. 1599"
+                        className="w-32 bg-white dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-1 font-mono text-stone-900 dark:text-white"
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* SECTION 2: CATEGORY / COLLECTION REASSIGNMENT */}
+              <div className="p-4 sm:p-5 rounded-2xl bg-[#FFFDF8] dark:bg-stone-900/40 border border-[#F3E8E2] dark:border-stone-800 space-y-3">
+                <div className="flex items-center gap-2">
+                  <Tag className="w-4 h-4 text-[#FF2E93]" />
+                  <h4 className="font-bold text-sm text-stone-900 dark:text-white">
+                    2. Category & Collection Reassignment
+                  </h4>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="font-bold text-stone-700 dark:text-stone-300 block">
+                      Category Action
+                    </label>
+                    <select
+                      value={bulkCategoryAction}
+                      onChange={(e) => setBulkCategoryAction(e.target.value as any)}
+                      className="w-full bg-white dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 font-semibold text-stone-900 dark:text-white"
+                    >
+                      <option value="keep">Keep Current Categories</option>
+                      <option value="set">Reassign to Official Collection</option>
+                    </select>
+                  </div>
+
+                  {bulkCategoryAction === 'set' && (
+                    <div className="space-y-1 animate-in fade-in">
+                      <label className="font-bold text-stone-700 dark:text-stone-300 block">
+                        Select Collection Target *
+                      </label>
+                      <select
+                        value={bulkTargetCategory}
+                        onChange={(e) => setBulkTargetCategory(e.target.value as any)}
+                        className="w-full bg-white dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 font-semibold text-stone-900 dark:text-white text-xs"
+                      >
+                        {SEVEN_COLLECTIONS.map((cat) => (
+                          <option key={cat} value={cat}>
+                            {cat}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* SECTION 3: INVENTORY / STOCK STATUS UPDATE */}
+              <div className="p-4 sm:p-5 rounded-2xl bg-[#FFFDF8] dark:bg-stone-900/40 border border-[#F3E8E2] dark:border-stone-800 space-y-3">
+                <div className="flex items-center gap-2">
+                  <Truck className="w-4 h-4 text-[#FF2E93]" />
+                  <h4 className="font-bold text-sm text-stone-900 dark:text-white">
+                    3. Inventory & Stock Status
+                  </h4>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block">
+                    Stock Action
+                  </label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {[
+                      { id: 'keep', label: 'Keep Current' },
+                      { id: 'in_stock', label: '🟢 In Stock' },
+                      { id: 'low_stock', label: '🟡 Low Stock' },
+                      { id: 'out_of_stock', label: '🔴 Out of Stock' },
+                    ].map((st) => (
+                      <button
+                        key={st.id}
+                        type="button"
+                        onClick={() => setBulkStockAction(st.id as any)}
+                        className={`p-2.5 rounded-xl border text-center font-bold text-xs transition-all cursor-pointer ${
+                          bulkStockAction === st.id
+                            ? 'bg-[#211D1C] dark:bg-white text-white dark:text-stone-900 border-[#211D1C] dark:border-white shadow-xs'
+                            : 'bg-white dark:bg-stone-900 border-[#EFE7DE] dark:border-stone-800 text-stone-700 dark:text-stone-300 hover:border-[#FF2E93]'
+                        }`}
+                      >
+                        {st.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* LIVE ACTION SUMMARY BOX */}
+              <div className="p-4 rounded-2xl bg-[#FFF9EB] dark:bg-stone-900 border border-[#FFD94A]/40 text-xs text-stone-800 dark:text-stone-200 space-y-1.5">
+                <div className="font-bold flex items-center gap-1.5 text-stone-900 dark:text-white">
+                  <Sparkles className="w-3.5 h-3.5 text-[#FF2E93]" />
+                  <span>Update Summary for {selectedProductIds.length} Items:</span>
+                </div>
+                <ul className="list-disc pl-5 space-y-0.5 text-[11px] text-stone-600 dark:text-stone-300">
+                  <li>
+                    <strong>Price:</strong>{' '}
+                    {bulkPriceAction === 'keep'
+                      ? 'No change to price'
+                      : bulkPriceAction === 'fixed'
+                      ? `Set selling price to ₹${bulkPriceValue}`
+                      : bulkPriceAction === 'percent_discount'
+                      ? `Apply ${bulkPriceValue}% discount`
+                      : bulkPriceAction === 'percent_increase'
+                      ? `Increase price by ${bulkPriceValue}%`
+                      : bulkPriceAction === 'flat_discount'
+                      ? `Discount flat ₹${bulkPriceValue}`
+                      : `Increase price by flat ₹${bulkPriceValue}`}
+                    {bulkUpdateMrp && ` (MRP: ₹${bulkMrpValue})`}
+                  </li>
+                  <li>
+                    <strong>Category:</strong>{' '}
+                    {bulkCategoryAction === 'keep'
+                      ? 'No change to categories'
+                      : `Reassign to "${bulkTargetCategory}"`}
+                  </li>
+                  <li>
+                    <strong>Stock:</strong>{' '}
+                    {bulkStockAction === 'keep'
+                      ? 'No change to inventory status'
+                      : bulkStockAction === 'in_stock'
+                      ? 'Mark as Available / In Stock'
+                      : bulkStockAction === 'low_stock'
+                      ? 'Mark as Low Stock'
+                      : 'Mark as Sold Out / Out of Stock'}
+                  </li>
+                </ul>
+              </div>
+
+              {/* Modal Buttons */}
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#EFE7DE] dark:border-[#282127]">
+                <button
+                  type="button"
+                  onClick={() => setIsBulkEditModalOpen(false)}
+                  className="px-4 py-2.5 rounded-xl font-bold bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-200 transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-6 py-2.5 rounded-xl font-bold bg-[#FF2E93] hover:bg-[#e02680] text-white shadow-md transition-all active:scale-95 cursor-pointer flex items-center gap-2"
+                >
+                  <Zap className="w-4 h-4 text-[#FFD94A]" />
+                  <span>Apply Bulk Update ({selectedProductIds.length})</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Floating feedback notification toast */}
+      {bulkFeedbackToast && (
+        <div className="fixed top-20 right-6 z-[70] bg-[#171413] text-white px-5 py-3 rounded-2xl shadow-2xl border border-[#FF2E93] flex items-center gap-3 animate-in fade-in slide-in-from-top-3 duration-200">
+          <Sparkles className="w-4 h-4 text-[#FFD94A] shrink-0" />
+          <span className="text-xs font-bold">{bulkFeedbackToast}</span>
+          <button
+            onClick={() => setBulkFeedbackToast(null)}
+            className="text-stone-400 hover:text-white ml-2 cursor-pointer"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
         </div>
       )}
     </div>

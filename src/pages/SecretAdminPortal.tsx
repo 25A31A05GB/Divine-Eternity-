@@ -8,6 +8,7 @@ interface SecretAdminPortalProps {
   products: Product[];
   onAddProduct: (product: Product) => void;
   onUpdateProduct: (product: Product) => void;
+  onBulkUpdateProducts?: (products: Product[]) => void;
   onDeleteProduct: (productId: string) => void;
   onReturnToStore: () => void;
 }
@@ -16,6 +17,7 @@ export const SecretAdminPortal: React.FC<SecretAdminPortalProps> = ({
   products,
   onAddProduct,
   onUpdateProduct,
+  onBulkUpdateProducts,
   onDeleteProduct,
   onReturnToStore,
 }) => {
@@ -295,6 +297,7 @@ export const SecretAdminPortal: React.FC<SecretAdminPortalProps> = ({
       products={products}
       onAddProduct={onAddProduct}
       onUpdateProduct={onUpdateProduct}
+      onBulkUpdateProducts={onBulkUpdateProducts}
       onDeleteProduct={onDeleteProduct}
       onReturnToStore={handleLogout}
       initialRole={selectedRole}

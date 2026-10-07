@@ -109,6 +109,8 @@ export interface Product {
   variantsStock?: { [key: string]: boolean | undefined };
   allowsPersonalization: boolean;
   personalizationConfig?: PersonalizationConfig;
+  inStock?: boolean;
+  stockStatus?: 'in_stock' | 'out_of_stock' | 'low_stock';
 }
 
 export interface CartItem {

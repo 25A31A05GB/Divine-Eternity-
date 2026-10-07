@@ -29,12 +29,18 @@ export const PhoneCaseMockup: React.FC<PhoneCaseMockupProps> = ({
     prodImage &&
     typeof prodImage === 'string' &&
     (prodImage.startsWith('http') ||
-      prodImage.startsWith('data:image/') ||
+      prodImage.startsWith('data:') ||
       prodImage.startsWith('/images/') ||
+      prodImage.startsWith('/') ||
+      prodImage.startsWith('./') ||
       prodImage.startsWith('blob:') ||
       prodImage.includes('.jpg') ||
+      prodImage.includes('.jpeg') ||
       prodImage.includes('.png') ||
-      prodImage.includes('.webp'));
+      prodImage.includes('.webp') ||
+      prodImage.includes('.gif') ||
+      prodImage.includes('.avif') ||
+      prodImage.includes('.svg'));
 
   if (isRealImage) {
     return (
