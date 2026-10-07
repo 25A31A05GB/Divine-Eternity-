@@ -231,6 +231,223 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [newProductBadge, setNewProductBadge] = useState('Atelier Special');
   const [newProductCustomImage, setNewProductCustomImage] = useState<string>('');
 
+  // Bulk Product Image Importer State
+  const [isBulkImageImporterOpen, setIsBulkImageImporterOpen] = useState(false);
+  const [bulkImageItems, setBulkImageItems] = useState<
+    Array<{
+      id: string;
+      imageUrl: string;
+      name: string;
+      price: number;
+      mrp: number;
+      category: Product['category'];
+      badge: string;
+      description: string;
+    }>
+  >([]);
+  const [batchCategory, setBatchCategory] = useState<Product['category']>('Personalized Name Jewelry');
+  const [batchPrice, setBatchPrice] = useState<number>(849);
+  const [batchMrp, setBatchMrp] = useState<number>(1899);
+  const [batchBadge, setBatchBadge] = useState<string>('New Arrival');
+  const [pastedImageUrlsText, setPastedImageUrlsText] = useState('');
+  const [isDragOverBulk, setIsDragOverBulk] = useState(false);
+
+  // Helper: Process multiple selected or dropped files into bulk items
+  const handleProcessFilesToBulkItems = (files: FileList | File[]) => {
+    const fileList = Array.from(files);
+    if (fileList.length === 0) return;
+
+    fileList.forEach((file, index) => {
+      if (!file.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        if (e.target?.result) {
+          const rawFileName = file.name.replace(/\.[^/.]+$/, '');
+          const formattedName = rawFileName
+            .replace(/[-_]+/g, ' ')
+            .replace(/\b\w/g, (char) => char.toUpperCase())
+            .trim();
+
+          setBulkImageItems((prev) => [
+            ...prev,
+            {
+              id: `bulk-img-${Date.now()}-${Math.random().toString(36).substring(2, 7)}-${index}`,
+              imageUrl: e.target?.result as string,
+              name: formattedName || `Atelier Keepsake #${prev.length + 1}`,
+              price: batchPrice,
+              mrp: batchMrp,
+              category: batchCategory,
+              badge: batchBadge,
+              description: 'Handcrafted bespoke gift created with fine laser engraving and premium luxury finish.',
+            },
+          ]);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+
+    setBulkFeedbackToast(`📸 Loaded ${fileList.length} image(s)! Customize details below or click Publish.`);
+    setTimeout(() => setBulkFeedbackToast(null), 3500);
+  };
+
+  // Helper: Parse pasted image URLs text into bulk items
+  const handleParseImageUrlsTextToBulk = () => {
+    if (!pastedImageUrlsText.trim()) {
+      setBulkFeedbackToast('⚠️ Paste some image URLs or links first.');
+      setTimeout(() => setBulkFeedbackToast(null), 3000);
+      return;
+    }
+
+    const lines = pastedImageUrlsText
+      .split('\n')
+      .map((l) => l.trim())
+      .filter((l) => l.startsWith('http') || l.startsWith('data:image') || l.startsWith('/'));
+
+    if (lines.length === 0) {
+      setBulkFeedbackToast('⚠️ No valid image URLs found in pasted text.');
+      setTimeout(() => setBulkFeedbackToast(null), 3000);
+      return;
+    }
+
+    lines.forEach((url, idx) => {
+      setBulkImageItems((prev) => [
+        ...prev,
+        {
+          id: `bulk-url-${Date.now()}-${idx}-${Math.random().toString(36).substring(2, 6)}`,
+          imageUrl: url,
+          name: `Custom Bespoke Keepsake #${prev.length + 1}`,
+          price: batchPrice,
+          mrp: batchMrp,
+          category: batchCategory,
+          badge: batchBadge,
+          description: 'Handcrafted bespoke gift created with fine laser engraving and premium luxury finish.',
+        },
+      ]);
+    });
+
+    setPastedImageUrlsText('');
+    setBulkFeedbackToast(`✨ Added ${lines.length} image link(s) to queue!`);
+    setTimeout(() => setBulkFeedbackToast(null), 3500);
+  };
+
+  // Helper: Paste images directly from Clipboard into Bulk
+  const handlePasteFromClipboardToBulk = async () => {
+    try {
+      if (navigator.clipboard && navigator.clipboard.read) {
+        const items = await navigator.clipboard.read();
+        let addedCount = 0;
+        for (const item of items) {
+          const imageType = item.types.find((t) => t.startsWith('image/'));
+          if (imageType) {
+            const blob = await item.getType(imageType);
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              if (e.target?.result) {
+                setBulkImageItems((prev) => [
+                  ...prev,
+                  {
+                    id: `bulk-clip-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+                    imageUrl: e.target?.result as string,
+                    name: `Clipboard Keepsake #${prev.length + 1}`,
+                    price: batchPrice,
+                    mrp: batchMrp,
+                    category: batchCategory,
+                    badge: batchBadge,
+                    description: 'Handcrafted bespoke gift created with fine laser engraving and premium luxury finish.',
+                  },
+                ]);
+              }
+            };
+            reader.readAsDataURL(blob);
+            addedCount++;
+          }
+        }
+        if (addedCount > 0) {
+          setBulkFeedbackToast(`📋 Pasted ${addedCount} image(s) from clipboard!`);
+          setTimeout(() => setBulkFeedbackToast(null), 3500);
+          return;
+        }
+      }
+
+      if (navigator.clipboard && navigator.clipboard.readText) {
+        const text = await navigator.clipboard.readText();
+        if (text && (text.startsWith('http') || text.startsWith('data:') || text.startsWith('/'))) {
+          setPastedImageUrlsText(text);
+          setBulkFeedbackToast('📋 Pasted image link into input box below.');
+          setTimeout(() => setBulkFeedbackToast(null), 3000);
+          return;
+        }
+      }
+      setBulkFeedbackToast('ℹ️ Copy an image or image links to clipboard first, then click Paste.');
+      setTimeout(() => setBulkFeedbackToast(null), 3500);
+    } catch {
+      setBulkFeedbackToast('ℹ️ Use the Drag & Drop area or file chooser to select bulk images.');
+      setTimeout(() => setBulkFeedbackToast(null), 3500);
+    }
+  };
+
+  // Helper: Apply batch settings to all currently queued bulk items
+  const handleApplyBatchSettingsToAll = () => {
+    if (bulkImageItems.length === 0) return;
+    setBulkImageItems((prev) =>
+      prev.map((item) => ({
+        ...item,
+        category: batchCategory,
+        price: batchPrice,
+        mrp: batchMrp,
+        badge: batchBadge,
+      }))
+    );
+    setBulkFeedbackToast('⚡ Updated category, price, and badge across all queued items!');
+    setTimeout(() => setBulkFeedbackToast(null), 3000);
+  };
+
+  // Helper: Mass publish all queued bulk image items as live store products
+  const handlePublishBulkProducts = () => {
+    if (bulkImageItems.length === 0) {
+      setBulkFeedbackToast('⚠️ Add at least 1 image before publishing.');
+      setTimeout(() => setBulkFeedbackToast(null), 3000);
+      return;
+    }
+
+    const createdProducts: Product[] = bulkImageItems.map((item, idx) => ({
+      id: `bulk-prod-${Date.now()}-${idx}-${Math.random().toString(36).substring(2, 6)}`,
+      slug: (item.name || 'custom-keepsake').toLowerCase().replace(/[^a-z0-9]+/g, '-') + `-${Date.now()}-${idx}`,
+      name: item.name.trim() || `Atelier Keepsake #${idx + 1}`,
+      category: item.category || 'Personalized Name Jewelry',
+      price: Number(item.price) || 849,
+      mrp: Number(item.mrp) || 1899,
+      rating: 5.0,
+      reviewCount: Math.floor(Math.random() * 15) + 5,
+      description: item.description || 'Handcrafted bespoke gift created with fine laser engraving and premium luxury finish.',
+      features: ['18k Vermeil Laser Plating', 'Custom Engraving Included', 'Archival Gift Box Packaging'],
+      images: [item.imageUrl, 'case_front'],
+      badge: item.badge || 'New Arrival',
+      isBestSeller: idx === 0,
+      isNew: true,
+      themeColor: '#FAF4EC',
+      secondaryColor: '#881337',
+      designPattern: 'jewelry_necklace',
+      allowsPersonalization: true,
+      supportedBrands: ['Apple', 'Samsung', 'OnePlus', 'Google'],
+      personalizationConfig: {
+        allowsText: true,
+        textLabel: 'Custom Name / Monogram',
+        textPlaceholder: 'e.g. Aurelia, Sophia, 14.02',
+        textMaxLength: 16,
+        allowsGiftMessage: true,
+      },
+    }));
+
+    createdProducts.forEach((p) => onAddProduct(p));
+
+    confetti({ particleCount: 80, spread: 80, origin: { y: 0.5 } });
+    setIsBulkImageImporterOpen(false);
+    setBulkImageItems([]);
+    setBulkFeedbackToast(`🎉 Success! Published ${createdProducts.length} new product(s) to your live storefront!`);
+    setTimeout(() => setBulkFeedbackToast(null), 4000);
+  };
+
   // Quick Paste Raw Text / JSON Auto-Filler State
   const [quickPasteText, setQuickPasteText] = useState('');
   const [showQuickPasteBox, setShowQuickPasteBox] = useState(false);
@@ -1547,6 +1764,22 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   {selectedProductIds.length > 0 && (
                     <span className="ml-1 px-1.5 py-0.2 rounded-full bg-white text-[#FF2E93] text-[10px] font-mono font-bold">
                       {selectedProductIds.length}
+                    </span>
+                  )}
+                </button>
+
+                <button
+                  onClick={() => {
+                    setIsBulkImageImporterOpen(true);
+                  }}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-[#FF2E93] hover:bg-[#e02680] text-white transition-all shadow-md cursor-pointer animate-pulse-subtle"
+                  title="Upload or paste multiple product photos to batch-create store catalog items"
+                >
+                  <ImageIcon className="w-4 h-4 text-[#FFD94A]" />
+                  <span>📸 Bulk Images Importer</span>
+                  {bulkImageItems.length > 0 && (
+                    <span className="px-1.5 py-0.2 rounded-full bg-white text-[#FF2E93] text-[10px] font-mono font-bold">
+                      {bulkImageItems.length}
                     </span>
                   )}
                 </button>
@@ -3586,6 +3819,383 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           <span>Menu</span>
         </button>
       </nav>
+
+      {/* ============================================================ */}
+      {/* MODAL: BULK PRODUCT IMAGE IMPORTER */}
+      {/* ============================================================ */}
+      {isBulkImageImporterOpen && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+          <div className="bg-white dark:bg-[#181418] w-full max-w-5xl rounded-3xl border border-[#EFE7DE] dark:border-[#2C242A] shadow-2xl overflow-hidden flex flex-col max-h-[92vh] animate-in fade-in duration-200">
+            {/* Header */}
+            <div className="p-5 sm:p-6 border-b border-[#EFE7DE] dark:border-[#282127] flex items-center justify-between bg-[#FAF7F2] dark:bg-[#1C181C]">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-[#FF2E93] text-white flex items-center justify-center shadow-md">
+                  <ImageIcon className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-serif font-bold text-lg sm:text-xl text-stone-900 dark:text-white flex items-center gap-2">
+                    <span>Bulk Image to Product Importer</span>
+                    {bulkImageItems.length > 0 && (
+                      <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#FF2E93] text-white font-mono">
+                        {bulkImageItems.length} Ready
+                      </span>
+                    )}
+                  </h3>
+                  <p className="text-xs text-stone-500 dark:text-stone-400">
+                    Upload multiple product photos or paste image links to batch-create catalog items in seconds.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setIsBulkImageImporterOpen(false)}
+                className="p-2 rounded-full text-stone-400 hover:text-stone-700 dark:hover:text-white transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-5 sm:p-6 space-y-6 overflow-y-auto flex-1 custom-scrollbar text-xs">
+              {/* Drag & Drop Upload Zone + Paste Buttons */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+                {/* Drag and Drop File Input Area */}
+                <div className="lg:col-span-7">
+                  <div
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      setIsDragOverBulk(true);
+                    }}
+                    onDragLeave={() => setIsDragOverBulk(false)}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      setIsDragOverBulk(false);
+                      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                        handleProcessFilesToBulkItems(e.dataTransfer.files);
+                      }
+                    }}
+                    className={`border-2 border-dashed rounded-2xl p-6 text-center transition-all cursor-pointer relative flex flex-col items-center justify-center min-h-[160px] ${
+                      isDragOverBulk
+                        ? 'border-[#FF2E93] bg-[#FFF0F5] dark:bg-[#321323]/50 scale-[1.01]'
+                        : 'border-[#EFE7DE] dark:border-stone-800 bg-[#FAF7F2]/60 dark:bg-stone-900/40 hover:border-[#FF2E93] hover:bg-[#FFF0F5]/50'
+                    }`}
+                  >
+                    <input
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                      onChange={(e) => {
+                        if (e.target.files && e.target.files.length > 0) {
+                          handleProcessFilesToBulkItems(e.target.files);
+                        }
+                      }}
+                    />
+                    <div className="w-12 h-12 rounded-2xl bg-[#FF2E93]/10 text-[#FF2E93] flex items-center justify-center mb-2 shadow-xs">
+                      <ImagePlus className="w-6 h-6" />
+                    </div>
+                    <h4 className="font-bold text-stone-900 dark:text-white text-sm">
+                      Drop Bulk Product Photos Here
+                    </h4>
+                    <p className="text-stone-500 text-[11px] mt-1 max-w-xs">
+                      Select multiple JPG, PNG, or WebP files at once from your computer or phone.
+                    </p>
+                    <span className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-stone-800 text-[#FF2E93] font-bold text-xs border border-[#FF2E93]/30 shadow-2xs">
+                      <ImagePlus className="w-3.5 h-3.5" />
+                      Browse Files
+                    </span>
+                  </div>
+                </div>
+
+                {/* Quick Paste & Clipboard Tools */}
+                <div className="lg:col-span-5 bg-[#FAF7F2] dark:bg-stone-900/60 p-4 rounded-2xl border border-[#EFE7DE] dark:border-stone-800 flex flex-col justify-between space-y-3">
+                  <div>
+                    <h4 className="font-bold text-stone-900 dark:text-white flex items-center gap-1.5 mb-1">
+                      <Clipboard className="w-4 h-4 text-[#FF2E93]" />
+                      <span>Paste Image Links or Clipboard</span>
+                    </h4>
+                    <p className="text-stone-500 text-[11px]">
+                      Paste multiple image URLs (one per line) or directly paste image files copied to your clipboard.
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <textarea
+                      rows={2}
+                      value={pastedImageUrlsText}
+                      onChange={(e) => setPastedImageUrlsText(e.target.value)}
+                      placeholder="https://images.unsplash.com/photo-1...&#10;https://images.unsplash.com/photo-2..."
+                      className="w-full bg-white dark:bg-stone-950 border border-[#EFE7DE] dark:border-stone-800 rounded-xl p-2.5 text-[11px] font-mono text-stone-900 dark:text-white placeholder-stone-400 focus:outline-none focus:border-[#FF2E93]"
+                    />
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={handleParseImageUrlsTextToBulk}
+                        className="flex-1 py-2 px-3 rounded-xl bg-stone-900 dark:bg-white text-white dark:text-stone-900 font-bold text-xs hover:bg-stone-800 transition-colors shadow-2xs cursor-pointer flex items-center justify-center gap-1.5"
+                      >
+                        <Sparkles className="w-3.5 h-3.5 text-[#FFD94A]" />
+                        <span>Add Links</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={handlePasteFromClipboardToBulk}
+                        className="py-2 px-3 rounded-xl bg-[#FFF0F5] text-[#FF2E93] border border-[#FF2E93]/40 font-bold text-xs hover:bg-[#ffe4ee] transition-colors shadow-2xs cursor-pointer flex items-center gap-1.5 whitespace-nowrap"
+                      >
+                        <Clipboard className="w-3.5 h-3.5" />
+                        <span>Clipboard</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Batch Settings Bar */}
+              <div className="bg-gradient-to-r from-[#FFF0F5] via-[#FFF9EB] to-[#FFF0F5] dark:from-[#2A1320] dark:via-[#261E1A] dark:to-[#2A1320] p-4 rounded-2xl border border-[#FF2E93]/30 shadow-xs space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-bold text-stone-900 dark:text-white flex items-center gap-2 text-xs">
+                    <Zap className="w-4 h-4 text-[#FF2E93]" />
+                    <span>Batch Product Controls (Apply Settings Across All Items)</span>
+                  </h4>
+                  {bulkImageItems.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={handleApplyBatchSettingsToAll}
+                      className="px-3 py-1 rounded-xl bg-[#FF2E93] hover:bg-[#e02680] text-white font-bold text-[11px] transition-all shadow-xs cursor-pointer flex items-center gap-1"
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      <span>Apply to All {bulkImageItems.length} Items</span>
+                    </button>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                  <div className="space-y-1">
+                    <label className="font-bold text-stone-700 dark:text-stone-300 text-[11px]">Category</label>
+                    <select
+                      value={batchCategory}
+                      onChange={(e) => setBatchCategory(e.target.value as any)}
+                      className="w-full bg-white dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-1.5 font-semibold text-stone-900 dark:text-white focus:outline-none"
+                    >
+                      {SEVEN_COLLECTIONS.map((cat) => (
+                        <option key={cat} value={cat}>
+                          {cat}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="font-bold text-stone-700 dark:text-stone-300 text-[11px]">Offer Price (₹)</label>
+                    <input
+                      type="number"
+                      value={batchPrice}
+                      onChange={(e) => setBatchPrice(Number(e.target.value))}
+                      className="w-full bg-white dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-1.5 font-mono font-bold text-stone-900 dark:text-white focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="font-bold text-stone-700 dark:text-stone-300 text-[11px]">List MRP (₹)</label>
+                    <input
+                      type="number"
+                      value={batchMrp}
+                      onChange={(e) => setBatchMrp(Number(e.target.value))}
+                      className="w-full bg-white dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-1.5 font-mono font-bold text-stone-900 dark:text-white focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="font-bold text-stone-700 dark:text-stone-300 text-[11px]">Promo Badge</label>
+                    <input
+                      type="text"
+                      value={batchBadge}
+                      onChange={(e) => setBatchBadge(e.target.value)}
+                      placeholder="e.g. New Arrival, Best Seller"
+                      className="w-full bg-white dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-1.5 font-bold text-stone-900 dark:text-white focus:outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Items Preview & Individual Customization Grid */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="font-serif font-bold text-sm text-stone-900 dark:text-white flex items-center gap-2">
+                    <Package className="w-4 h-4 text-[#FF2E93]" />
+                    <span>Queued Products ({bulkImageItems.length})</span>
+                  </h4>
+
+                  {bulkImageItems.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setBulkImageItems([])}
+                      className="text-rose-600 hover:text-rose-700 font-bold text-xs flex items-center gap-1 cursor-pointer"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Clear All Queued</span>
+                    </button>
+                  )}
+                </div>
+
+                {bulkImageItems.length === 0 ? (
+                  <div className="p-12 text-center rounded-2xl border border-dashed border-[#EFE7DE] dark:border-stone-800 bg-[#FAF7F2]/40 dark:bg-stone-900/20 text-stone-400 space-y-2">
+                    <ImageIcon className="w-10 h-10 mx-auto opacity-40 text-[#FF2E93]" />
+                    <p className="font-bold text-sm text-stone-700 dark:text-stone-300">
+                      No bulk image items queued yet
+                    </p>
+                    <p className="text-xs max-w-sm mx-auto text-stone-500">
+                      Use the drop zone above to select multiple photos or paste image links to get started.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-3 max-h-[360px] overflow-y-auto pr-1 custom-scrollbar">
+                    {bulkImageItems.map((item, index) => (
+                      <div
+                        key={item.id}
+                        className="p-3.5 rounded-2xl bg-white dark:bg-[#1C181C] border border-[#EFE7DE] dark:border-[#2C242A] shadow-2xs hover:border-[#FF2E93]/40 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
+                      >
+                        {/* Image Thumbnail & Counter */}
+                        <div className="flex items-center gap-3 shrink-0">
+                          <span className="w-6 h-6 rounded-full bg-stone-100 dark:bg-stone-800 font-mono text-[10px] font-bold text-stone-600 dark:text-stone-300 flex items-center justify-center shrink-0">
+                            #{index + 1}
+                          </span>
+                          <div className="w-14 h-14 rounded-xl overflow-hidden border border-[#EFE7DE] bg-stone-100 shrink-0 relative group">
+                            <img
+                              src={item.imageUrl}
+                              alt={item.name}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=300&q=80';
+                              }}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Editable Product Name & Category */}
+                        <div className="flex-1 space-y-1.5 w-full">
+                          <div className="grid grid-cols-1 sm:grid-cols-12 gap-2">
+                            <div className="sm:col-span-7">
+                              <label className="text-[10px] text-stone-400 font-bold block mb-0.5">Title / Name</label>
+                              <input
+                                type="text"
+                                value={item.name}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  setBulkImageItems((prev) =>
+                                    prev.map((i) => (i.id === item.id ? { ...i, name: val } : i))
+                                  );
+                                }}
+                                className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-lg px-2.5 py-1 text-xs font-bold text-stone-900 dark:text-white focus:outline-none focus:border-[#FF2E93]"
+                              />
+                            </div>
+
+                            <div className="sm:col-span-5">
+                              <label className="text-[10px] text-stone-400 font-bold block mb-0.5">Category</label>
+                              <select
+                                value={item.category}
+                                onChange={(e) => {
+                                  const val = e.target.value as any;
+                                  setBulkImageItems((prev) =>
+                                    prev.map((i) => (i.id === item.id ? { ...i, category: val } : i))
+                                  );
+                                }}
+                                className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-lg px-2 py-1 text-xs font-semibold text-stone-900 dark:text-white focus:outline-none"
+                              >
+                                {SEVEN_COLLECTIONS.map((cat) => (
+                                  <option key={cat} value={cat}>
+                                    {cat}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Editable Price & MRP */}
+                        <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-between sm:justify-end">
+                          <div className="w-20">
+                            <label className="text-[10px] text-stone-400 font-bold block mb-0.5">Price (₹)</label>
+                            <input
+                              type="number"
+                              value={item.price}
+                              onChange={(e) => {
+                                const val = Number(e.target.value);
+                                setBulkImageItems((prev) =>
+                                  prev.map((i) => (i.id === item.id ? { ...i, price: val } : i))
+                                );
+                              }}
+                              className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-lg px-2 py-1 text-xs font-mono font-bold text-stone-900 dark:text-white focus:outline-none"
+                            />
+                          </div>
+
+                          <div className="w-20">
+                            <label className="text-[10px] text-stone-400 font-bold block mb-0.5">MRP (₹)</label>
+                            <input
+                              type="number"
+                              value={item.mrp}
+                              onChange={(e) => {
+                                const val = Number(e.target.value);
+                                setBulkImageItems((prev) =>
+                                  prev.map((i) => (i.id === item.id ? { ...i, mrp: val } : i))
+                                );
+                              }}
+                              className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-lg px-2 py-1 text-xs font-mono font-bold text-stone-900 dark:text-white focus:outline-none"
+                            />
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setBulkImageItems((prev) => prev.filter((i) => i.id !== item.id));
+                            }}
+                            className="p-1.5 rounded-lg text-stone-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer mt-3"
+                            title="Remove from batch"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 sm:p-5 border-t border-[#EFE7DE] dark:border-[#282127] bg-[#FAF7F2] dark:bg-[#1C181C] flex items-center justify-between gap-3">
+              <div className="text-xs text-stone-500 hidden sm:block">
+                Ready to publish <strong className="text-stone-900 dark:text-white">{bulkImageItems.length}</strong> items to catalog studio.
+              </div>
+
+              <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+                <button
+                  type="button"
+                  onClick={() => setIsBulkImageImporterOpen(false)}
+                  className="px-4 py-2 rounded-xl font-bold bg-white dark:bg-stone-800 border border-[#EFE7DE] dark:border-stone-700 text-stone-700 dark:text-stone-200 hover:bg-stone-50 cursor-pointer transition-colors"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handlePublishBulkProducts}
+                  disabled={bulkImageItems.length === 0}
+                  className={`px-6 py-2.5 rounded-xl font-bold text-white transition-all shadow-md flex items-center gap-2 cursor-pointer ${
+                    bulkImageItems.length > 0
+                      ? 'bg-[#FF2E93] hover:bg-[#e02680] active:scale-95'
+                      : 'bg-stone-300 dark:bg-stone-800 cursor-not-allowed opacity-60'
+                  }`}
+                >
+                  <Sparkles className="w-4 h-4 text-[#FFD94A]" />
+                  <span>Publish All {bulkImageItems.length} Products to Store</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Invoice Modal */}
       <InvoiceModal
