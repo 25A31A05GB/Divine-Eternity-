@@ -136,12 +136,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       <div className="bg-[#FFFDF8] w-full max-w-md rounded-3xl border border-[#F3E8E2] shadow-2xl p-6 sm:p-8 space-y-5 animate-in fade-in duration-200 text-[#211D1C]">
         
         {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-[#F3E8E2]">
-          <div>
-            <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#FF2E93] block">
-              DIVINE’S ETERNITY
-            </span>
-            <h3 className="font-serif-heading font-bold text-xl text-[#211D1C] mt-0.5">
+        <div className="flex items-center justify-between pb-3.5 border-b border-[#F3E8E2]">
+          <div className="space-y-0.5">
+            <div className="flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-widest text-[#FF2E93]">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>DIVINE’S ETERNITY</span>
+            </div>
+            <h3 className="font-serif-heading font-bold text-xl text-[#211D1C]">
               {mode === 'login' && 'Patron Sign In'}
               {mode === 'signup' && 'Create Your Account'}
               {mode === 'forgot' && 'Reset Password'}
@@ -149,103 +150,105 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-stone-100 hover:bg-stone-200 flex items-center justify-center text-stone-500 cursor-pointer"
+            aria-label="Close"
+            className="w-9 h-9 rounded-full bg-stone-100 hover:bg-[#FFF0F5] hover:text-[#FF2E93] flex items-center justify-center text-stone-500 transition-colors cursor-pointer shrink-0"
           >
             ✕
           </button>
         </div>
 
         {errorMsg && (
-          <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
+          <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2.5">
             <AlertCircle className="w-4 h-4 shrink-0 text-rose-500" />
-            <span>{errorMsg}</span>
+            <span className="leading-snug">{errorMsg}</span>
           </div>
         )}
 
         {successMsg && (
-          <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs flex items-center gap-2">
+          <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs flex items-center gap-2.5">
             <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-500" />
-            <span>{successMsg}</span>
+            <span className="leading-snug">{successMsg}</span>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-3.5">
+        <form onSubmit={handleSubmit} className="space-y-4">
           {mode === 'signup' && (
             <>
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <label className="text-xs font-bold text-[#211D1C] block">Full Name</label>
-                <div className="relative">
-                  <User className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <div className="relative flex items-center">
+                  <User className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none shrink-0" />
                   <input
                     type="text"
                     required
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    placeholder="Enter your name"
-                    className="w-full bg-[#FFF9EB] border border-[#F5E6CE] focus:border-[#FF2E93] rounded-xl pl-10 pr-3.5 py-2.5 text-xs text-[#211D1C] outline-none"
+                    placeholder="e.g. Radhika Sharma"
+                    className="w-full bg-[#FFF9EB] border border-[#F5E6CE] focus:border-[#FF2E93] rounded-2xl pl-10.5 pr-4 py-3 text-xs text-[#211D1C] placeholder:text-stone-400 outline-none transition-all"
                   />
                 </div>
               </div>
 
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <label className="text-xs font-bold text-[#211D1C] block">Phone Number</label>
-                <div className="relative">
-                  <Phone className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <div className="relative flex items-center">
+                  <Phone className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none shrink-0" />
                   <input
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="10-digit mobile number"
-                    className="w-full bg-[#FFF9EB] border border-[#F5E6CE] focus:border-[#FF2E93] rounded-xl pl-10 pr-3.5 py-2.5 text-xs text-[#211D1C] outline-none"
+                    className="w-full bg-[#FFF9EB] border border-[#F5E6CE] focus:border-[#FF2E93] rounded-2xl pl-10.5 pr-4 py-3 text-xs text-[#211D1C] placeholder:text-stone-400 outline-none transition-all"
                   />
                 </div>
               </div>
             </>
           )}
 
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <label className="text-xs font-bold text-[#211D1C] block">Email Address</label>
-            <div className="relative">
-              <Mail className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <div className="relative flex items-center">
+              <Mail className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none shrink-0" />
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@domain.com"
-                className="w-full bg-[#FFF9EB] border border-[#F5E6CE] focus:border-[#FF2E93] rounded-xl pl-10 pr-3.5 py-2.5 text-xs text-[#211D1C] outline-none"
+                placeholder="patron@example.com"
+                className="w-full bg-[#FFF9EB] border border-[#F5E6CE] focus:border-[#FF2E93] rounded-2xl pl-10.5 pr-4 py-3 text-xs text-[#211D1C] placeholder:text-stone-400 outline-none transition-all"
               />
             </div>
           </div>
 
           {mode !== 'forgot' && (
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <label className="text-xs font-bold text-[#211D1C]">Password</label>
                 {mode === 'login' && (
                   <button
                     type="button"
                     onClick={() => setMode('forgot')}
-                    className="text-[11px] font-semibold text-[#FF2E93] hover:underline"
+                    className="text-[11px] font-bold text-[#FF2E93] hover:underline cursor-pointer"
                   >
                     Forgot Password?
                   </button>
                 )}
               </div>
-              <div className="relative">
-                <Lock className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <div className="relative flex items-center">
+                <Lock className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none shrink-0" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full bg-[#FFF9EB] border border-[#F5E6CE] focus:border-[#FF2E93] rounded-xl pl-10 pr-10 py-2.5 text-xs text-[#211D1C] outline-none"
+                  placeholder="••••••••••••"
+                  className="w-full bg-[#FFF9EB] border border-[#F5E6CE] focus:border-[#FF2E93] rounded-2xl pl-10.5 pr-11 py-3 text-xs text-[#211D1C] placeholder:text-stone-400 outline-none transition-all"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-[#211D1C] transition-colors p-1 cursor-pointer"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -256,9 +259,17 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-3 rounded-xl bg-[#FF2E93] hover:bg-[#e02680] text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md active:scale-98 cursor-pointer disabled:opacity-50"
+            className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#FF2E93] to-[#E02680] hover:brightness-105 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md active:scale-98 cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2 mt-2"
           >
-            {isLoading ? 'Processing...' : mode === 'login' ? 'Sign In' : mode === 'signup' ? 'Create Account' : 'Send Reset Link'}
+            {isLoading ? (
+              <span>Processing...</span>
+            ) : mode === 'login' ? (
+              <span>Sign In to Atelier</span>
+            ) : mode === 'signup' ? (
+              <span>Create Patron Account</span>
+            ) : (
+              <span>Send Reset Instructions</span>
+            )}
           </button>
         </form>
 
@@ -268,7 +279,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               New to Divine’s Eternity?{' '}
               <button
                 onClick={() => setMode('signup')}
-                className="font-bold text-[#FF2E93] hover:underline cursor-pointer"
+                className="font-bold text-[#FF2E93] hover:underline cursor-pointer inline-block ml-1"
               >
                 Join Atelier VIP
               </button>
@@ -280,7 +291,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               Already registered?{' '}
               <button
                 onClick={() => setMode('login')}
-                className="font-bold text-[#FF2E93] hover:underline cursor-pointer"
+                className="font-bold text-[#FF2E93] hover:underline cursor-pointer inline-block ml-1"
               >
                 Sign In
               </button>
@@ -290,7 +301,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           {mode === 'forgot' && (
             <button
               onClick={() => setMode('login')}
-              className="font-bold text-[#FF2E93] hover:underline cursor-pointer flex items-center justify-center gap-1 mx-auto"
+              className="font-bold text-[#FF2E93] hover:underline cursor-pointer inline-flex items-center justify-center gap-1.5"
             >
               <ArrowLeft className="w-3.5 h-3.5" /> Back to Sign In
             </button>

@@ -1,11 +1,8 @@
 import React from 'react';
-import { ProductReviews } from './ProductReviews';
+import { CustomerReviews, CustomerReviewsProps } from './CustomerReviews';
 import { Product } from '../../types';
 
-export interface ReviewProps {
-  product: Product;
-  className?: string;
-}
+export interface ReviewProps extends CustomerReviewsProps {}
 
 /**
  * Review Component
@@ -14,7 +11,8 @@ export interface ReviewProps {
  * Seamlessly integrates with ReviewsProvider and useReviews context.
  */
 export const Review: React.FC<ReviewProps> = (props) => {
-  return <ProductReviews {...props} />;
+  return <CustomerReviews {...props} />;
 };
 
+export { CustomerReviews };
 export default Review;

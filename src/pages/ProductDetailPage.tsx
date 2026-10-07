@@ -8,7 +8,7 @@ import { PhoneCaseMockup } from '../utils/productVisuals';
 import { ProductCard } from '../components/common/ProductCard';
 import { SocialShare } from '../components/common/SocialShare';
 import { GiftPersonalizer } from '../components/personalization/GiftPersonalizer';
-import { ProductReviews } from '../components/common/ProductReviews';
+import { CustomerReviews } from '../components/common/CustomerReviews';
 import { SEO } from '../components/common/SEO';
 import {
   Star,
@@ -428,8 +428,8 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
         </div>
 
         {/* Customer Reviews & Feedback Component */}
-        <div className="pt-8 border-t border-[#F5E6E8] dark:border-[#2D252A]">
-          <ProductReviews product={product} />
+        <div className="pt-8 border-t border-[#F5E6E8]">
+          <CustomerReviews product={product} />
         </div>
 
         {/* You May Also Like Row */}
