@@ -811,7 +811,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </div>
 
           {/* Desktop Controls */}
-          <div className="hidden md:flex items-center gap-2.5 shrink-0">
+          <div className="hidden lg:flex items-center gap-2.5 shrink-0">
             {/* Active Role Switcher */}
             <div className="flex items-center p-1 bg-[#171413] rounded-xl border border-stone-800 text-xs">
               <button
@@ -872,11 +872,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </button>
           </div>
 
-          {/* Mobile Navigation Controls: Hamburger "Three Lines" Button */}
-          <div className="flex md:hidden items-center gap-2 shrink-0">
+          {/* Mobile Navigation Controls: Highly Visible Hamburger 3-Lines Button */}
+          <div className="flex lg:hidden items-center gap-2 shrink-0">
             <button
               onClick={onReturnToStore}
-              className="px-2.5 py-2 rounded-xl bg-[#171413] border border-stone-800 text-white text-xs font-semibold flex items-center gap-1"
+              className="px-2.5 py-2 rounded-xl bg-[#171413] border border-stone-800 text-white text-xs font-semibold flex items-center gap-1 hover:border-stone-600 transition-colors"
+              title="Return to Store"
             >
               <Store className="w-3.5 h-3.5 text-[#FFD94A]" />
               <span className="hidden xs:inline">Store</span>
@@ -885,10 +886,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             <button
               onClick={() => setIsAdminMobileMenuOpen(true)}
               aria-label="Toggle Dashboard Menu"
-              className="p-2.5 rounded-xl bg-[#171413] border border-[#FF2E93] text-white hover:bg-[#211D1C] active:scale-95 transition-all shadow-md flex items-center gap-1.5 cursor-pointer"
+              className="px-3 py-2 rounded-xl bg-[#FF2E93] hover:bg-[#e02680] text-white border-2 border-pink-300 active:scale-95 transition-all shadow-lg flex items-center gap-1.5 cursor-pointer font-bold shrink-0"
             >
-              <Menu className="w-5 h-5 text-[#FF2E93]" />
-              <span className="text-xs font-bold text-white">Menu</span>
+              <Menu className="w-5 h-5 text-white stroke-[2.5]" />
+              <span className="text-xs font-extrabold text-white">Menu</span>
             </button>
           </div>
         </div>
@@ -898,23 +899,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       {isAdminMobileMenuOpen &&
         typeof document !== 'undefined' &&
         createPortal(
-          <div className="md:hidden fixed inset-0 z-[9999] w-full h-full h-[100dvh] bg-[#211D1C] text-white flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right duration-300 p-5 shadow-2xl">
+          <div className="lg:hidden fixed inset-0 z-[9999] w-full h-full h-[100dvh] bg-[#171413] text-white flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right duration-300 p-5 shadow-2xl">
             <div>
               {/* Drawer Top Bar */}
               <div className="flex items-center justify-between pb-4 border-b border-stone-800">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-[#FF2E93] text-white font-bold text-sm flex items-center justify-center">
+                  <div className="w-9 h-9 rounded-xl bg-[#FF2E93] text-white font-black text-sm flex items-center justify-center shadow-md">
                     GD
                   </div>
                   <div>
                     <div className="text-sm font-bold text-white">Gadgets Destiny Control</div>
-                    <div className="text-[10px] text-[#FFD94A]">Mobile Command Center</div>
+                    <div className="text-[10px] text-[#FFD94A] font-medium">Mobile Command Center</div>
                   </div>
                 </div>
 
                 <button
                   onClick={() => setIsAdminMobileMenuOpen(false)}
-                  className="p-2 rounded-full bg-[#171413] border border-stone-800 text-white shadow-md hover:bg-stone-800"
+                  className="p-2 rounded-full bg-[#211D1C] border border-stone-700 text-white shadow-md hover:bg-stone-800 cursor-pointer"
                   aria-label="Close admin menu"
                 >
                   <X className="w-5 h-5" />
@@ -923,7 +924,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
               {/* Role Selection inside Drawer */}
               <div className="my-4 space-y-2">
-                <div className="text-[10px] font-bold uppercase tracking-widest text-[#5B8CFF] font-mono">
+                <div className="text-[10px] font-extrabold uppercase tracking-widest text-[#FFD94A] font-mono">
                   Access Role
                 </div>
                 <div className="grid grid-cols-3 gap-2">
@@ -933,14 +934,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       setActiveTab('media-cms');
                       setIsAdminMobileMenuOpen(false);
                     }}
-                    className={`p-2.5 rounded-xl border text-center transition-all ${
+                    className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer ${
                       currentRole === 'director'
-                        ? 'bg-[#5B8CFF] border-[#5B8CFF] text-white shadow-xs'
-                        : 'bg-[#151A24] border-[#242C3D] text-[#A7AFBD]'
+                        ? 'bg-[#FF2E93] border-[#FF2E93] text-white shadow-md'
+                        : 'bg-[#211D1C] border-stone-800 text-stone-300 hover:border-stone-700'
                     }`}
                   >
-                    <Film className="w-4 h-4 mx-auto mb-1 text-[#22D3EE]" />
-                    <span className="text-[11px] font-bold block">Media Director</span>
+                    <Film className="w-4 h-4 mx-auto mb-1 text-white" />
+                    <span className="text-[10px] font-bold block">Media Director</span>
                   </button>
 
                   <button
@@ -949,14 +950,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       setActiveTab('overview');
                       setIsAdminMobileMenuOpen(false);
                     }}
-                    className={`p-2.5 rounded-xl border text-center transition-all ${
+                    className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer ${
                       currentRole === 'superadmin'
-                        ? 'bg-[#5B8CFF] border-[#5B8CFF] text-white shadow-xs'
-                        : 'bg-[#151A24] border-[#242C3D] text-[#A7AFBD]'
+                        ? 'bg-[#FF2E93] border-[#FF2E93] text-white shadow-md'
+                        : 'bg-[#211D1C] border-stone-800 text-stone-300 hover:border-stone-700'
                     }`}
                   >
-                    <BarChart3 className="w-4 h-4 mx-auto mb-1 text-[#D6B36A]" />
-                    <span className="text-[11px] font-bold block">Super Admin</span>
+                    <BarChart3 className="w-4 h-4 mx-auto mb-1 text-white" />
+                    <span className="text-[10px] font-bold block">Super Admin</span>
                   </button>
 
                   <button
@@ -965,21 +966,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       setActiveTab('orders');
                       setIsAdminMobileMenuOpen(false);
                     }}
-                    className={`p-2.5 rounded-xl border text-center transition-all ${
+                    className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer ${
                       currentRole === 'orders'
-                        ? 'bg-[#5B8CFF] border-[#5B8CFF] text-white shadow-xs'
-                        : 'bg-[#151A24] border-[#242C3D] text-[#A7AFBD]'
+                        ? 'bg-[#FF2E93] border-[#FF2E93] text-white shadow-md'
+                        : 'bg-[#211D1C] border-stone-800 text-stone-300 hover:border-stone-700'
                     }`}
                   >
-                    <ShoppingBag className="w-4 h-4 mx-auto mb-1 text-[#8B5CF6]" />
-                    <span className="text-[11px] font-bold block">Fulfillment</span>
+                    <ShoppingBag className="w-4 h-4 mx-auto mb-1 text-white" />
+                    <span className="text-[10px] font-bold block">Fulfillment</span>
                   </button>
                 </div>
               </div>
 
               {/* Navigation Tabs List */}
               <div className="my-5 space-y-2">
-                <div className="text-[10px] font-bold uppercase tracking-widest text-[#5B8CFF] font-mono">
+                <div className="text-[10px] font-extrabold uppercase tracking-widest text-[#FFD94A] font-mono">
                   Dashboard Modules
                 </div>
                 {[
@@ -1001,23 +1002,25 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         setActiveTab(tab.id as any);
                         setIsAdminMobileMenuOpen(false);
                       }}
-                      className={`w-full text-left p-3 rounded-2xl border transition-all flex items-center justify-between group shadow-xs ${
+                      className={`w-full text-left p-3 rounded-2xl border transition-all flex items-center justify-between group shadow-xs cursor-pointer ${
                         isActive
-                          ? 'bg-[#1B2230] border-[#5B8CFF] text-[#F7F4EC]'
-                          : 'bg-[#151A24] border-[#242C3D] text-[#A7AFBD] hover:border-[#5B8CFF]'
+                          ? 'bg-[#FF2E93] border-pink-400 text-white font-bold'
+                          : 'bg-[#211D1C] border-stone-800 text-stone-300 hover:border-[#FF2E93]/60'
                       }`}
                     >
                       <div className="flex items-center gap-2.5">
-                        <Icon className={`w-4 h-4 ${isActive ? 'text-[#22D3EE]' : 'text-[#737C8C]'}`} />
-                        <span className="text-xs font-semibold text-[#F7F4EC]">{tab.label}</span>
+                        <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-[#FFD94A]'}`} />
+                        <span className="text-xs font-bold text-white">{tab.label}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         {tab.count !== null && (
-                          <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-[#0C1220] text-[#22D3EE]">
+                          <span className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-bold ${
+                            isActive ? 'bg-white text-[#FF2E93]' : 'bg-[#171413] text-[#FFD94A]'
+                          }`}>
                             {tab.count}
                           </span>
                         )}
-                        <ChevronRight className="w-4 h-4 text-[#737C8C]" />
+                        <ChevronRight className={`w-4 h-4 ${isActive ? 'text-white' : 'text-stone-500'}`} />
                       </div>
                     </button>
                   );
@@ -1026,15 +1029,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </div>
 
             {/* Bottom Actions inside Drawer */}
-            <div className="pt-4 mt-6 border-t border-[#242C3D] space-y-2">
+            <div className="pt-4 mt-6 border-t border-stone-800 space-y-2">
               <button
                 onClick={() => {
                   setIsAdminMobileMenuOpen(false);
                   onReturnToStore();
                 }}
-                className="w-full p-3 rounded-2xl bg-[#5B8CFF] hover:bg-[#4b7beb] text-white text-xs font-bold flex items-center justify-center gap-2 transition-colors shadow-md"
+                className="w-full p-3.5 rounded-2xl bg-white hover:bg-stone-100 text-[#211D1C] text-xs font-bold flex items-center justify-center gap-2 transition-colors shadow-md cursor-pointer"
               >
-                <Store className="w-4 h-4" />
+                <Store className="w-4 h-4 text-[#FF2E93]" />
                 <span>Return to Public Storefront</span>
               </button>
             </div>
@@ -1043,7 +1046,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         )}
 
       {/* Main Container */}
-      <div className="max-w-7xl mx-auto px-4 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 lg:px-8 py-6 sm:py-8 pb-28 lg:pb-12">
         
         {/* Navigation Tabs */}
         <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-8 border-b border-[#F3E8E2] no-scrollbar">
@@ -3235,6 +3238,68 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </button>
         </div>
       )}
+
+      {/* Mobile Sticky Quick Navigation Dock */}
+      <nav aria-label="Mobile Dashboard Navigation" className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#171413]/95 backdrop-blur-md border-t border-stone-800 px-2 py-2 shadow-2xl flex items-center justify-around">
+        <button
+          onClick={() => setActiveTab('overview')}
+          className={`flex flex-col items-center gap-1 text-[10px] font-bold py-1 px-2 rounded-xl transition-all cursor-pointer ${
+            activeTab === 'overview'
+              ? 'text-[#FF2E93] bg-[#FF2E93]/10'
+              : 'text-stone-400 hover:text-white'
+          }`}
+        >
+          <BarChart3 className="w-4 h-4" />
+          <span>Overview</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('orders')}
+          className={`relative flex flex-col items-center gap-1 text-[10px] font-bold py-1 px-2 rounded-xl transition-all cursor-pointer ${
+            activeTab === 'orders'
+              ? 'text-[#FF2E93] bg-[#FF2E93]/10'
+              : 'text-stone-400 hover:text-white'
+          }`}
+        >
+          <ShoppingBag className="w-4 h-4" />
+          <span>Orders</span>
+          {orders.length > 0 && (
+            <span className="absolute top-1 right-2 w-2 h-2 rounded-full bg-[#FF2E93]" />
+          )}
+        </button>
+
+        <button
+          onClick={() => setActiveTab('products')}
+          className={`flex flex-col items-center gap-1 text-[10px] font-bold py-1 px-2 rounded-xl transition-all cursor-pointer ${
+            activeTab === 'products'
+              ? 'text-[#FF2E93] bg-[#FF2E93]/10'
+              : 'text-stone-400 hover:text-white'
+          }`}
+        >
+          <Package className="w-4 h-4" />
+          <span>Catalog</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('media-cms')}
+          className={`flex flex-col items-center gap-1 text-[10px] font-bold py-1 px-2 rounded-xl transition-all cursor-pointer ${
+            activeTab === 'media-cms'
+              ? 'text-[#FF2E93] bg-[#FF2E93]/10'
+              : 'text-stone-400 hover:text-white'
+          }`}
+        >
+          <Film className="w-4 h-4" />
+          <span>Media</span>
+        </button>
+
+        <button
+          onClick={() => setIsAdminMobileMenuOpen(true)}
+          className="flex flex-col items-center gap-1 text-[10px] font-extrabold py-1 px-2 text-[#FFD94A] hover:text-amber-300 rounded-xl bg-[#211D1C] border border-[#FFD94A]/30 transition-all cursor-pointer shadow-xs"
+        >
+          <Menu className="w-4 h-4 stroke-[2.5]" />
+          <span>Menu</span>
+        </button>
+      </nav>
     </div>
   );
 };

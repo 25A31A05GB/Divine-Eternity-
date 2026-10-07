@@ -91,7 +91,6 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, ope
       tagline: 'Discover the world of Divine’s Eternity',
       badge: 'All Gifts',
       subcategories: [
-        'Customize Your Gift',
         'Names on Gifts',
         'Personalized Jewellery',
         'Customize Your Caricature or Miniature',
@@ -426,7 +425,7 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, ope
                 <div className="grid grid-cols-2 gap-2 text-xs font-semibold">
                   <button
                     onClick={() => navigateTo('track-order')}
-                    className="p-2.5 rounded-xl bg-[#0C1220] border border-[#242C3D] text-[#F7F4EC] hover:bg-[#1B2230] flex items-center gap-2 transition-colors"
+                    className="p-2.5 rounded-xl bg-[#0C1220] border border-[#242C3D] text-[#F7F4EC] hover:bg-[#1B2230] flex items-center gap-2 transition-colors cursor-pointer"
                   >
                     <Package className="w-4 h-4 text-[#22D3EE]" />
                     <span>Track Orders</span>
@@ -434,12 +433,26 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, ope
 
                   <button
                     onClick={() => navigateTo('wishlist')}
-                    className="p-2.5 rounded-xl bg-[#0C1220] border border-[#242C3D] text-[#F7F4EC] hover:bg-[#1B2230] flex items-center gap-2 transition-colors"
+                    className="p-2.5 rounded-xl bg-[#0C1220] border border-[#242C3D] text-[#F7F4EC] hover:bg-[#1B2230] flex items-center gap-2 transition-colors cursor-pointer"
                   >
                     <Heart className="w-4 h-4 text-[#5B8CFF]" />
                     <span>Wishlist ({wishlistCount})</span>
                   </button>
                 </div>
+
+                {/* Direct Mobile Admin Portal Button */}
+                <button
+                  onClick={() => navigateTo('secret-admin-portal')}
+                  className="w-full mt-2 p-2.5 rounded-xl bg-[#211D1C] hover:bg-[#2c2625] border border-[#FF2E93]/40 text-[#FFD94A] flex items-center justify-between text-xs font-bold transition-all shadow-xs cursor-pointer"
+                >
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className="w-4 h-4 text-[#FF2E93]" />
+                    <span className="text-white">Admin Studio & Media Portal</span>
+                  </div>
+                  <span className="text-[10px] bg-[#FF2E93] text-white px-2 py-0.5 rounded-md font-extrabold uppercase">
+                    Admin
+                  </span>
+                </button>
               </div>
 
               {/* Navigation Section */}
@@ -459,6 +472,7 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, ope
                   { label: '7. Podcast (Inspiring Stories)', view: 'collections', params: { category: 'podcast' } },
                   { label: 'Track Order', view: 'track-order' },
                   { label: 'Contact & Concierge', view: 'contact' },
+                  { label: '👑 Secret Admin Portal & Studio', view: 'secret-admin-portal' },
                 ].map((item, idx) => (
                   <button
                     key={idx}

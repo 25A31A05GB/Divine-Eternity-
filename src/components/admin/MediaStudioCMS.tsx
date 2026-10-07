@@ -383,48 +383,32 @@ export const MediaStudioCMS: React.FC<MediaStudioCMSProps> = ({ products }) => {
                 </div>
               )}
 
-              {/* Simulated Hero Section */}
+              {/* Simulated Hero Section (Full Image Banner) */}
               {activeSlide && (
-                <div className={`p-6 bg-gradient-to-br ${activeSlide.bgGradient} relative overflow-hidden`}>
-                  {activeSlide.customVideoUrl && (
+                <div className="relative w-full aspect-[21/9] sm:aspect-[24/9] bg-stone-900 overflow-hidden group flex items-center justify-center">
+                  {activeSlide.customVideoUrl ? (
                     <video
                       src={activeSlide.customVideoUrl}
                       autoPlay
                       loop
                       muted
                       playsInline
-                      className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none"
+                      className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+                    />
+                  ) : (
+                    <img
+                      src={
+                        activeSlide.customImageUrl ||
+                        'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=1200&q=80'
+                      }
+                      alt={activeSlide.title || 'Slide Banner'}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).src =
+                          'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=1200&q=80';
+                      }}
                     />
                   )}
-
-                  <div className="relative z-10 space-y-3">
-                    <span className="bg-[#881337] text-white text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wider inline-flex items-center gap-1">
-                      <Sparkles className="w-2.5 h-2.5 text-[#E5C378]" />
-                      {activeSlide.eyebrow}
-                    </span>
-
-                    <h3 className="font-serif text-xl sm:text-3xl font-bold text-stone-900 dark:text-white leading-tight">
-                      {activeSlide.title}
-                    </h3>
-
-                    <p className="text-xs text-stone-600 dark:text-stone-300 max-w-md">
-                      {activeSlide.tagline}
-                    </p>
-
-                    {activeSlide.coupon && (
-                      <div className="inline-flex items-center gap-2 bg-white/90 dark:bg-stone-900/90 px-3 py-1 rounded-lg text-[10px] border border-stone-200 dark:border-stone-800">
-                        <span>Code:</span>
-                        <strong className="font-mono text-[#881337] dark:text-[#FB7185]">{activeSlide.coupon}</strong>
-                      </div>
-                    )}
-
-                    <div className="pt-2">
-                      <button className="bg-[#881337] text-white px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
-                        <span>{activeSlide.ctaText}</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
                 </div>
               )}
 
