@@ -47,6 +47,7 @@ export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({
   const [customMessage, setCustomMessage] = useState('');
   const [showNotificationBadge, setShowNotificationBadge] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
+  const [typingStatus, setTypingStatus] = useState<string>('typing...');
   const [messages, setMessages] = useState<MessageHistoryItem[]>([]);
   const [activeCategoryFilter, setActiveCategoryFilter] = useState<'all' | 'context' | 'orders' | 'deals'>('all');
   const [pastOrders, setPastOrders] = useState<Order[]>([]);
@@ -325,22 +326,29 @@ export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({
       { id: userMsgId, sender: 'user', text: prompt.message, time: now, status: 'sent' },
     ]);
 
-    // 2. Deliver within 350ms: Double grey checkmarks (delivered)
+    // 2. Deliver within 300ms: Double grey checkmarks (delivered)
     setTimeout(() => {
       setMessages((prev) =>
         prev.map((m) => (m.id === userMsgId ? { ...m, status: 'delivered' } : m))
       );
-    }, 350);
+    }, 300);
 
-    // Concierge typing indicator
-    setIsTyping(true);
-
-    // 3. Concierge responds: Animated Blue Double Checkmarks + Reply Sound
+    // 3. Blue double checkmark (read) + Concierge typing indicator starts after 600ms
     setTimeout(() => {
       setMessages((prev) =>
         prev.map((m) => (m.id === userMsgId ? { ...m, status: 'read' } : m))
       );
+      setTypingStatus('typing...');
+      setIsTyping(true);
+    }, 600);
 
+    // 4. Multi-stage typing progression at 1400ms for natural realism
+    setTimeout(() => {
+      setTypingStatus('crafting response...');
+    }, 1400);
+
+    // 5. Concierge responds at 2200ms: Reply sound + message
+    setTimeout(() => {
       setIsTyping(false);
       soundFeedback.playSoftPing(0.12);
 
@@ -354,7 +362,7 @@ export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({
           status: 'delivered',
         },
       ]);
-    }, 1100);
+    }, 2200);
   };
 
   const handleSendMessage = () => {
@@ -377,16 +385,24 @@ export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({
       setMessages((prev) =>
         prev.map((m) => (m.id === userMsgId ? { ...m, status: 'delivered' } : m))
       );
-    }, 350);
+    }, 300);
 
-    setIsTyping(true);
-
-    // 3. Read status + personalized response
+    // 3. Read status + start typing indicator
     setTimeout(() => {
       setMessages((prev) =>
         prev.map((m) => (m.id === userMsgId ? { ...m, status: 'read' } : m))
       );
+      setTypingStatus('typing...');
+      setIsTyping(true);
+    }, 600);
 
+    // 4. Multi-stage typing progression
+    setTimeout(() => {
+      setTypingStatus('checking customization options...');
+    }, 1400);
+
+    // 5. Personalized response
+    setTimeout(() => {
       setIsTyping(false);
       soundFeedback.playSoftPing(0.12);
 
@@ -404,7 +420,7 @@ export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({
           status: 'delivered',
         },
       ]);
-    }, 1100);
+    }, 2300);
   };
 
   const toggleOpen = () => {
@@ -441,9 +457,22 @@ export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({
                   <h4 className="font-bold text-sm leading-tight text-white truncate">{storeName} Care</h4>
                   <CheckCheck className="w-3.5 h-3.5 text-white/90 shrink-0" />
                 </div>
-                <p className="text-[11px] text-emerald-100 font-medium truncate">
-                  {user ? `Namaste, ${(user.name || 'Friend').split(' ')[0]}` : 'Online • Instant Artisan Support'}
-                </p>
+                <div className="text-[11px] text-emerald-100 font-medium truncate min-h-[16px] flex items-center">
+                  {isTyping ? (
+                    <span className="text-[#A7F3D0] font-bold flex items-center gap-1.5 animate-in fade-in duration-200">
+                      <span className="italic">{typingStatus}</span>
+                      <span className="inline-flex items-center gap-0.5">
+                        <span className="w-1 h-1 rounded-full bg-white animate-wa-dot-1" />
+                        <span className="w-1 h-1 rounded-full bg-white animate-wa-dot-2" />
+                        <span className="w-1 h-1 rounded-full bg-white animate-wa-dot-3" />
+                      </span>
+                    </span>
+                  ) : user ? (
+                    `Namaste, ${(user.name || 'Friend').split(' ')[0]}`
+                  ) : (
+                    'Online • Instant Artisan Support'
+                  )}
+                </div>
               </div>
             </div>
 
@@ -557,11 +586,24 @@ export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({
               </div>
             )}
 
-            {/* Typing Indicator */}
+            {/* Realistic WhatsApp Typing Indicator */}
             {isTyping && (
-              <div className="flex items-center gap-1.5 text-xs text-stone-500 bg-white border border-[#E7E2DA] rounded-2xl py-2 px-3 w-fit shadow-2xs animate-pulse">
-                <Loader2 className="w-3 h-3 animate-spin text-[#128C7E]" />
-                <span className="text-[11px] font-medium">Concierge is replying...</span>
+              <div className="flex flex-col items-start gap-1 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <div className="flex items-center gap-1.5 text-[10px] text-[#128C7E] pl-1 font-bold">
+                  <Sparkles className="w-3 h-3 text-[#FF2E93] animate-spin" />
+                  <span>{storeName} Concierge</span>
+                </div>
+                <div className="bg-white text-stone-800 border border-[#E7E2DA] rounded-2xl rounded-tl-xs shadow-2xs py-2.5 px-4 flex items-center gap-3">
+                  {/* 3 WhatsApp Style Bouncing Dots */}
+                  <div className="flex items-center gap-1 py-0.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#128C7E] animate-wa-dot-1" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#128C7E] animate-wa-dot-2" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#128C7E] animate-wa-dot-3" />
+                  </div>
+                  <span className="text-[11px] text-stone-500 font-medium italic">
+                    {typingStatus}
+                  </span>
+                </div>
               </div>
             )}
 

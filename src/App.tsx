@@ -50,46 +50,96 @@ const VALID_VIEWS = new Set([
   'secret-admin-portal',
 ]);
 
-// Helper to parse current hash into view, params, and target product
-function parseHash(hash: string, productsList: Product[]) {
-  const clean = hash.replace(/^#\/?/, '').trim();
-  if (!clean) return { view: 'home', params: {}, product: null };
+// Universal URL parser to support hashes (#collections), pathnames (/collections), and search params (?view=collections&category=jewellery)
+function parseURL(productsList: Product[]) {
+  if (typeof window === 'undefined') {
+    return { view: 'home', params: {} as Record<string, string>, product: null as Product | null };
+  }
 
-  const [routePart, queryPart] = clean.split('?');
+  const rawHash = window.location.hash.replace(/^#\/?/, '').trim();
+  const rawPathname = window.location.pathname.replace(/^\//, '').trim();
+  const rawSearch = window.location.search.replace(/^\?/, '').trim();
+
   const params: Record<string, string> = {};
 
-  if (queryPart) {
-    const searchParams = new URLSearchParams(queryPart);
+  // 1. Parse standard URL search parameters (?view=collections&category=jewellery)
+  if (rawSearch) {
+    const searchParams = new URLSearchParams(rawSearch);
     searchParams.forEach((val, key) => {
       params[key] = val;
     });
   }
 
-  let view = routePart || 'home';
+  // 2. Parse hash query parameters (#collections?category=jewellery)
+  let rawRoute = '';
+  if (rawHash) {
+    const [hashRoute, hashQuery] = rawHash.split('?');
+    if (hashRoute) rawRoute = hashRoute;
+    if (hashQuery) {
+      const hashSearchParams = new URLSearchParams(hashQuery);
+      hashSearchParams.forEach((val, key) => {
+        params[key] = val;
+      });
+    }
+  }
+
+  // 3. Fallback to pathname if hash is empty (/collections, /secret-admin-portal, /checkout)
+  if (!rawRoute && rawPathname) {
+    const cleanPath = rawPathname.replace(/\/$/, '').replace(/^index\.html$/, '');
+    if (cleanPath) {
+      rawRoute = cleanPath;
+    }
+  }
+
+  // Override view if explicitly provided in query params (?view=collections or ?page=collections)
+  if (params.view) {
+    rawRoute = params.view;
+  } else if (params.page) {
+    rawRoute = params.page;
+  }
+
+  let view = (rawRoute || 'home').toLowerCase();
 
   // Admin aliases
-  if (view === 'admin' || view === 'secret-admin-portal') {
+  if (view === 'admin' || view === 'secret-admin-portal' || params.admin === 'true') {
     view = 'secret-admin-portal';
   }
 
   // Legal policy direct aliases
-  if (view === 'privacy-policy') {
+  if (view === 'privacy-policy' || view === 'privacy') {
     view = 'policy';
     params.tab = 'privacy';
   } else if (view === 'terms-and-conditions' || view === 'terms') {
     view = 'policy';
     params.tab = 'terms';
-  } else if (view === 'refund-and-cancellation' || view === 'refund-policy') {
+  } else if (view === 'refund-and-cancellation' || view === 'refund-policy' || view === 'refund') {
     view = 'policy';
     params.tab = 'refund';
-  } else if (view === 'shipping-and-delivery' || view === 'shipping-policy') {
+  } else if (view === 'shipping-and-delivery' || view === 'shipping-policy' || view === 'shipping') {
     view = 'policy';
     params.tab = 'shipping';
   }
 
+  // Fallback for unknown routes
+  if (!VALID_VIEWS.has(view)) {
+    // Check if view matches a product slug directly (/gift-hamper-1 or /#gift-hamper-1)
+    const foundBySlug = productsList.find((p) => p.slug === view || p.id === view);
+    if (foundBySlug) {
+      view = 'product-detail';
+      params.slug = foundBySlug.slug;
+    } else {
+      view = 'home';
+    }
+  }
+
+  // Locate selected product if in product-detail view or if slug/product is in params
   let foundProduct: Product | null = null;
-  if (view === 'product-detail' && params.slug) {
-    foundProduct = productsList.find((p) => p.slug === params.slug || p.id === params.slug) || null;
+  const targetSlug = params.slug || params.product;
+  if (targetSlug) {
+    foundProduct = productsList.find((p) => p.slug === targetSlug || p.id === targetSlug) || null;
+    if (foundProduct && view === 'home') {
+      view = 'product-detail';
+    }
   }
 
   return { view, params, product: foundProduct };
@@ -121,7 +171,35 @@ export function AppContent() {
     return INITIAL_PRODUCTS;
   });
 
-  // Initialize and load products via Database Access Layer
+  const [currentView, setCurrentView] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      const { view } = parseURL(INITIAL_PRODUCTS);
+      return view;
+    }
+    return 'home';
+  });
+
+  const [viewParams, setViewParams] = useState<Record<string, string>>(() => {
+    if (typeof window !== 'undefined') {
+      const { params } = parseURL(INITIAL_PRODUCTS);
+      return params;
+    }
+    return {};
+  });
+
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(() => {
+    if (typeof window !== 'undefined') {
+      const { product } = parseURL(INITIAL_PRODUCTS);
+      return product;
+    }
+    return null;
+  });
+
+  const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [completedOrder, setCompletedOrder] = useState<Order | null>(null);
+
+  // Load products via Database Access Layer and re-evaluate URL targeting
   useEffect(() => {
     const loadProducts = async () => {
       try {
@@ -136,38 +214,10 @@ export function AppContent() {
     loadProducts();
   }, []);
 
-  const [currentView, setCurrentView] = useState<string>(() => {
-    if (typeof window !== 'undefined' && window.location.hash) {
-      const { view } = parseHash(window.location.hash, INITIAL_PRODUCTS);
-      return view;
-    }
-    return 'home';
-  });
-
-  const [viewParams, setViewParams] = useState<Record<string, string>>(() => {
-    if (typeof window !== 'undefined' && window.location.hash) {
-      const { params } = parseHash(window.location.hash, INITIAL_PRODUCTS);
-      return params;
-    }
-    return {};
-  });
-
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(() => {
-    if (typeof window !== 'undefined' && window.location.hash) {
-      const { product } = parseHash(window.location.hash, INITIAL_PRODUCTS);
-      return product;
-    }
-    return null;
-  });
-
-  const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [completedOrder, setCompletedOrder] = useState<Order | null>(null);
-
-  // Hash & Browser Back/Forward navigation listener
+  // Sync route and selected product whenever products change or URL updates
   useEffect(() => {
-    const handleHashChange = () => {
-      const { view, params, product } = parseHash(window.location.hash, products);
+    const handleLocationChange = () => {
+      const { view, params, product } = parseURL(products);
       setCurrentView(view);
       setViewParams(params);
       if (product) {
@@ -175,9 +225,7 @@ export function AppContent() {
       }
     };
 
-    if (window.location.hash) {
-      handleHashChange();
-    }
+    handleLocationChange();
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.ctrlKey && e.shiftKey && (e.key === 'A' || e.key === 'a')) {
@@ -186,10 +234,12 @@ export function AppContent() {
       }
     };
 
-    window.addEventListener('hashchange', handleHashChange);
+    window.addEventListener('hashchange', handleLocationChange);
+    window.addEventListener('popstate', handleLocationChange);
     window.addEventListener('keydown', handleKeyDown);
     return () => {
-      window.removeEventListener('hashchange', handleHashChange);
+      window.removeEventListener('hashchange', handleLocationChange);
+      window.removeEventListener('popstate', handleLocationChange);
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [products]);

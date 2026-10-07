@@ -76,3 +76,28 @@
   scrollbar-width: none;
 }
 
+/* Authentic WhatsApp Typing Dots Animation */
+@keyframes waDotBounce {
+  0%, 60%, 100% {
+    transform: translateY(0);
+    opacity: 0.35;
+  }
+  30% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+
+.animate-wa-dot-1 {
+  animation: waDotBounce 1.3s infinite ease-in-out;
+  animation-delay: 0s;
+}
+.animate-wa-dot-2 {
+  animation: waDotBounce 1.3s infinite ease-in-out;
+  animation-delay: 0.18s;
+}
+.animate-wa-dot-3 {
+  animation: waDotBounce 1.3s infinite ease-in-out;
+  animation-delay: 0.36s;
+}
+
