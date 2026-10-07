@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
-import { ArrowUpRight, Sparkles, Eye, ShoppingBag } from 'lucide-react';
+import { ArrowUpRight, Sparkles, Eye } from 'lucide-react';
 import { Product } from '../../types';
-import { PhoneCaseMockup } from '../../utils/productVisuals';
-import { useMediaCMS } from '../../context/MediaCMSContext';
 
 interface ChoiceSelectorProps {
   products: Product[];
@@ -15,17 +13,34 @@ export const ChoiceSelector: React.FC<ChoiceSelectorProps> = ({
   onSelectCategory,
   onQuickView,
 }) => {
-  const { choiceSection } = useMediaCMS();
   const [activeIndex, setActiveIndex] = useState(0);
 
-  if (choiceSection.isActive === false) return null;
+  const CHOICES = [
+    {
+      num: '01.',
+      title: 'Customized Initial & Name Necklaces',
+      category: 'Customize Your Gift',
+      product: products[1] || products[0],
+    },
+    {
+      num: '02.',
+      title: 'Solid Gold Plated Figaro & ID Bracelets',
+      category: 'Customize Your Gift',
+      product: products[2] || products[0],
+    },
+    {
+      num: '03.',
+      title: 'Vintage Keepsake Photo Book Lockets',
+      category: 'Customize Your Gift',
+      product: products[15] || products[0],
+    },
+  ];
 
-  const tabs = choiceSection.tabs || [];
-  const currentTab = tabs[activeIndex] || tabs[0];
+  const currentChoice = CHOICES[activeIndex] || CHOICES[0];
 
-  const currentProduct = currentTab
-    ? products.find((p) => p.category === currentTab.category || p.category.toLowerCase().includes(currentTab.category.toLowerCase().split(' ')[0])) || products[0]
-    : products[0];
+  if (!products || products.length === 0 || !currentChoice?.product) {
+    return null;
+  }
 
   return (
     <section className="py-16 sm:py-24 bg-[#FFFDF8]">
@@ -34,115 +49,87 @@ export const ChoiceSelector: React.FC<ChoiceSelectorProps> = ({
         {/* 2-Column Layout */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-16 items-center">
           
-          {/* Left Column: Big Product Visual */}
+          {/* Left Column: Real Jewellery Image Visual */}
           <div className="flex items-center justify-center">
-            {currentProduct && (
+            {currentChoice.product && (
               <div
-                onClick={() => onQuickView(currentProduct)}
-                className="w-64 sm:w-80 h-96 sm:h-[460px] cursor-pointer transform hover:scale-102 transition-transform duration-300 drop-shadow-xl bg-white p-4 rounded-3xl border border-[#F3E8E2] flex flex-col items-center justify-between"
+                onClick={() => onQuickView(currentChoice.product!)}
+                className="relative w-72 sm:w-84 aspect-square rounded-3xl overflow-hidden cursor-pointer transform hover:scale-102 transition-all duration-300 shadow-2xl border-4 border-[#FFFDF8] group"
               >
-                <div className="w-full flex-1 rounded-2xl overflow-hidden bg-[#FFFDF8] flex items-center justify-center p-2">
-                  {currentProduct.images?.[0] ? (
-                    <img
-                      src={currentProduct.images[0]}
-                      alt={currentProduct.name}
-                      className="w-full h-full object-contain rounded-xl"
-                    />
-                  ) : (
-                    <PhoneCaseMockup
-                      product={currentProduct}
-                      customText="Atelier"
-                      className="w-full h-full"
-                    />
-                  )}
+                <img
+                  src={currentChoice.product.images[0]}
+                  alt={currentChoice.product.name}
+                  referrerPolicy="no-referrer"
+                  className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-700"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex flex-col justify-end p-5 text-white">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-[#FFD94A]">Purely Gold Plated ✨💖</span>
+                  <p className="font-serif-heading text-lg font-bold text-white line-clamp-1">{currentChoice.product.name}</p>
+                  <p className="text-xs text-white/90">₹{currentChoice.product.price} <span className="line-through text-white/60">₹{currentChoice.product.mrp}</span></p>
                 </div>
-
-                <div className="w-full pt-3 flex items-center justify-between border-t border-[#F3E8E2] mt-2">
-                  <div>
-                    <h4 className="font-bold text-xs text-[#211D1C] truncate max-w-[170px]">
-                      {currentProduct.name}
-                    </h4>
-                    <span className="text-xs font-serif font-bold text-[#FF2E93]">
-                      ₹{currentProduct.price}
-                    </span>
-                  </div>
-                  <button className="px-3 py-1.5 rounded-full bg-[#FF2E93] text-white text-[10px] font-bold flex items-center gap-1 shadow-xs">
-                    <Eye className="w-3 h-3" /> Quick View
-                  </button>
+                <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md text-[#211D1C] rounded-full p-2 shadow-md opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Eye className="w-4 h-4 text-[#FF2E93]" />
                 </div>
               </div>
             )}
           </div>
 
-          {/* Right Column: Choices List */}
-          <div className="space-y-6">
+          {/* Right Column: Title and Numbered Options */}
+          <div className="space-y-8">
             <div>
               <div className="text-[11px] font-extrabold uppercase tracking-widest text-[#FF2E93] flex items-center gap-1.5 mb-1">
                 <Sparkles className="w-3.5 h-3.5 text-[#FFD94A]" />
-                <span>{choiceSection.eyebrow || 'DISCOVER BY OCCASION & STYLE'}</span>
+                <span>PERSONALIZED KEEPSAKES</span>
               </div>
-              <h2 className="font-serif-heading text-3xl sm:text-4xl lg:text-5xl font-bold text-[#211D1C]">
-                {choiceSection.title || 'Shop By Your'}{' '}
-                <span className="font-serif italic text-[#FF2E93] font-normal">Choice</span>
+              <h2 className="font-serif-heading text-3xl sm:text-4xl lg:text-5xl font-normal text-[#211D1C]">
+                Shop By Your Choice
               </h2>
-              <p className="text-xs sm:text-sm text-stone-600 mt-1">
-                {choiceSection.subtitle || 'Hand-picked keepsakes categorized for your exact gifting moment.'}
-              </p>
             </div>
 
-            {/* List with selection indicator */}
-            <div className="space-y-3">
-              {tabs.map((tab, idx) => {
+            <div className="space-y-4 pt-2">
+              {CHOICES.map((choice, idx) => {
                 const isSelected = activeIndex === idx;
-                const numStr = String(idx + 1).padStart(2, '0') + '.';
 
                 return (
                   <div
-                    key={tab.id || idx}
-                    onClick={() => setActiveIndex(idx)}
-                    className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between group ${
-                      isSelected
-                        ? 'bg-[#FFF9EB] border-[#FF2E93] shadow-xs'
-                        : 'bg-white border-[#F3E8E2] hover:border-[#FF2E93]/50'
-                    }`}
+                    key={choice.num}
+                    onClick={() => {
+                      setActiveIndex(idx);
+                      onSelectCategory(choice.category);
+                    }}
+                    onMouseEnter={() => setActiveIndex(idx)}
+                    className="py-4 border-b border-stone-200 flex items-center justify-between cursor-pointer group transition-colors"
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-baseline gap-4">
+                      <span className="text-sm font-normal text-stone-500">
+                        {choice.num}
+                      </span>
                       <span
-                        className={`text-xs font-mono font-bold ${
-                          isSelected ? 'text-[#FF2E93]' : 'text-stone-400'
+                        className={`text-base sm:text-lg font-normal transition-colors ${
+                          isSelected ? 'text-[#FF2E93] font-semibold' : 'text-[#211D1C] group-hover:text-[#FF2E93]'
                         }`}
                       >
-                        {numStr}
+                        {choice.title}
                       </span>
-                      <div>
-                        <h3
-                          className={`text-sm font-bold transition-colors ${
-                            isSelected ? 'text-[#211D1C]' : 'text-stone-700 group-hover:text-[#211D1C]'
-                          }`}
-                        >
-                          {tab.label}
-                        </h3>
-                        <p className="text-[11px] text-stone-500">
-                          {tab.category}
-                        </p>
-                      </div>
                     </div>
 
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onSelectCategory(tab.category);
-                      }}
-                      className="p-2 rounded-full bg-white border border-[#F3E8E2] text-stone-600 hover:text-[#FF2E93] hover:border-[#FF2E93] transition-colors"
-                      title="Explore this category"
-                    >
-                      <ArrowUpRight className="w-4 h-4" />
-                    </button>
+                    <div className="w-8 h-8 rounded-full border border-stone-200 flex items-center justify-center text-stone-400 group-hover:border-[#FF2E93] group-hover:text-[#FF2E93] transition-colors">
+                      <span className="text-xs">→</span>
+                    </div>
                   </div>
                 );
               })}
             </div>
+
+            {/* Progress line indicator at bottom */}
+            <div className="w-full h-0.5 bg-stone-200 mt-6 relative">
+              <div
+                className="h-full bg-[#211D1C] transition-all duration-300"
+                style={{ width: `${((activeIndex + 1) / CHOICES.length) * 100}%` }}
+              />
+            </div>
           </div>
+
         </div>
       </div>
     </section>

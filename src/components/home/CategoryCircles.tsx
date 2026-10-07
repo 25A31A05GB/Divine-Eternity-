@@ -9,30 +9,76 @@ import {
   Headphones,
   Sparkles,
 } from 'lucide-react';
-import { useMediaCMS } from '../../context/MediaCMSContext';
+import { STRICT_COLLECTIONS } from '../../data/collectionsData';
 
 interface CategoryCirclesProps {
   onSelectCategory: (categoryName: string) => void;
   activeCategory: string;
 }
 
-const ICON_MAP: Record<string, any> = {
-  products: Gift,
-  personalization: Palette,
-  collaboration: Users,
-  'upcoming-campaigns': Calendar,
-  'creator-club': Award,
-  'affiliate-marketing': TrendingUp,
-  podcast: Headphones,
-};
+const COLLECTION_VISUALS = [
+  {
+    id: 'products',
+    name: 'Products',
+    subtitle: '7 Gift Categories',
+    image: 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=400&q=80',
+    icon: Gift,
+    badge: 'Explore All',
+  },
+  {
+    id: 'personalization',
+    name: 'Personalization',
+    subtitle: 'WhatsApp Confirmed',
+    image: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=400&q=80',
+    icon: Palette,
+    badge: 'WhatsApp Verified',
+  },
+  {
+    id: 'collaboration',
+    name: 'Collaboration',
+    subtitle: 'UGC & Creators',
+    image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+    icon: Users,
+    badge: 'Open for Creators',
+  },
+  {
+    id: 'upcoming-campaigns',
+    name: 'Upcoming Campaigns',
+    subtitle: '@divineseternity',
+    image: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=400&q=80',
+    icon: Calendar,
+    badge: 'Follow & Win',
+  },
+  {
+    id: 'creator-club',
+    name: 'Creator Club',
+    subtitle: 'Earn up to ₹7k',
+    image: 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&w=400&q=80',
+    icon: Award,
+    badge: 'Earn up to ₹7k',
+  },
+  {
+    id: 'affiliate-marketing',
+    name: 'Affiliate Marketing',
+    subtitle: '15-20% Comm.',
+    image: 'https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&w=400&q=80',
+    icon: TrendingUp,
+    badge: 'Share & Earn',
+  },
+  {
+    id: 'podcast',
+    name: 'Podcast',
+    subtitle: 'Inspiring Stories',
+    image: 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?auto=format&fit=crop&w=400&q=80',
+    icon: Headphones,
+    badge: 'Listen Now',
+  },
+];
 
 export const CategoryCircles: React.FC<CategoryCirclesProps> = ({
   onSelectCategory,
   activeCategory,
 }) => {
-  const { categoryCircles } = useMediaCMS();
-  const activeList = categoryCircles.filter((c) => c.isActive !== false);
-
   return (
     <section className="py-10 sm:py-14 bg-[#FFFDF8]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -53,14 +99,14 @@ export const CategoryCircles: React.FC<CategoryCirclesProps> = ({
 
         {/* Collections Row */}
         <div className="flex items-center gap-4 sm:gap-6 overflow-x-auto no-scrollbar pb-3 pt-2 justify-start lg:justify-between px-1">
-          {activeList.map((col, index) => {
-            const isSelected = activeCategory.toLowerCase() === col.id.toLowerCase() || activeCategory.toLowerCase() === col.route.toLowerCase();
-            const Icon = ICON_MAP[col.id] || Gift;
+          {COLLECTION_VISUALS.map((col, index) => {
+            const isSelected = activeCategory.toLowerCase() === col.id.toLowerCase();
+            const Icon = col.icon;
 
             return (
               <button
                 key={col.id}
-                onClick={() => onSelectCategory(col.route || col.id)}
+                onClick={() => onSelectCategory(col.id)}
                 className="group flex flex-col items-center shrink-0 text-center focus:outline-none cursor-pointer"
               >
                 {/* Circular Image Container with Pink Ring & Gold Badge */}
@@ -92,14 +138,12 @@ export const CategoryCircles: React.FC<CategoryCirclesProps> = ({
                   className={`bg-white border rounded-full px-3.5 py-1 text-xs font-semibold whitespace-nowrap transition-all shadow-2xs ${
                     isSelected
                       ? 'border-[#FF2E93] text-[#FF2E93] ring-1 ring-[#FF2E93]/30'
-                      : 'border-[#F3E8E2] text-stone-700 group-hover:border-[#FF2E93] group-hover:text-[#FF2E93]'
+                      : 'border-[#E7E2DA] text-[#211D1C] group-hover:border-[#FF2E93] group-hover:text-[#FF2E93]'
                   }`}
                 >
                   {col.name}
                 </div>
-
-                {/* Subtitle */}
-                <span className="text-[10px] text-stone-400 mt-1 font-medium tracking-tight">
+                <span className="text-[10px] text-stone-500 mt-0.5">
                   {col.subtitle}
                 </span>
               </button>

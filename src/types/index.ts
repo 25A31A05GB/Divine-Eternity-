@@ -1,4 +1,5 @@
 export type GiftCategory =
+  | 'Customize Your Gift'
   | 'Names on Gifts'
   | 'Personalized Jewellery'
   | 'Customize Your Caricature or Miniature'
@@ -6,21 +7,7 @@ export type GiftCategory =
   | 'Special Hampers'
   | 'Hair Accessories'
   | 'Paradise of Jewels'
-  // Backward compatibility aliases
-  | 'Personalized Name Jewelry'
-  | 'Preserved Eternal Roses & Dome Displays'
-  | 'Custom Acrylic Song Plaques & Photo Frames'
-  | 'Memory Photo Lamps & Crystal Cubes'
-  | 'Engraved Wooden Gift Boxes & Keepsakes'
-  | 'Romantic Couple Hampers & Scented Candle Sets'
-  | 'Personalized Phone Cases & Pocket Accessories'
-  | 'Zipper Wallet Case'
-  | 'Bracelet Phone Case'
-  | 'Gripper Phone Case'
-  | 'Mirror Phone Case'
-  | 'Toy Cases'
-  | 'Clear Designer Case'
-  | 'Designer Case';
+  | (string & {});
 
 export type PhoneBrand = 
   | 'Apple'
@@ -323,6 +310,19 @@ export interface BrandStoryCMS {
   posterUrl: string;
 }
 
+export interface FounderCMS {
+  name: string;
+  role: string;
+  badge1: string;
+  badge2: string;
+  imageUrl: string;
+  establishedDate: string;
+  dreamAge: string;
+  launchDate: string;
+  introText: string;
+  storyNote: string;
+}
+
 export type AdminRole = 'director' | 'superadmin' | 'orders' | 'catalog';
 
 export interface PodcastEpisode {
@@ -368,79 +368,6 @@ export interface CollaborationProposal {
   pitch: string;
   portfolioUrl?: string;
   createdAt?: string;
-}
-
-export interface CategoryCircleCMS {
-  id: string;
-  name: string;
-  subtitle: string;
-  image: string;
-  badge: string;
-  route: string;
-  isActive: boolean;
-}
-
-export interface BestsellerSectionCMS {
-  eyebrow: string;
-  title: string;
-  accentWord: string;
-  subtitle: string;
-  promoTag: string;
-  isActive: boolean;
-}
-
-export interface FounderNoteCMS {
-  title: string;
-  accentTitle: string;
-  subtitle: string;
-  badge: string;
-  quote: string;
-  paragraphs: string[];
-  founderName: string;
-  founderRole: string;
-  photoUrl: string;
-  signature: string;
-  stats: { label: string; value: string }[];
-  instagramHandle: string;
-  primaryCtaText: string;
-  secondaryCtaText: string;
-  isActive: boolean;
-}
-
-export interface CuratedSpotlightCMS {
-  eyebrow: string;
-  title: string;
-  subtitle: string;
-  category: string;
-  badge: string;
-  ctaText: string;
-  isActive: boolean;
-}
-
-export interface ChoiceSectionCMS {
-  eyebrow: string;
-  title: string;
-  subtitle: string;
-  tabs: { id: string; label: string; category: string }[];
-  isActive: boolean;
-}
-
-export interface ValuePropCMS {
-  id: string;
-  title: string;
-  subtitle: string;
-  iconName: string;
-  badge: string;
-  isActive: boolean;
-}
-
-export interface NewsletterCMS {
-  title: string;
-  subtitle: string;
-  discountCode: string;
-  discountBadge: string;
-  buttonText: string;
-  isActive: boolean;
 }
 
 export type MainCollectionId =

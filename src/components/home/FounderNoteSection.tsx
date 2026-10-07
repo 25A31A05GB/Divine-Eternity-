@@ -1,5 +1,5 @@
 import React from 'react';
-import { Heart, Sparkles, Award, Star, ArrowRight, Instagram, Users } from 'lucide-react';
+import { Sparkles, Award, ArrowRight, Users } from 'lucide-react';
 import { useMediaCMS } from '../../context/MediaCMSContext';
 
 interface FounderNoteSectionProps {
@@ -11,9 +11,18 @@ export const FounderNoteSection: React.FC<FounderNoteSectionProps> = ({
   onExploreProducts,
   onJoinCreatorClub,
 }) => {
-  const { founderNote } = useMediaCMS();
+  const { founderData } = useMediaCMS();
 
-  if (founderNote.isActive === false) return null;
+  const name = founderData?.name || 'Sonu';
+  const role = founderData?.role || 'Founder — Divine’s Eternity';
+  const badge1 = founderData?.badge1 || '20-Year-Old Founder';
+  const badge2 = founderData?.badge2 || 'Educator & Creator';
+  const imageUrl = founderData?.imageUrl || '/src/assets/images/founder_sonu_real_1791375717528.jpg';
+  const establishedDate = founderData?.establishedDate || 'EST. AUG 31';
+  const dreamAge = founderData?.dreamAge || 'Dreamed at Age 16';
+  const launchDate = founderData?.launchDate || 'August 31st';
+  const introText = founderData?.introText || 'Myself Sonu, a 20-year-old proud young founder, content creator, educator, and entrepreneur.';
+  const storyNote = founderData?.storyNote;
 
   return (
     <section className="py-16 sm:py-24 bg-gradient-to-br from-[#FFFDF8] via-[#FFF9EB] to-[#FFF0F5] border-y border-[#F3E8E2] relative overflow-hidden">
@@ -27,17 +36,16 @@ export const FounderNoteSection: React.FC<FounderNoteSectionProps> = ({
         <div className="text-center mb-10 sm:mb-14">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-[#F3E8E2] text-xs font-extrabold uppercase tracking-widest text-[#FF2E93] shadow-xs mb-3">
             <Sparkles className="w-3.5 h-3.5 text-[#FFD94A]" />
-            <span>{founderNote.badge || 'FOUNDER’S STORY • EST. AUG 31'}</span>
+            <span>FOUNDER’S STORY</span>
+            <span className="text-stone-300">•</span>
+            <span className="text-[#211D1C]">{establishedDate}</span>
           </div>
 
           <h2 className="font-serif-heading text-3xl sm:text-4xl lg:text-5xl font-bold text-[#211D1C]">
-            {founderNote.title || 'A Note From'}{' '}
-            <span className="font-serif italic text-[#FF2E93]">
-              {founderNote.accentTitle || 'Founder'}
-            </span>
+            A Note From <span className="font-serif italic text-[#FF2E93]">Founder</span>
           </h2>
           <p className="text-xs sm:text-sm text-stone-600 mt-2 max-w-lg mx-auto">
-            {founderNote.subtitle || 'What started as a dream at 16 is now a reality lived every single day.'}
+            What started as a dream at 16 is now a reality lived every single day.
           </p>
         </div>
 
@@ -51,12 +59,13 @@ export const FounderNoteSection: React.FC<FounderNoteSectionProps> = ({
               <div className="relative rounded-3xl overflow-hidden p-2.5 bg-gradient-to-b from-[#FFD94A] via-[#FF2E93] to-[#211D1C] shadow-2xl">
                 <div className="aspect-[4/5] rounded-2xl overflow-hidden bg-stone-900 relative group">
                   <img
-                    src={founderNote.photoUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80'}
-                    alt={`${founderNote.founderName || 'Sonu'} — Founder of Divine’s Eternity`}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                    src={imageUrl}
+                    alt={`${name} — ${role}`}
+                    referrerPolicy="no-referrer"
+                    className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700"
                     onError={(e) => {
                       (e.currentTarget as HTMLImageElement).src =
-                        'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=800&q=80';
+                        '/images/founder/founder_sonu_real_1791317591344.jpg';
                     }}
                   />
 
@@ -65,17 +74,17 @@ export const FounderNoteSection: React.FC<FounderNoteSectionProps> = ({
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
                         <span className="bg-[#FF2E93] text-white text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full tracking-wider">
-                          Young Founder
+                          {badge1}
                         </span>
                         <span className="bg-[#FFD94A] text-[#211D1C] text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full tracking-wider">
-                          Creator & Artisan
+                          {badge2}
                         </span>
                       </div>
                       <h3 className="font-serif-heading text-2xl font-bold text-white">
-                        {founderNote.founderName || 'Sonu'}
+                        {name}
                       </h3>
                       <p className="text-xs text-stone-300">
-                        {founderNote.founderRole || 'Founder — Divine’s Eternity'}
+                        {role}
                       </p>
                     </div>
                   </div>
@@ -85,11 +94,11 @@ export const FounderNoteSection: React.FC<FounderNoteSectionProps> = ({
               {/* Floating Milestone Badges */}
               <div className="absolute -top-4 -left-4 bg-white border border-[#F3E8E2] rounded-2xl p-3 shadow-lg flex items-center gap-2.5 z-20">
                 <div className="w-8 h-8 rounded-full bg-[#FFF0F5] text-[#FF2E93] flex items-center justify-center font-bold text-xs">
-                  DE
+                  16
                 </div>
                 <div>
-                  <span className="text-[10px] uppercase font-bold text-stone-400 block">Atelier Craft</span>
-                  <span className="text-xs font-bold text-[#211D1C]">Divine’s Eternity</span>
+                  <span className="text-[10px] uppercase font-bold text-stone-400 block">Dream Seeded</span>
+                  <span className="text-xs font-bold text-[#211D1C]">{dreamAge}</span>
                 </div>
               </div>
 
@@ -98,8 +107,8 @@ export const FounderNoteSection: React.FC<FounderNoteSectionProps> = ({
                   <Award className="w-4 h-4" />
                 </div>
                 <div>
-                  <span className="text-[10px] uppercase font-bold text-stone-400 block">Rating</span>
-                  <span className="text-xs font-bold text-[#211D1C]">4.95 / 5 ★</span>
+                  <span className="text-[10px] uppercase font-bold text-stone-400 block">Official Launch</span>
+                  <span className="text-xs font-bold text-[#211D1C]">{launchDate}</span>
                 </div>
               </div>
             </div>
@@ -112,63 +121,78 @@ export const FounderNoteSection: React.FC<FounderNoteSectionProps> = ({
             </div>
 
             <div className="space-y-4 text-xs sm:text-sm text-stone-700 leading-relaxed font-sans">
-              {founderNote.quote && (
-                <p className="font-bold text-stone-900 text-sm sm:text-base border-l-4 border-[#FF2E93] pl-3 py-1 bg-[#FFF9EB] rounded-r-xl">
-                  {founderNote.quote}
-                </p>
-              )}
+              <p className="font-bold text-stone-900 text-sm sm:text-base">
+                {introText}
+              </p>
 
-              {founderNote.paragraphs && founderNote.paragraphs.length > 0 ? (
-                founderNote.paragraphs.map((p, idx) => <p key={idx}>{p}</p>)
+              {storyNote ? (
+                storyNote.split('\n\n').map((paragraph: string, pIdx: number) => {
+                  if (paragraph.includes('faced failures')) {
+                    return (
+                      <p key={pIdx} className="bg-[#FFF9EB] border-l-4 border-[#FF2E93] p-3.5 rounded-r-2xl italic text-stone-800">
+                        {paragraph}
+                      </p>
+                    );
+                  }
+                  return <p key={pIdx}>{paragraph}</p>;
+                })
               ) : (
                 <>
                   <p>
-                    Myself <span className="text-[#FF2E93]">Sonu</span>, a proud young founder, content creator, educator, and entrepreneur.
+                    <strong>Divine’s Eternity</strong> is more than just a brand to me — it is a dream I carried with me since I was 16 years old. After completing my 12th, I finally decided to take that dream seriously and started working towards building something of my own.
                   </p>
                   <p>
-                    <strong>Divine’s Eternity</strong> is more than just a brand to me — it is a dream I carried with me since I was 16 years old.
-                  </p>
-                  <p>
-                    Divine’s Eternity is my little world of creativity, dreams, gifts, opportunities, and growth. Every order becomes a part of this journey.
+                    On <strong className="text-[#211D1C] underline decoration-[#FFD94A] decoration-2">August 31st</strong>, I officially started Divine’s Eternity, and that day will always remain one of the best days of my life.
                   </p>
                 </>
               )}
+
+              <div className="bg-[#FFF0F5] border border-pink-200 rounded-2xl p-4 text-center space-y-1 my-2">
+                <p className="font-bold text-[#211D1C] text-sm sm:text-base">
+                  This is not just my brand.
+                </p>
+                <p className="font-serif italic text-[#FF2E93] font-bold text-base sm:text-lg">
+                  This is my dream, my journey, and my Divine’s Eternity. ❤️
+                </p>
+              </div>
             </div>
 
-            {/* Founder Signature & Direct Buttons */}
-            <div className="pt-6 border-t border-[#F3E8E2] flex flex-col sm:flex-row items-center justify-between gap-4">
+            {/* Founder Signature */}
+            <div className="pt-4 border-t border-stone-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
-                <span className="font-serif italic text-2xl sm:text-3xl text-[#FF2E93] block">
-                  ~ {founderNote.signature || founderNote.founderName || 'Sonu'}
-                </span>
-                <span className="text-xs text-stone-500 font-medium">
-                  {founderNote.founderRole || 'Founder — Divine’s Eternity'}
-                </span>
+                <span className="text-xs text-stone-400 block font-serif italic">With love,</span>
+                <span className="font-serif-heading text-2xl font-bold text-[#211D1C]">{name}</span>
+                <span className="text-xs text-[#FF2E93] font-bold block">{role}</span>
               </div>
 
-              <div className="flex items-center gap-3 w-full sm:w-auto">
-                <button
-                  onClick={onExploreProducts}
-                  className="flex-1 sm:flex-none px-5 py-2.5 rounded-full bg-[#211D1C] hover:bg-[#FF2E93] text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer"
-                >
-                  <span>{founderNote.primaryCtaText || 'Explore Handcrafted Gifts'}</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-
+              <div className="flex flex-wrap items-center gap-2">
+                {onExploreProducts && (
+                  <button
+                    onClick={onExploreProducts}
+                    className="px-5 py-2.5 rounded-full bg-[#211D1C] hover:bg-[#FF2E93] text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <span>Explore {name}’s Creations</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                )}
                 {onJoinCreatorClub && (
                   <button
                     onClick={onJoinCreatorClub}
-                    className="flex-1 sm:flex-none px-4 py-2.5 rounded-full bg-[#FFF0F5] hover:bg-[#FFE0E6] text-[#FF2E93] font-bold text-xs flex items-center justify-center gap-1.5 border border-[#FF2E93]/30 transition-colors cursor-pointer"
+                    className="px-5 py-2.5 rounded-full bg-[#FFF0F5] hover:bg-[#FF2E93] text-[#FF2E93] hover:text-white border border-[#FF2E93]/30 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
                   >
                     <Users className="w-3.5 h-3.5" />
-                    <span>{founderNote.secondaryCtaText || 'Creator Club'}</span>
+                    <span>Join Creator Club</span>
                   </button>
                 )}
               </div>
             </div>
+
           </div>
+
         </div>
+
       </div>
     </section>
   );
 };
+
