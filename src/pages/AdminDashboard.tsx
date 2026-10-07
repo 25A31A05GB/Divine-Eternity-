@@ -781,10 +781,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2] dark:bg-[#0F0D10] text-[#1C1917] dark:text-[#F5F0EB]">
+    <div className="min-h-screen bg-[#FFFDF8] text-[#211D1C]">
       <SEO
-        title="Admin Suite & Media CMS — Gadgets Destiny"
-        description="Store control panel for live catalog, order operations, and hero video management."
+        title="Admin Studio & Control Panel — Divine’s Eternity"
+        description="Divine’s Eternity store control panel for live catalog, order operations, and hero media management."
         noindex={true}
       />
 
@@ -792,20 +792,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       <header className="sticky top-0 z-50 bg-[#211D1C] border-b border-stone-800 px-4 lg:px-8 py-3.5 transition-colors">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-xl bg-[#FF2E93] flex items-center justify-center text-white shadow-md font-sans text-lg font-extrabold shrink-0">
-              GD
+            <div className="w-10 h-10 rounded-xl bg-[#FF2E93] flex items-center justify-center text-white shadow-md font-serif-heading text-lg font-black shrink-0">
+              DE
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-extrabold text-base sm:text-lg tracking-tight text-white truncate">
-                  Gadgets <span className="text-[#FF2E93]">Destiny</span>
+                  Divine’s <span className="text-[#FF2E93]">Eternity</span>
                 </span>
                 <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold tracking-wider uppercase bg-[#FF2E93]/20 text-[#FF2E93] border border-[#FF2E93]/40 flex items-center gap-1 shrink-0">
-                  <Activity className="w-3 h-3 animate-pulse" /> Studio Panel
+                  <Activity className="w-3 h-3 animate-pulse" /> Atelier Studio
                 </span>
               </div>
               <p className="text-[11px] sm:text-xs text-stone-400 truncate">
-                Active Session · <strong className="text-white">{user?.name || 'Store Manager'}</strong>
+                Active Session · <strong className="text-[#FFD94A]">{user?.name || 'Store Manager'}</strong>
               </p>
             </div>
           </div>
@@ -876,7 +876,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           <div className="flex lg:hidden items-center gap-2 shrink-0">
             <button
               onClick={onReturnToStore}
-              className="px-2.5 py-2 rounded-xl bg-[#171413] border border-stone-800 text-white text-xs font-semibold flex items-center gap-1 hover:border-stone-600 transition-colors"
+              className="px-2.5 py-2 rounded-xl bg-[#171413] border border-stone-800 text-white text-xs font-semibold flex items-center gap-1 hover:border-stone-600 transition-colors cursor-pointer"
               title="Return to Store"
             >
               <Store className="w-3.5 h-3.5 text-[#FFD94A]" />
@@ -904,12 +904,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               {/* Drawer Top Bar */}
               <div className="flex items-center justify-between pb-4 border-b border-stone-800">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-xl bg-[#FF2E93] text-white font-black text-sm flex items-center justify-center shadow-md">
-                    GD
+                  <div className="w-9 h-9 rounded-xl bg-[#FF2E93] text-white font-black text-sm flex items-center justify-center shadow-md font-serif-heading">
+                    DE
                   </div>
                   <div>
-                    <div className="text-sm font-bold text-white">Gadgets Destiny Control</div>
-                    <div className="text-[10px] text-[#FFD94A] font-medium">Mobile Command Center</div>
+                    <div className="text-sm font-bold text-white">Divine’s Eternity Control</div>
+                    <div className="text-[10px] text-[#FFD94A] font-medium">Atelier Command Center</div>
                   </div>
                 </div>
 
