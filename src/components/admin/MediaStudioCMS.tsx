@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Film,
   Image as ImageIcon,
@@ -20,12 +20,10 @@ import {
   ArrowRight,
   ShieldCheck,
   X,
-  Upload,
-  User,
-  CheckCircle2,
 } from 'lucide-react';
-import { Product, HeroSlideCMS, VideoReelCMS, AnnouncementCMS, BrandStoryCMS, FounderCMS } from '../../types';
+import { Product, HeroSlideCMS, VideoReelCMS, AnnouncementCMS, BrandStoryCMS } from '../../types';
 import { useMediaCMS } from '../../context/MediaCMSContext';
+import { PhoneCaseMockup } from '../../utils/productVisuals';
 import confetti from 'canvas-confetti';
 
 interface MediaStudioCMSProps {
@@ -38,7 +36,6 @@ export const MediaStudioCMS: React.FC<MediaStudioCMSProps> = ({ products }) => {
     videoReels,
     announcements,
     brandStory,
-    founderData,
     updateHeroSlide,
     addHeroSlide,
     deleteHeroSlide,
@@ -49,15 +46,13 @@ export const MediaStudioCMS: React.FC<MediaStudioCMSProps> = ({ products }) => {
     addAnnouncement,
     deleteAnnouncement,
     updateBrandStory,
-    updateFounderData,
     resetToDefaults,
   } = useMediaCMS();
 
   // Active sub-section within media CMS
-  const [activeMediaSection, setActiveMediaSection] = useState<'slots' | 'hero' | 'founder' | 'reels' | 'announcements' | 'story'>('slots');
+  const [activeMediaSection, setActiveMediaSection] = useState<'slots' | 'hero' | 'reels' | 'announcements' | 'story'>('slots');
   const [previewViewport, setPreviewViewport] = useState<'desktop' | 'mobile'>('desktop');
   const [selectedPreviewSlide, setSelectedPreviewSlide] = useState(0);
-  const [founderSuccessToast, setFounderSuccessToast] = useState(false);
 
   // Modals & Forms State
   const [isAddSlideOpen, setIsAddSlideOpen] = useState(false);
@@ -97,66 +92,6 @@ export const MediaStudioCMS: React.FC<MediaStudioCMSProps> = ({ products }) => {
   const [storyMediaUrl, setStoryMediaUrl] = useState(brandStory.mediaUrl);
   const [storyPosterUrl, setStoryPosterUrl] = useState(brandStory.posterUrl);
 
-  // Founder Form Fields
-  const [founderName, setFounderName] = useState(founderData?.name || 'Sonu');
-  const [founderRole, setFounderRole] = useState(founderData?.role || 'Founder — Divine’s Eternity');
-  const [founderBadge1, setFounderBadge1] = useState(founderData?.badge1 || '20-Year-Old Founder');
-  const [founderBadge2, setFounderBadge2] = useState(founderData?.badge2 || 'Educator & Creator');
-  const [founderImageUrl, setFounderImageUrl] = useState(founderData?.imageUrl || '/src/assets/images/founder_sonu_real_1791375717528.jpg');
-  const [founderEstablishedDate, setFounderEstablishedDate] = useState(founderData?.establishedDate || 'EST. AUG 31');
-  const [founderDreamAge, setFounderDreamAge] = useState(founderData?.dreamAge || 'Dreamed at Age 16');
-  const [founderLaunchDate, setFounderLaunchDate] = useState(founderData?.launchDate || 'August 31st');
-  const [founderIntroText, setFounderIntroText] = useState(founderData?.introText || 'Myself Sonu, a 20-year-old proud young founder, content creator, educator, and entrepreneur.');
-  const [founderStoryNote, setFounderStoryNote] = useState(founderData?.storyNote || '');
-
-  useEffect(() => {
-    if (founderData) {
-      setFounderName(founderData.name);
-      setFounderRole(founderData.role);
-      setFounderBadge1(founderData.badge1);
-      setFounderBadge2(founderData.badge2);
-      setFounderImageUrl(founderData.imageUrl);
-      setFounderEstablishedDate(founderData.establishedDate);
-      setFounderDreamAge(founderData.dreamAge);
-      setFounderLaunchDate(founderData.launchDate);
-      setFounderIntroText(founderData.introText);
-      setFounderStoryNote(founderData.storyNote);
-    }
-  }, [founderData]);
-
-  const handleFounderImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (evt) => {
-        if (evt.target?.result && typeof evt.target.result === 'string') {
-          setFounderImageUrl(evt.target.result);
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-    e.target.value = '';
-  };
-
-  const handleSaveFounder = (e: React.FormEvent) => {
-    e.preventDefault();
-    updateFounderData({
-      name: founderName.trim(),
-      role: founderRole.trim(),
-      badge1: founderBadge1.trim(),
-      badge2: founderBadge2.trim(),
-      imageUrl: founderImageUrl.trim(),
-      establishedDate: founderEstablishedDate.trim(),
-      dreamAge: founderDreamAge.trim(),
-      launchDate: founderLaunchDate.trim(),
-      introText: founderIntroText.trim(),
-      storyNote: founderStoryNote.trim(),
-    });
-    setFounderSuccessToast(true);
-    confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
-    setTimeout(() => setFounderSuccessToast(false), 4000);
-  };
-
   // Curated Royalty-Free Luxury Media Presets
   const PRESET_MEDIA = [
     {
@@ -178,34 +113,10 @@ export const MediaStudioCMS: React.FC<MediaStudioCMSProps> = ({ products }) => {
       poster: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b675?auto=format&fit=crop&w=600&q=80',
     },
     {
-      title: 'Your Go-To Platform (Divine Krishna Poster)',
+      title: 'Gold Vermeil Atelier Showcase (Image)',
       type: 'image',
-      url: '/src/assets/images/hero_platform_1791314686484.jpg',
-      poster: '/src/assets/images/hero_platform_1791314686484.jpg',
-    },
-    {
-      title: 'Earn 5-7K Creator Club (Divine Krishna Poster)',
-      type: 'image',
-      url: '/src/assets/images/hero_creator_club_1791314713473.jpg',
-      poster: '/src/assets/images/hero_creator_club_1791314713473.jpg',
-    },
-    {
-      title: 'Learn Affiliate Marketing (Divine Krishna Poster)',
-      type: 'image',
-      url: '/src/assets/images/hero_affiliate_1791314731407.jpg',
-      poster: '/src/assets/images/hero_affiliate_1791314731407.jpg',
-    },
-    {
-      title: 'Special Ones Day Memorable (Divine Poster)',
-      type: 'image',
-      url: '/src/assets/images/hero_memorable_day_1791314745468.jpg',
-      poster: '/src/assets/images/hero_memorable_day_1791314745468.jpg',
-    },
-    {
-      title: 'First Order DS1102 Flat 60% Off (Divine Poster)',
-      type: 'image',
-      url: '/src/assets/images/hero_first_order_1791314758906.jpg',
-      poster: '/src/assets/images/hero_first_order_1791314758906.jpg',
+      url: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=1200&q=80',
+      poster: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=600&q=80',
     },
   ];
 
@@ -372,7 +283,6 @@ export const MediaStudioCMS: React.FC<MediaStudioCMSProps> = ({ products }) => {
       <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-[#EFE7DE] dark:border-[#282127] no-scrollbar">
         {[
           { id: 'slots', label: 'Visual Layout Map & Live Simulator', icon: Layers },
-          { id: 'founder', label: 'Founder Photo & Story', icon: User },
           { id: 'hero', label: `Hero Carousel Slides (${heroSlides.length})`, icon: ImageIcon },
           { id: 'reels', label: `Shoppable Video Reels (${videoReels.length})`, icon: Video },
           { id: 'announcements', label: `Announcement Bar Offers (${announcements.length})`, icon: Tag },
@@ -895,254 +805,6 @@ export const MediaStudioCMS: React.FC<MediaStudioCMSProps> = ({ products }) => {
       )}
 
       {/* ============================================================ */}
-      {/* SECTION: FOUNDER PHOTO & STORY CMS */}
-      {/* ============================================================ */}
-      {activeMediaSection === 'founder' && (
-        <div className="space-y-6 animate-in fade-in duration-150 max-w-5xl">
-          {founderSuccessToast && (
-            <div className="bg-emerald-600 text-white px-5 py-3.5 rounded-2xl flex items-center justify-between shadow-xl animate-in slide-in-from-top-2 duration-200">
-              <div className="flex items-center gap-3 font-bold text-xs sm:text-sm">
-                <CheckCircle2 className="w-5 h-5 text-emerald-200 shrink-0" />
-                <span>Founder photo and story updated successfully! Changes are live on the homepage.</span>
-              </div>
-              <button
-                onClick={() => setFounderSuccessToast(false)}
-                className="text-white/80 hover:text-white p-1"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          )}
-
-          <div className="bg-white dark:bg-[#181418] p-6 sm:p-8 rounded-3xl border border-[#EFE7DE] dark:border-[#2C242A] shadow-xs">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[#EFE7DE] dark:border-[#282127]">
-              <div>
-                <h3 className="font-serif font-bold text-xl text-stone-900 dark:text-white flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-[#881337] dark:text-[#FB7185]" />
-                  <span>Founder Note, Photo & Personal Story</span>
-                </h3>
-                <p className="text-xs text-stone-500 mt-1">
-                  Upload Sonu&rsquo;s portrait photo directly from your device or enter an image link. Update titles, milestone badges, and story text.
-                </p>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <span className="px-3 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200">
-                  Live on Homepage
-                </span>
-              </div>
-            </div>
-
-            <form onSubmit={handleSaveFounder} className="grid grid-cols-1 lg:grid-cols-12 gap-8 pt-6">
-              {/* Left Column: Photo Uploader & Live Portrait Card Preview */}
-              <div className="lg:col-span-5 space-y-4">
-                <label className="text-xs font-bold text-stone-700 dark:text-stone-300 block">
-                  Founder Portrait Photo *
-                </label>
-
-                {/* Upload Buttons */}
-                <div className="space-y-2.5">
-                  <label className="w-full py-3 rounded-xl bg-[#881337] hover:bg-[#700f2d] text-white text-xs font-bold cursor-pointer text-center flex items-center justify-center gap-2 shadow-md transition-all">
-                    <Upload className="w-4 h-4" />
-                    <span>📁 Upload Photo from Device / Computer</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={handleFounderImageUpload}
-                    />
-                  </label>
-
-                  <div className="space-y-1">
-                    <span className="text-[10px] text-stone-400 font-semibold block">Or paste image web link:</span>
-                    <input
-                      type="text"
-                      value={founderImageUrl}
-                      onChange={(e) => setFounderImageUrl(e.target.value)}
-                      placeholder="Paste image URL / path..."
-                      className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 text-xs text-stone-900 dark:text-white"
-                    />
-                  </div>
-                </div>
-
-                {/* Live Card Preview */}
-                <div className="pt-2">
-                  <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block mb-2">
-                    Live Portrait Card Preview
-                  </span>
-                  <div className="relative rounded-3xl overflow-hidden p-2 bg-gradient-to-b from-[#FFD94A] via-[#FF2E93] to-[#211D1C] shadow-xl max-w-[280px] mx-auto">
-                    <div className="aspect-[4/5] rounded-2xl overflow-hidden bg-stone-900 relative">
-                      <img
-                        src={founderImageUrl}
-                        alt="Founder Preview"
-                        referrerPolicy="no-referrer"
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          (e.currentTarget as HTMLImageElement).src =
-                            '/images/founder/founder_sonu_real_1791317591344.jpg';
-                        }}
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex flex-col justify-end p-4 text-white">
-                        <div className="flex flex-wrap gap-1 mb-1">
-                          <span className="bg-[#FF2E93] text-white text-[8px] font-bold uppercase px-2 py-0.5 rounded-full">
-                            {founderBadge1}
-                          </span>
-                          <span className="bg-[#FFD94A] text-[#211D1C] text-[8px] font-bold uppercase px-2 py-0.5 rounded-full">
-                            {founderBadge2}
-                          </span>
-                        </div>
-                        <h4 className="font-serif font-bold text-lg text-white">
-                          {founderName}
-                        </h4>
-                        <p className="text-[10px] text-stone-300">
-                          {founderRole}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Right Column: Text Information & Story Editor */}
-              <div className="lg:col-span-7 space-y-4 text-xs">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <label className="font-bold text-stone-700 dark:text-stone-300">
-                      Founder Name *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={founderName}
-                      onChange={(e) => setFounderName(e.target.value)}
-                      className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3.5 py-2.5 text-stone-900 dark:text-white font-semibold"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="font-bold text-stone-700 dark:text-stone-300">
-                      Role / Sub-label *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={founderRole}
-                      onChange={(e) => setFounderRole(e.target.value)}
-                      className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3.5 py-2.5 text-stone-900 dark:text-white"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <label className="font-bold text-stone-700 dark:text-stone-300">
-                      Badge 1 (e.g. 20-Year-Old Founder)
-                    </label>
-                    <input
-                      type="text"
-                      value={founderBadge1}
-                      onChange={(e) => setFounderBadge1(e.target.value)}
-                      className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3.5 py-2.5 text-stone-900 dark:text-white"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="font-bold text-stone-700 dark:text-stone-300">
-                      Badge 2 (e.g. Educator & Creator)
-                    </label>
-                    <input
-                      type="text"
-                      value={founderBadge2}
-                      onChange={(e) => setFounderBadge2(e.target.value)}
-                      className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3.5 py-2.5 text-stone-900 dark:text-white"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="space-y-1">
-                    <label className="font-bold text-stone-700 dark:text-stone-300 text-[11px]">
-                      Est. Badge
-                    </label>
-                    <input
-                      type="text"
-                      value={founderEstablishedDate}
-                      onChange={(e) => setFounderEstablishedDate(e.target.value)}
-                      placeholder="EST. AUG 31"
-                      className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-2.5 py-2 text-stone-900 dark:text-white text-xs"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="font-bold text-stone-700 dark:text-stone-300 text-[11px]">
-                      Dream Milestone
-                    </label>
-                    <input
-                      type="text"
-                      value={founderDreamAge}
-                      onChange={(e) => setFounderDreamAge(e.target.value)}
-                      placeholder="Dreamed at Age 16"
-                      className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-2.5 py-2 text-stone-900 dark:text-white text-xs"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="font-bold text-stone-700 dark:text-stone-300 text-[11px]">
-                      Launch Date
-                    </label>
-                    <input
-                      type="text"
-                      value={founderLaunchDate}
-                      onChange={(e) => setFounderLaunchDate(e.target.value)}
-                      placeholder="August 31st"
-                      className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-2.5 py-2 text-stone-900 dark:text-white text-xs"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="font-bold text-stone-700 dark:text-stone-300">
-                    Introductory Opening Sentence *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={founderIntroText}
-                    onChange={(e) => setFounderIntroText(e.target.value)}
-                    className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3.5 py-2.5 text-stone-900 dark:text-white"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="font-bold text-stone-700 dark:text-stone-300 flex items-center justify-between">
-                    <span>Full Founder Letter / Note *</span>
-                    <span className="text-[10px] text-stone-400 font-normal">Use double enter for paragraphs</span>
-                  </label>
-                  <textarea
-                    rows={6}
-                    required
-                    value={founderStoryNote}
-                    onChange={(e) => setFounderStoryNote(e.target.value)}
-                    className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3.5 py-2.5 text-stone-900 dark:text-white leading-relaxed"
-                  />
-                </div>
-
-                <div className="pt-2">
-                  <button
-                    type="submit"
-                    className="px-6 py-3 rounded-xl font-bold text-xs bg-[#881337] hover:bg-[#700f2d] text-white transition-all shadow-md active:scale-95 flex items-center gap-2 cursor-pointer"
-                  >
-                    <Sparkles className="w-4 h-4" />
-                    <span>Save & Publish Founder Story</span>
-                  </button>
-                </div>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* ============================================================ */}
       {/* SECTION 5: BRAND ATELIER STORY & VIDEO */}
       {/* ============================================================ */}
       {activeMediaSection === 'story' && (
@@ -1296,16 +958,49 @@ export const MediaStudioCMS: React.FC<MediaStudioCMSProps> = ({ products }) => {
 
               <div className="space-y-1">
                 <label className="text-xs font-bold text-stone-700 dark:text-stone-300 block">
-                  Custom Image File or URL (Optional)
+                  Custom Image File, Paste or URL (Optional)
                 </label>
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                   <input
                     type="text"
                     value={slideImageUrl}
                     onChange={(e) => setSlideImageUrl(e.target.value)}
-                    placeholder="Paste image URL or choose file from device..."
+                    placeholder="Paste image URL, press Ctrl+V, or use buttons..."
                     className="flex-1 bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 text-xs font-mono text-stone-900 dark:text-white"
                   />
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        if (navigator.clipboard && navigator.clipboard.read) {
+                          const items = await navigator.clipboard.read();
+                          for (const item of items) {
+                            const imgType = item.types.find((t) => t.startsWith('image/'));
+                            if (imgType) {
+                              const blob = await item.getType(imgType);
+                              const reader = new FileReader();
+                              reader.onload = (evt) => {
+                                if (evt.target?.result) {
+                                  setSlideImageUrl(evt.target.result as string);
+                                }
+                              };
+                              reader.readAsDataURL(blob);
+                              return;
+                            }
+                          }
+                        }
+                        if (navigator.clipboard && navigator.clipboard.readText) {
+                          const txt = await navigator.clipboard.readText();
+                          if (txt) setSlideImageUrl(txt.trim());
+                        }
+                      } catch (err) {
+                        console.warn('Clipboard read failed', err);
+                      }
+                    }}
+                    className="px-3 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold shrink-0 cursor-pointer text-center flex items-center justify-center gap-1.5 shadow-xs transition-colors"
+                  >
+                    <span>📋 Paste Image</span>
+                  </button>
                   <label className="px-3 py-2 rounded-xl bg-[#211D1C] hover:bg-black text-white text-xs font-bold shrink-0 cursor-pointer text-center flex items-center justify-center gap-1.5 shadow-xs transition-colors">
                     <span>📁 Upload Photo</span>
                     <input
@@ -1328,11 +1023,20 @@ export const MediaStudioCMS: React.FC<MediaStudioCMSProps> = ({ products }) => {
                   </label>
                 </div>
                 {slideImageUrl && (
-                  <div className="mt-2 flex items-center gap-2">
-                    <div className="w-16 h-16 rounded-xl overflow-hidden border border-[#EFE7DE] bg-stone-100 shrink-0">
-                      <img src={slideImageUrl} alt="Preview" className="w-full h-full object-cover" />
+                  <div className="mt-2 flex items-center gap-3">
+                    <div className="w-20 h-20 rounded-xl overflow-hidden border border-[#EFE7DE] bg-stone-100 dark:bg-stone-800 shrink-0 p-1 flex items-center justify-center">
+                      <img src={slideImageUrl} alt="Preview" className="max-h-full max-w-full object-contain rounded-lg" />
                     </div>
-                    <span className="text-[10px] text-emerald-600 font-bold">✓ Image Loaded Ready to Display</span>
+                    <div className="space-y-1">
+                      <span className="text-[10px] text-emerald-600 font-bold block">✓ Image Loaded Ready to Display (Uncropped)</span>
+                      <button
+                        type="button"
+                        onClick={() => setSlideImageUrl('')}
+                        className="text-[10px] text-rose-500 hover:underline font-semibold"
+                      >
+                        Remove Image
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
