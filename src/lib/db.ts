@@ -55,6 +55,44 @@ const setStoredOrders = (orders: Order[]) => {
  * with resilient offline/local caching so the app remains 100% operational.
  */
 export const db = {
+  /**
+   * Diagnostic helper to verify Supabase Cloud Connection & Table readiness
+   */
+  async checkSupabaseStatus(): Promise<{
+    configured: boolean;
+    connected: boolean;
+    hasProductsTable: boolean;
+    error: string | null;
+  }> {
+    if (!isSupabaseConfigured() || !supabase) {
+      return { configured: false, connected: false, hasProductsTable: false, error: 'Supabase credentials missing' };
+    }
+    try {
+      const { error } = await supabase.from('products').select('id').limit(1);
+      if (error) {
+        return {
+          configured: true,
+          connected: true,
+          hasProductsTable: false,
+          error: error.message,
+        };
+      }
+      return {
+        configured: true,
+        connected: true,
+        hasProductsTable: true,
+        error: null,
+      };
+    } catch (err: any) {
+      return {
+        configured: true,
+        connected: false,
+        hasProductsTable: false,
+        error: err.message,
+      };
+    }
+  },
+
   // ----------------------------------------------------
   // PRODUCTS
   // ----------------------------------------------------
