@@ -140,10 +140,19 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, ope
 
   return (
     <header className="sticky top-0 z-50 w-full bg-[#FFFDF8]/95 backdrop-blur-md border-b border-[#F3E8E2] transition-all duration-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 sm:h-20 flex items-center justify-between gap-4">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 sm:h-20 flex items-center justify-between gap-3 sm:gap-4">
         
-        {/* Zone 1: Divine's Eternity Brand Wordmark */}
-        <div className="flex items-center gap-2 shrink-0">
+        {/* Zone 1: Mobile Hamburger Menu + Divine's Eternity Brand Wordmark */}
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          {/* Mobile 3-Line Menu / Dashboard Drawer Trigger (Placed on the LEFT) */}
+          <button
+            onClick={() => setIsMobileMenuOpen(true)}
+            aria-label="Toggle menu"
+            className="lg:hidden w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-[#E7E2DA] flex items-center justify-center text-[#211D1C] hover:border-[#FF2E93] hover:text-[#FF2E93] shadow-xs transition-colors cursor-pointer shrink-0"
+          >
+            <Menu className="w-5 h-5 text-[#211D1C]" />
+          </button>
+
           <button
             onClick={() => navigateTo('home')}
             className="flex flex-col text-left group focus:outline-none cursor-pointer"
@@ -270,13 +279,13 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, ope
           </div>
         </nav>
 
-        {/* Zone 3: Exact Round Action Buttons */}
-        <div className="flex items-center gap-2.5 shrink-0">
+        {/* Zone 3: Action Buttons (Search, Wishlist, Bag) */}
+        <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
           {/* Round Search Button */}
           <button
             onClick={openSearch}
             aria-label="Search cases"
-            className="w-9 h-9 rounded-full bg-white border border-[#E7E2DA] flex items-center justify-center text-[#211D1C] hover:border-[#FF2E93] hover:text-[#FF2E93] shadow-xs transition-colors cursor-pointer"
+            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-[#E7E2DA] flex items-center justify-center text-[#211D1C] hover:border-[#FF2E93] hover:text-[#FF2E93] shadow-xs transition-colors cursor-pointer"
           >
             <Search className="w-4 h-4" />
           </button>
@@ -285,7 +294,7 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, ope
           <button
             onClick={() => navigateTo('wishlist')}
             aria-label="Wishlist"
-            className="relative w-9 h-9 rounded-full bg-white border border-[#E7E2DA] flex items-center justify-center text-[#211D1C] hover:border-[#FF2E93] hover:text-[#FF2E93] shadow-xs transition-colors cursor-pointer"
+            className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-[#E7E2DA] flex items-center justify-center text-[#211D1C] hover:border-[#FF2E93] hover:text-[#FF2E93] shadow-xs transition-colors cursor-pointer"
           >
             <Heart className="w-4 h-4" />
             {wishlistCount > 0 && (
@@ -299,21 +308,12 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, ope
           <button
             onClick={openCart}
             aria-label="Open Shopping Bag"
-            className="bg-white border border-[#E7E2DA] rounded-full px-3.5 py-1.5 flex items-center gap-1.5 text-xs font-bold text-[#211D1C] hover:border-[#FF2E93] shadow-xs transition-colors cursor-pointer"
+            className="bg-white border border-[#E7E2DA] rounded-full px-3.5 py-1.5 sm:px-4 sm:py-2 flex items-center gap-1.5 text-xs font-bold text-[#211D1C] hover:border-[#FF2E93] shadow-xs transition-colors cursor-pointer"
           >
             <span>Bag</span>
             <span className="bg-[#FF2E93] text-white rounded-full min-w-[18px] h-4.5 px-1 flex items-center justify-center text-[10px] font-extrabold">
               {totalItemsCount}
             </span>
-          </button>
-
-          {/* Mobile Menu Trigger */}
-          <button
-            onClick={() => setIsMobileMenuOpen(true)}
-            aria-label="Toggle menu"
-            className="lg:hidden p-2 text-[#211D1C] rounded-full bg-white border border-[#E7E2DA] hover:border-[#FF2E93]"
-          >
-            <Menu className="w-5 h-5" />
           </button>
         </div>
       </div>
@@ -329,13 +329,13 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, ope
               <div className="flex items-center justify-between pb-4 border-b border-[#242C3D]">
                 <button
                   onClick={() => navigateTo('home')}
-                  className="flex items-baseline text-left group focus:outline-none"
+                  className="flex items-baseline text-left group focus:outline-none cursor-pointer"
                 >
                   <span className="font-extrabold text-xl tracking-tight text-[#FF2E93]">
-                    Gadgets
+                    Divine’s
                   </span>
                   <span className="font-extrabold text-xl tracking-tight text-[#F7F4EC]">
-                    Destiny
+                    Eternity
                   </span>
                   <span className="text-[#FFD94A] text-sm font-bold ml-1">✦</span>
                 </button>
