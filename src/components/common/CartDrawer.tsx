@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Trash2, Sparkles, Tag, ArrowRight, ShoppingBag, ShieldCheck, Check, Gift, MessageSquare } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
+import { PhoneCaseMockup } from '../../utils/productVisuals';
 
 interface CartDrawerProps {
   onProceedToCheckout: () => void;
@@ -54,54 +55,55 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onProceedToCheckout, onE
   );
 
   return (
-    <div className="fixed inset-0 z-[100] overflow-hidden bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[100] overflow-hidden bg-black/60 backdrop-blur-xs animate-in fade-in duration-200 flex justify-end">
+      {/* Backdrop */}
       <div className="absolute inset-0" onClick={closeCart} />
 
-      <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
-        <div className="w-screen max-w-md bg-[#FFFDF8] text-[#211D1C] shadow-2xl flex flex-col justify-between border-l border-[#F3E8E2] animate-in slide-in-from-right duration-300">
-          
-          {/* Drawer Header */}
-          <div className="p-4 sm:p-5 border-b border-[#FFE0E6] flex items-center justify-between bg-[#FFF0F3]">
-            <div className="flex items-center gap-2">
-              <ShoppingBag className="w-5 h-5 text-[#FF2E93]" />
-              <h2 className="font-serif-heading text-lg sm:text-xl font-bold text-[#211D1C]">
-                Your Shopping Bag
-              </h2>
-              <span className="bg-[#FF2E93] text-white text-xs px-2 py-0.5 rounded-full font-bold">
-                {totalItemsCount}
-              </span>
-            </div>
-            <button
-              onClick={closeCart}
-              aria-label="Close cart"
-              className="p-1.5 rounded-full text-stone-500 hover:text-[#FF2E93] hover:bg-white transition-colors cursor-pointer"
-            >
-              <X className="w-5 h-5" />
-            </button>
+      {/* Slide-in Drawer Container */}
+      <div className="relative w-full sm:max-w-md h-full max-h-[100dvh] bg-[#FFFDF8] text-[#211D1C] shadow-2xl flex flex-col justify-between border-l border-[#F3E8E2] z-10 animate-in slide-in-from-right duration-300 overflow-hidden">
+        
+        {/* Drawer Header */}
+        <div className="p-3.5 sm:p-5 border-b border-[#FFE0E6] flex items-center justify-between bg-[#FFF0F3] shrink-0">
+          <div className="flex items-center gap-2 min-w-0">
+            <ShoppingBag className="w-5 h-5 text-[#FF2E93] shrink-0" />
+            <h2 className="font-serif-heading text-lg sm:text-xl font-bold text-[#211D1C] truncate">
+              Your Shopping Bag
+            </h2>
+            <span className="bg-[#FF2E93] text-white text-xs px-2 py-0.5 rounded-full font-bold shrink-0">
+              {totalItemsCount}
+            </span>
           </div>
+          <button
+            onClick={closeCart}
+            aria-label="Close cart"
+            className="p-1.5 rounded-full text-stone-500 hover:text-[#FF2E93] hover:bg-white transition-colors cursor-pointer shrink-0"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
 
-          {/* Free Shipping Progress Bar */}
-          <div className="px-5 py-3 bg-[#FFF9DE] border-b border-[#F5E6B8]">
-            <div className="flex items-center justify-between text-xs font-semibold text-stone-800 mb-1.5">
-              {amountNeededForFreeShipping > 0 ? (
-                <span>
-                  Add <strong className="text-[#FF2E93]">₹{amountNeededForFreeShipping}</strong> more for{' '}
-                  <strong className="text-emerald-700">FREE Shipping</strong>!
-                </span>
-              ) : (
-                <span className="text-emerald-700 font-bold flex items-center gap-1">
-                  <Check className="w-3.5 h-3.5" /> You unlocked FREE Express Shipping!
-                </span>
-              )}
-              <span className="text-[10px] text-stone-500">{freeShippingProgress}%</span>
-            </div>
-            <div className="w-full bg-stone-200 rounded-full h-2 overflow-hidden">
-              <div
-                className="bg-[#FF2E93] h-full rounded-full transition-all duration-500"
-                style={{ width: `${freeShippingProgress}%` }}
-              />
-            </div>
+        {/* Free Shipping Progress Bar */}
+        <div className="px-4 py-2.5 sm:px-5 sm:py-3 bg-[#FFF9DE] border-b border-[#F5E6B8] shrink-0">
+          <div className="flex items-center justify-between text-xs font-semibold text-stone-800 mb-1.5 gap-2">
+            {amountNeededForFreeShipping > 0 ? (
+              <span className="truncate">
+                Add <strong className="text-[#FF2E93]">₹{amountNeededForFreeShipping}</strong> more for{' '}
+                <strong className="text-emerald-700">FREE Shipping</strong>!
+              </span>
+            ) : (
+              <span className="text-emerald-700 font-bold flex items-center gap-1 truncate">
+                <Check className="w-3.5 h-3.5 shrink-0" /> You unlocked FREE Express Shipping!
+              </span>
+            )}
+            <span className="text-[10px] text-stone-500 shrink-0">{freeShippingProgress}%</span>
           </div>
+          <div className="w-full bg-stone-200 rounded-full h-2 overflow-hidden">
+            <div
+              className="bg-[#FF2E93] h-full rounded-full transition-all duration-500"
+              style={{ width: `${freeShippingProgress}%` }}
+            />
+          </div>
+        </div>
 
           {/* Items List Area */}
           <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
@@ -134,12 +136,27 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onProceedToCheckout, onE
                   key={item.id}
                   className="flex gap-3 bg-white p-3 rounded-2xl border border-[#F3E8E2] shadow-2xs relative group"
                 >
-                  {/* Thumbnail Badge */}
-                  <div className="w-16 h-16 rounded-xl bg-gradient-to-tr from-[#FFF9EB] to-[#FFF0F5] overflow-hidden flex flex-col items-center justify-center border border-[#FFD94A]/40 shrink-0 p-2 text-center shadow-2xs">
-                    <Sparkles className="w-5 h-5 text-[#FF2E93] mb-0.5" />
-                    <span className="text-[9px] font-extrabold text-[#211D1C] uppercase tracking-wider">
-                      Gold Plated
-                    </span>
+                  {/* Thumbnail Mockup / Photo */}
+                  <div className="w-20 h-24 rounded-xl bg-[#FFFDF8] overflow-hidden flex items-center justify-center border border-[#F3E8E2] shrink-0 p-1">
+                    {item.customPhoto ? (
+                      <img
+                        src={item.customPhoto}
+                        alt={item.name}
+                        className="w-full h-full object-contain rounded-lg"
+                      />
+                    ) : (
+                      <PhoneCaseMockup
+                        product={{
+                          designPattern: item.designPattern,
+                          themeColor: item.themeColor,
+                          secondaryColor: item.secondaryColor,
+                          name: item.name,
+                          category: item.category,
+                        }}
+                        customText={item.customText}
+                        className="w-full h-full scale-75"
+                      />
+                    )}
                   </div>
 
                   {/* Details */}
@@ -152,27 +169,34 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onProceedToCheckout, onE
                         <button
                           onClick={() => removeFromCart(item.id)}
                           aria-label="Remove item"
-                          className="text-stone-400 hover:text-rose-500 p-0.5 transition-colors cursor-pointer"
+                          className="text-stone-400 hover:text-rose-500 p-0.5 transition-colors cursor-pointer shrink-0"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
 
-                      <p className="text-[11px] text-[#FF2E93] font-semibold mt-0.5">
-                        {item.category || 'Customize Your Gift'}
-                      </p>
+                      {item.brand && item.model && (
+                        <p className="text-[11px] text-stone-600 font-medium mt-0.5 truncate">
+                          {item.brand} · {item.model}
+                        </p>
+                      )}
+                      {item.caseType && (
+                        <p className="text-[10px] text-stone-400 truncate">
+                          Type: {item.caseType}
+                        </p>
+                      )}
 
                       {item.customText && (
-                        <p className="text-[10px] text-stone-600 font-medium mt-0.5 flex items-center gap-1 bg-[#FFFDF8] px-2 py-0.5 rounded-md border border-[#F3E8E2] w-fit">
-                          <Sparkles className="w-2.5 h-2.5 text-[#FFD94A]" />
-                          <span>Engraving: &ldquo;{item.customText}&rdquo;</span>
+                        <p className="text-[10px] text-[#FF2E93] font-semibold mt-0.5 flex items-center gap-1 truncate">
+                          <Sparkles className="w-2.5 h-2.5 text-[#FF2E93] shrink-0" />
+                          <span className="truncate">Custom: {item.customText}</span>
                         </p>
                       )}
                     </div>
 
                     {/* Quantity & Price */}
-                    <div className="flex items-center justify-between pt-2 border-t border-dashed border-stone-100">
-                      <div className="flex items-center border border-stone-200 rounded-full bg-stone-50 px-1 py-0.5">
+                    <div className="flex items-center justify-between pt-2 border-t border-dashed border-stone-100 gap-2">
+                      <div className="flex items-center border border-stone-200 rounded-full bg-stone-50 px-1 py-0.5 shrink-0">
                         <button
                           onClick={() => updateQuantity(item.id, item.quantity - 1)}
                           className="w-5 h-5 flex items-center justify-center text-xs font-bold hover:text-[#FF2E93] cursor-pointer"
@@ -190,7 +214,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onProceedToCheckout, onE
                         </button>
                       </div>
 
-                      <div className="text-right">
+                      <div className="text-right shrink-0">
                         <span className="text-xs font-bold text-[#211D1C] tabular-nums font-serif">
                           ₹{item.price * item.quantity}
                         </span>
@@ -204,25 +228,25 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onProceedToCheckout, onE
 
           {/* Drawer Footer & Checkout Engine */}
           {cart.length > 0 && (
-            <div className="p-4 sm:p-5 border-t border-stone-200 bg-white space-y-3">
+            <div className="p-3.5 sm:p-5 border-t border-stone-200 bg-white space-y-3 shrink-0">
               
-              {/* Luxury Gift Wrapping Toggle Card */}
+              {/* Luxury Gift Packaging Toggle Card */}
               <div className="p-3 rounded-2xl bg-[#FFFDF8] border border-[#F3E8E2] shadow-xs space-y-2.5 transition-all">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
                     <div className="w-7 h-7 rounded-lg bg-[#FFF0F3] text-[#FF2E93] flex items-center justify-center shrink-0">
                       <Gift className="w-4 h-4" />
                     </div>
-                    <div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-xs font-bold text-[#211D1C]">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-xs font-bold text-[#211D1C] truncate">
                           Cute Gift Packaging & Note
                         </span>
-                        <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-[#FFD94A] text-[#211D1C]">
+                        <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-[#FFD94A] text-[#211D1C] shrink-0">
                           +₹99
                         </span>
                       </div>
-                      <p className="text-[10px] text-stone-500 line-clamp-1">
+                      <p className="text-[10px] text-stone-500 truncate">
                         Signature box, pink bow & handwritten card
                       </p>
                     </div>
@@ -260,7 +284,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onProceedToCheckout, onE
               {/* Coupon Input & Preset Pills */}
               <div className="space-y-2">
                 <div className="flex gap-2">
-                  <div className="relative flex-1">
+                  <div className="relative flex-1 min-w-0">
                     <Tag className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
                     <input
                       type="text"
@@ -272,7 +296,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onProceedToCheckout, onE
                   </div>
                   <button
                     onClick={() => handleApplyCoupon()}
-                    className="bg-[#211D1C] text-white hover:bg-[#FF2E93] text-xs font-bold px-3.5 py-1.5 rounded-xl transition-colors cursor-pointer"
+                    className="bg-[#211D1C] text-white hover:bg-[#FF2E93] text-xs font-bold px-3.5 py-1.5 rounded-xl transition-colors cursor-pointer shrink-0"
                   >
                     Apply
                   </button>
@@ -378,7 +402,6 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onProceedToCheckout, onE
             </div>
           )}
         </div>
-      </div>
     </div>
   );
 };
