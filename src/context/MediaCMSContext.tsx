@@ -1,8 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { HeroSlideCMS, VideoReelCMS, CategoryCMS, AnnouncementCMS, BrandStoryCMS } from '../types';
+import { HeroSlideCMS, VideoReelCMS, CategoryCMS, AnnouncementCMS, BrandStoryCMS, FounderCMS } from '../types';
 
 export const INITIAL_ANNOUNCEMENTS: AnnouncementCMS[] = [
-  { id: 'ann-1', text: 'SPECIAL PAIRING: ANY 2 CASES FOR ₹849 – CODE: ', code: 'FLAT849', highlight: 'FLAT849', isActive: true },
+  { id: 'ann-1', text: 'SPECIAL PAIRING: ANY 2 GIFTS FOR ₹849 – CODE: ', code: 'FLAT849', highlight: 'FLAT849', isActive: true },
   { id: 'ann-2', text: 'ATELIER CELEBRATION: BUY 3 PAY FOR 2 – LOWEST PRICED ITEM 100% FREE', code: 'BUY3PAY2', highlight: 'Auto-Applied', isActive: true },
   { id: 'ann-3', text: 'WELCOME PRIVILEGE: BUY 1 GIFT, GET ₹100 OFF – CODE: ', code: 'LOVE100', highlight: 'LOVE100', isActive: true },
   { id: 'ann-4', text: 'COMPLIMENTARY INSURED EXPRESS DISPATCH ON ORDERS ABOVE ₹499', code: '', highlight: 'Pan-India', isActive: true },
@@ -18,7 +18,7 @@ export const INITIAL_HERO_SLIDES: HeroSlideCMS[] = [
     highlightBadge: 'Go-To Platform',
     ctaText: 'Explore Collection',
     ctaCategory: 'products',
-    customImageUrl: 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=1200&q=80',
+    customImageUrl: '/images/hero/hero_platform_1791314686484.jpg',
     bgGradient: 'from-[#FFF9EB] via-[#FFF0F5] to-[#FFF9EB] dark:from-[#17191F] dark:via-[#111318] dark:to-[#08090B]',
     featuredProductId: 'gift-hamper-1',
     isActive: true,
@@ -32,7 +32,7 @@ export const INITIAL_HERO_SLIDES: HeroSlideCMS[] = [
     highlightBadge: 'Creator Opportunity',
     ctaText: 'Join Creator Club',
     ctaCategory: 'creator-club',
-    customImageUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1200&q=80',
+    customImageUrl: '/images/hero/hero_creator_club_1791314713473.jpg',
     bgGradient: 'from-[#FFF0F5] via-[#FFF9EB] to-[#FFF0F5] dark:from-[#17191F] dark:via-[#111318] dark:to-[#08090B]',
     featuredProductId: 'gift-name-1',
     isActive: true,
@@ -46,7 +46,7 @@ export const INITIAL_HERO_SLIDES: HeroSlideCMS[] = [
     highlightBadge: '15-20% Commission',
     ctaText: 'Start Affiliate Program',
     ctaCategory: 'affiliate-marketing',
-    customImageUrl: 'https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&w=1200&q=80',
+    customImageUrl: '/images/hero/hero_affiliate_1791314731407.jpg',
     bgGradient: 'from-[#FFF9EB] via-[#FFF0F5] to-[#FFF9EB] dark:from-[#17191F] dark:via-[#111318] dark:to-[#08090B]',
     featuredProductId: 'gift-[#jewel-1]',
     isActive: true,
@@ -60,7 +60,7 @@ export const INITIAL_HERO_SLIDES: HeroSlideCMS[] = [
     highlightBadge: 'Thoughtful Surprises',
     ctaText: 'Personalize A Gift',
     ctaCategory: 'personalization',
-    customImageUrl: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1200&q=80',
+    customImageUrl: '/images/hero/hero_memorable_day_1791314745468.jpg',
     bgGradient: 'from-[#FFF0F5] via-[#FFFDF8] to-[#FFF0F5] dark:from-[#17191F] dark:via-[#111318] dark:to-[#08090B]',
     featuredProductId: 'gift-bouquet-1',
     isActive: true,
@@ -74,7 +74,7 @@ export const INITIAL_HERO_SLIDES: HeroSlideCMS[] = [
     highlightBadge: 'FLAT 60% OFF',
     ctaText: 'Apply Code DS1102',
     ctaCategory: 'products',
-    customImageUrl: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=1200&q=80',
+    customImageUrl: '/images/hero/hero_first_order_1791314758906.jpg',
     bgGradient: 'from-[#FFF9EB] via-[#FFF0F5] to-[#FFF9EB] dark:from-[#17191F] dark:via-[#111318] dark:to-[#08090B]',
     featuredProductId: 'gift-jewel-1',
     isActive: true,
@@ -129,12 +129,37 @@ export const INITIAL_VIDEO_REELS: VideoReelCMS[] = [
 ];
 
 export const INITIAL_BRAND_STORY: BrandStoryCMS = {
-  title: 'Designed with Personality. Built for Everyday Life.',
-  subtitle: 'The Cute Covers Club Studio',
-  description: 'Every phone case in the Gadgets Destiny lineup is crafted with care. From shockproof drop-cushion bumpers to pearl wristlet charms, zipper wallet pouches, and vanity mirrors, our mission is simple: to make sure you never carry a boring phone case again.',
+  title: 'Crafted with Love. Made for Moments That Mean Everything.',
+  subtitle: 'The Divine’s Eternity Gift Atelier',
+  description: 'Every creation in the Divine’s Eternity collection is crafted with love and devotion. From pure gold plated personalized jewellery to handcrafted hampers, fragrant bouquets, and bespoke keepsakes, our mission is to celebrate the people and memories you cherish most.',
   mediaType: 'video',
   mediaUrl: 'https://assets.mixkit.co/videos/preview/mixkit-hands-of-a-woman-opening-a-jewelry-box-43306-large.mp4',
   posterUrl: 'https://images.unsplash.com/photo-1586105251261-72a756497a11?auto=format&fit=crop&w=800&q=80',
+};
+
+export const INITIAL_FOUNDER_DATA: FounderCMS = {
+  name: 'Sonu',
+  role: 'Founder — Divine’s Eternity',
+  badge1: '20-Year-Old Founder',
+  badge2: 'Educator & Creator',
+  imageUrl: '/src/assets/images/founder_sonu_real_1791375717528.jpg',
+  establishedDate: 'EST. AUG 31',
+  dreamAge: 'Dreamed at Age 16',
+  launchDate: 'August 31st',
+  introText: 'Myself Sonu, a 20-year-old proud young founder, content creator, educator, and entrepreneur.',
+  storyNote: `Divine’s Eternity is more than just a brand to me — it is a dream I carried with me since I was 16 years old. After completing my 12th, I finally decided to take that dream seriously and started working towards building something of my own.
+
+On August 31st, I officially started Divine’s Eternity, and that day will always remain one of the best days of my life. Today, after one and a half years of building this journey, seeing how far we have come feels like a true dream come true.
+
+The journey hasn't always been easy. I have faced failures, difficult phases, setbacks, and moments when giving up felt easier. But I never gave up on my passion or the vision I had for myself.
+
+Today, I proudly stand as a full-time content creator, educator, and entrepreneur, while continuing to grow Divine’s Eternity with the same passion with which it began.
+
+My vision goes beyond just building a successful brand. I want to create opportunities and encourage women and students to become financially independent, confident, and capable of building something of their own.
+
+Divine’s Eternity is my little world of creativity, dreams, gifts, opportunities, and growth. Every order, every creator who joins us, every collaboration, and every person who supports us becomes a part of this journey.
+
+What started as a dream at 16 is now a reality I get to live every day.`,
 };
 
 interface MediaCMSContextType {
@@ -142,6 +167,7 @@ interface MediaCMSContextType {
   videoReels: VideoReelCMS[];
   announcements: AnnouncementCMS[];
   brandStory: BrandStoryCMS;
+  founderData: FounderCMS;
   updateHeroSlide: (id: string, slide: Partial<HeroSlideCMS>) => void;
   addHeroSlide: (slide: Omit<HeroSlideCMS, 'id'>) => void;
   deleteHeroSlide: (id: string) => void;
@@ -152,21 +178,31 @@ interface MediaCMSContextType {
   addAnnouncement: (ann: Omit<AnnouncementCMS, 'id'>) => void;
   deleteAnnouncement: (id: string) => void;
   updateBrandStory: (story: Partial<BrandStoryCMS>) => void;
+  updateFounderData: (data: Partial<FounderCMS>) => void;
   resetToDefaults: () => void;
 }
 
 const MediaCMSContext = createContext<MediaCMSContextType | undefined>(undefined);
 
-const STORAGE_KEY_HERO = 'divines_hero_slides_cms_v4';
+const STORAGE_KEY_HERO = 'divines_hero_slides_cms_v6';
 const STORAGE_KEY_REELS = 'divines_video_reels_cms_v2';
 const STORAGE_KEY_ANN = 'divines_announcements_cms_v2';
 const STORAGE_KEY_STORY = 'divines_brand_story_cms_v2';
+const STORAGE_KEY_FOUNDER = 'divines_founder_data_cms_v2';
 
 export const MediaCMSProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [heroSlides, setHeroSlides] = useState<HeroSlideCMS[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY_HERO);
-      return saved ? JSON.parse(saved) : INITIAL_HERO_SLIDES;
+      if (saved) {
+        const parsed: HeroSlideCMS[] = JSON.parse(saved);
+        // If stored data contains stale unsplash images, upgrade to the new hero images
+        const hasStaleImages = parsed.some(s => s.customImageUrl?.includes('unsplash.com'));
+        if (!hasStaleImages) {
+          return parsed;
+        }
+      }
+      return INITIAL_HERO_SLIDES;
     } catch {
       return INITIAL_HERO_SLIDES;
     }
@@ -196,6 +232,15 @@ export const MediaCMSProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       return saved ? JSON.parse(saved) : INITIAL_BRAND_STORY;
     } catch {
       return INITIAL_BRAND_STORY;
+    }
+  });
+
+  const [founderData, setFounderData] = useState<FounderCMS>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY_FOUNDER);
+      return saved ? JSON.parse(saved) : INITIAL_FOUNDER_DATA;
+    } catch {
+      return INITIAL_FOUNDER_DATA;
     }
   });
 
@@ -230,6 +275,14 @@ export const MediaCMSProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       console.error('Failed to save brand story CMS', e);
     }
   }, [brandStory]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY_FOUNDER, JSON.stringify(founderData));
+    } catch (e) {
+      console.error('Failed to save founder data CMS', e);
+    }
+  }, [founderData]);
 
   const updateHeroSlide = (id: string, updated: Partial<HeroSlideCMS>) => {
     setHeroSlides((prev) =>
@@ -289,15 +342,21 @@ export const MediaCMSProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setBrandStory((prev) => ({ ...prev, ...story }));
   };
 
+  const updateFounderData = (data: Partial<FounderCMS>) => {
+    setFounderData((prev) => ({ ...prev, ...data }));
+  };
+
   const resetToDefaults = () => {
     setHeroSlides(INITIAL_HERO_SLIDES);
     setVideoReels(INITIAL_VIDEO_REELS);
     setAnnouncements(INITIAL_ANNOUNCEMENTS);
     setBrandStory(INITIAL_BRAND_STORY);
+    setFounderData(INITIAL_FOUNDER_DATA);
     localStorage.removeItem(STORAGE_KEY_HERO);
     localStorage.removeItem(STORAGE_KEY_REELS);
     localStorage.removeItem(STORAGE_KEY_ANN);
     localStorage.removeItem(STORAGE_KEY_STORY);
+    localStorage.removeItem(STORAGE_KEY_FOUNDER);
   };
 
   return (
@@ -307,6 +366,7 @@ export const MediaCMSProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         videoReels,
         announcements,
         brandStory,
+        founderData,
         updateHeroSlide,
         addHeroSlide,
         deleteHeroSlide,
@@ -317,6 +377,7 @@ export const MediaCMSProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         addAnnouncement,
         deleteAnnouncement,
         updateBrandStory,
+        updateFounderData,
         resetToDefaults,
       }}
     >

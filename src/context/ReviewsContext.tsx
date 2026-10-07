@@ -16,77 +16,64 @@ interface ReviewsContextType {
   };
 }
 
-const STORAGE_KEY = 'divines_product_reviews_v1';
+const STORAGE_KEY = 'divines_product_reviews_v2';
 
-// Seed initial reviews for our top products
+// Seed initial reviews for our top personalized jewellery products
 const SEED_PRODUCT_REVIEWS: Record<string, ProductReview[]> = {
-  'prod-1': [
-    INITIAL_REVIEWS[0],
-    INITIAL_REVIEWS[3],
+  'jewel-1': [
     {
-      id: 'rev-p1-1',
-      author: 'Sneha Roy',
-      rating: 5,
-      date: '3 days ago',
-      verified: true,
-      title: 'Stunning pearl finish and sturdy grip',
-      comment: 'I was worried the bracelet might break, but the string is reinforced steel wire coated in nylon! Very strong and looks so luxurious.',
-      phoneModelUsed: 'iPhone 16 Pro',
-      likesCount: 15,
-    },
-  ],
-  'prod-2': [
-    INITIAL_REVIEWS[2],
-    {
-      id: 'rev-p2-1',
-      author: 'Kavya Nair',
-      rating: 5,
-      date: '5 days ago',
-      verified: true,
-      title: 'Fits my cards and lip gloss perfectly',
-      comment: 'The zipper glide is so smooth and the vegan leather doesn’t peel. Perfect for clubbing and quick grocery runs!',
-      phoneModelUsed: 'Galaxy S24+',
-      likesCount: 11,
-    },
-  ],
-  'prod-3': [
-    INITIAL_REVIEWS[1],
-    {
-      id: 'rev-p3-1',
-      author: 'Zoya Khan',
-      rating: 5,
-      date: '1 week ago',
-      verified: true,
-      title: 'Mirror selfies look 10x cuter',
-      comment: 'Zero fish-eye distortion, real glass-like reflection. Every girl needs this in her bag!',
-      phoneModelUsed: 'iPhone 15 Pro',
-      likesCount: 22,
-    },
-  ],
-  'prod-4': [
-    {
-      id: 'rev-p4-1',
-      author: 'Ishita Sen',
-      rating: 5,
-      date: '4 days ago',
-      verified: true,
-      title: 'Real pressed flowers look magical',
-      comment: 'The 24k gold flakes catch the sunlight in the dreamiest way. The case is crystal clear with no yellowing.',
-      phoneModelUsed: 'Pixel 9 Pro',
-      likesCount: 8,
-    },
-  ],
-  'prod-5': [
-    {
-      id: 'rev-p5-1',
-      author: 'Meera Deshmukh',
+      id: 'rev-j1-1',
+      author: 'Arvind Sharma',
       rating: 5,
       date: '2 days ago',
       verified: true,
-      title: 'The coquette bow is so tactile and soft',
-      comment: 'Got my name engraved on the bottom and it looks straight out of a Paris boutique!',
-      phoneModelUsed: 'iPhone 16',
+      title: 'Heavy matte black finish, looks super premium',
+      comment: 'The laser engraving of my anniversary date is so crisp. The box chain feels solid and heavy. Worn it every day since receiving it.',
+      giftTypeUsed: "Custom Men's Matte Black Tag Necklace",
+      likesCount: 18,
+    },
+    INITIAL_REVIEWS[0],
+  ],
+  'jewel-2': [
+    INITIAL_REVIEWS[0],
+    {
+      id: 'rev-j2-1',
+      author: 'Ananya Roy',
+      rating: 5,
+      date: '3 days ago',
+      verified: true,
+      title: 'The cursive calligraphy is like poetry in gold!',
+      comment: 'The nameplate is delicate yet strong, and the 18k gold shine is radiant without looking tacky. Best gift my partner ever gave me.',
+      giftTypeUsed: 'Dainty Cursive Name Chain Bracelet',
+      likesCount: 24,
+    },
+  ],
+  'jewel-3': [
+    INITIAL_REVIEWS[1],
+    {
+      id: 'rev-j3-1',
+      author: 'Karan Mehra',
+      rating: 5,
+      date: '1 week ago',
+      verified: true,
+      title: 'Solid Figaro links with beautiful shine',
+      comment: 'Very comfortable contour curve on the ID bar. Packaging was immaculate with a personalized note and certificate.',
+      giftTypeUsed: 'Gold Figaro Chain ID Nameplate Bracelet',
       likesCount: 14,
+    },
+  ],
+  'jewel-16': [
+    INITIAL_REVIEWS[2],
+    {
+      id: 'rev-j16-1',
+      author: 'Pooja Varma',
+      rating: 5,
+      date: '4 days ago',
+      verified: true,
+      title: 'A true heirloom memory',
+      comment: 'The locket opens smoothly and the miniature photos of my late grandmother look so clear and heartwarming. Thank you Sonu for creating this!',
+      giftTypeUsed: 'Vintage Memoir Photo Book Locket Pendant',
+      likesCount: 32,
     },
   ],
 };

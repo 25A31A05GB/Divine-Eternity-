@@ -36,7 +36,7 @@ export const SecretAdminPortal: React.FC<SecretAdminPortalProps> = ({
   });
 
   const [pinCode, setPinCode] = useState('');
-  const [adminEmail, setAdminEmail] = useState('admin@gadgetsdestiny.com');
+  const [adminEmail, setAdminEmail] = useState('admin@divineseternity.com');
   const [adminPassword, setAdminPassword] = useState('');
   const [authMode, setAuthMode] = useState<'pin' | 'password'>('pin');
   const [showPassword, setShowPassword] = useState(false);
@@ -93,7 +93,7 @@ export const SecretAdminPortal: React.FC<SecretAdminPortalProps> = ({
     return (
       <div className="min-h-screen bg-[#211D1C] text-white flex items-center justify-center p-4 sm:p-6 relative overflow-hidden">
         <SEO
-          title="Admin Access Gate — Gadgets Destiny"
+          title="Admin Access Gate — Divine’s Eternity"
           description="Restricted Store Control Panel Access"
           noindex={true}
         />

@@ -1,4 +1,5 @@
 export type GiftCategory =
+  | 'Customize Your Gift'
   | 'Names on Gifts'
   | 'Personalized Jewellery'
   | 'Customize Your Caricature or Miniature'
@@ -6,21 +7,7 @@ export type GiftCategory =
   | 'Special Hampers'
   | 'Hair Accessories'
   | 'Paradise of Jewels'
-  // Backward compatibility aliases
-  | 'Personalized Name Jewelry'
-  | 'Preserved Eternal Roses & Dome Displays'
-  | 'Custom Acrylic Song Plaques & Photo Frames'
-  | 'Memory Photo Lamps & Crystal Cubes'
-  | 'Engraved Wooden Gift Boxes & Keepsakes'
-  | 'Romantic Couple Hampers & Scented Candle Sets'
-  | 'Personalized Phone Cases & Pocket Accessories'
-  | 'Zipper Wallet Case'
-  | 'Bracelet Phone Case'
-  | 'Gripper Phone Case'
-  | 'Mirror Phone Case'
-  | 'Toy Cases'
-  | 'Clear Designer Case'
-  | 'Designer Case';
+  | (string & {});
 
 export type PhoneBrand = 
   | 'Apple'
@@ -319,6 +306,19 @@ export interface BrandStoryCMS {
   mediaType: 'image' | 'video';
   mediaUrl: string;
   posterUrl: string;
+}
+
+export interface FounderCMS {
+  name: string;
+  role: string;
+  badge1: string;
+  badge2: string;
+  imageUrl: string;
+  establishedDate: string;
+  dreamAge: string;
+  launchDate: string;
+  introText: string;
+  storyNote: string;
 }
 
 export type AdminRole = 'director' | 'superadmin' | 'orders' | 'catalog';

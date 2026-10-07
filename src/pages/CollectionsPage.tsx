@@ -63,6 +63,7 @@ export const CollectionsPage: React.FC<CollectionsPageProps> = ({
     const raw = (initialCategory || '').trim();
     // Check if it matches any of the product categories
     const validProductCats = [
+      'Customize Your Gift',
       'Names on Gifts',
       'Personalized Jewellery',
       'Customize Your Caricature or Miniature',
@@ -81,6 +82,7 @@ export const CollectionsPage: React.FC<CollectionsPageProps> = ({
     setActiveTab(tab);
 
     const validProductCats = [
+      'Customize Your Gift',
       'Names on Gifts',
       'Personalized Jewellery',
       'Customize Your Caricature or Miniature',

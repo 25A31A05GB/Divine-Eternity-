@@ -44,11 +44,11 @@ export const NewsletterSection: React.FC = () => {
               <span className="font-serif italic text-[#FF2E93] font-normal">coming your way!</span>
             </h2>
             <p className="text-xs sm:text-sm text-stone-700 max-w-md">
-              New drops, private offers and phone-style inspiration—only the good stuff.
+              New personalized jewellery drops, luxury gift hampers & private discounts—only the good stuff.
             </p>
           </div>
 
-          {/* Right Column: Big Pill Input matching Screenshot 8 */}
+          {/* Right Column: Big Pill Input */}
           <div className="lg:col-span-6 space-y-2">
             <div className="text-[11px] font-bold text-[#211D1C] ml-4">
               Your email address
@@ -57,7 +57,7 @@ export const NewsletterSection: React.FC = () => {
             {status === 'success' ? (
               <div className="bg-white p-4 rounded-full shadow-md border border-white flex items-center justify-between px-6">
                 <span className="text-xs font-bold text-[#211D1C]">
-                  🌸 Welcome to the Cute Covers Club! Use code <strong className="text-[#FF2E93]">FLAT849</strong> at checkout.
+                  🌸 Welcome to the Divine’s Eternity Club! Use code <strong className="text-[#FF2E93]">LOVE100</strong> at checkout.
                 </span>
               </div>
             ) : (

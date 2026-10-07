@@ -97,11 +97,11 @@ export const CreatorPortal: React.FC<CreatorPortalProps> = ({ onExploreProducts 
 
   // Simulated referral conversions history
   const referralTransactions = [
-    { id: 'REF-9921', date: 'Today, 2:15 PM', item: 'Pearl Bliss Beaded Bracelet Case', amount: 649, codeUsed: activeCreator?.proposedCode || 'NATASHA15', comm: 97.35, status: 'Credited' },
-    { id: 'REF-9918', date: 'Yesterday, 8:40 PM', item: '18k Gold Cursive Name Necklace (2x)', amount: 2398, codeUsed: activeCreator?.proposedCode || 'NATASHA15', comm: 359.70, status: 'Credited' },
-    { id: 'REF-9904', date: '2 days ago', item: 'Celestial Chrome Heart Mirror Case', amount: 699, codeUsed: activeCreator?.proposedCode || 'NATASHA15', comm: 104.85, status: 'Credited' },
-    { id: 'REF-9882', date: '4 days ago', item: 'Preserved Rose Glass Dome + Music Plaque', amount: 2498, codeUsed: activeCreator?.proposedCode || 'NATASHA15', comm: 374.70, status: 'Credited' },
-    { id: 'REF-9861', date: '6 days ago', item: 'Zipper Wallet Quilted Phone Case', amount: 749, codeUsed: activeCreator?.proposedCode || 'NATASHA15', comm: 112.35, status: 'Credited' },
+    { id: 'REF-9921', date: 'Today, 2:15 PM', item: 'Dainty Cursive Name Chain Bracelet', amount: 799, codeUsed: activeCreator?.proposedCode || 'NATASHA15', comm: 119.85, status: 'Credited' },
+    { id: 'REF-9918', date: 'Yesterday, 8:40 PM', item: 'Gold Figaro Chain ID Nameplate (2x)', amount: 1998, codeUsed: activeCreator?.proposedCode || 'NATASHA15', comm: 299.70, status: 'Credited' },
+    { id: 'REF-9904', date: '2 days ago', item: 'Vintage Memoir Photo Book Locket', amount: 1099, codeUsed: activeCreator?.proposedCode || 'NATASHA15', comm: 164.85, status: 'Credited' },
+    { id: 'REF-9882', date: '4 days ago', item: 'Interlocking Monogram Initial Necklace', amount: 849, codeUsed: activeCreator?.proposedCode || 'NATASHA15', comm: 127.35, status: 'Credited' },
+    { id: 'REF-9861', date: '6 days ago', item: 'Custom Men\'s Matte Black Tag Necklace', amount: 899, codeUsed: activeCreator?.proposedCode || 'NATASHA15', comm: 134.85, status: 'Credited' },
   ];
 
   const totalReferralEarnings = referralTransactions.reduce((sum, r) => sum + r.comm, 16300);
@@ -733,7 +733,7 @@ export const CreatorPortal: React.FC<CreatorPortalProps> = ({ onExploreProducts 
                   <input
                     type="text"
                     required
-                    placeholder="Where should we ship your free custom cases & jewelry?"
+                    placeholder="Where should we ship your free personalized gifts & jewelry?"
                     value={signUpAddress}
                     onChange={(e) => setSignUpAddress(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF2EE] dark:bg-[#201A1E] border border-[#EDE2DB] dark:border-[#2A2328] outline-none focus:border-[#F0508C] mb-2"
@@ -794,13 +794,13 @@ export const CreatorPortal: React.FC<CreatorPortalProps> = ({ onExploreProducts 
                 size: '14.2 MB',
               },
               {
-                title: 'High-Res Phone Case PNGs',
-                desc: 'Transparent cutout mockups of Pearl cases, Chrome mirrors & Rose Domes.',
+                title: 'High-Res Personalized Jewellery PNGs',
+                desc: 'Transparent cutout mockups of 18k gold plated initial pendants, lockets & hampers.',
                 size: '28.5 MB',
               },
               {
                 title: 'Official Vector Logos & Sparkles',
-                desc: 'Gadgets Destiny hot pink & sunny yellow emblems and sparkle micro-assets in SVG format.',
+                desc: 'Divine’s Eternity hot pink & sunny yellow emblems and sparkle micro-assets in SVG format.',
                 size: '4.1 MB',
               },
             ].map((asset, i) => (

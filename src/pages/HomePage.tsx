@@ -10,7 +10,6 @@ import { ReviewsSection } from '../components/home/ReviewsSection';
 import { MarqueeStrip } from '../components/layout/MarqueeStrip';
 import { ValueProps } from '../components/home/ValueProps';
 import { NewsletterSection } from '../components/home/NewsletterSection';
-import { ScrollToTop } from '../components/common/ScrollToTop';
 import { SEO } from '../components/common/SEO';
 import { Product } from '../types';
 
@@ -95,9 +94,9 @@ export const HomePage: React.FC<HomePageProps> = ({
 
       {/* 6. Spotlight: Curated Gifts */}
       <CuratedCollectionRow
-        title="Personalized Name Jewellery"
-        subtitle="18k thick gold vermeil handwriting pendants & Roman numeral engraved bar bracelets."
-        category="Personalized Jewellery"
+        title="Customize Your Gift — Personalized Jewellery"
+        subtitle="Jewellery made personal, for moments that mean everything. Purely gold plated.✨💖"
+        category="Customize Your Gift"
         products={products}
         onQuickView={onQuickView}
         onOpenDetail={onOpenDetail}
@@ -122,9 +121,6 @@ export const HomePage: React.FC<HomePageProps> = ({
 
       {/* 11. Newsletter */}
       <NewsletterSection />
-
-      {/* 12. Scroll to top button */}
-      <ScrollToTop />
     </div>
   );
 };

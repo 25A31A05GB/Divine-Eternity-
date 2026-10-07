@@ -91,6 +91,7 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, ope
       tagline: 'Discover the world of Divine’s Eternity',
       badge: 'All Gifts',
       subcategories: [
+        'Customize Your Gift',
         'Names on Gifts',
         'Personalized Jewellery',
         'Customize Your Caricature or Miniature',

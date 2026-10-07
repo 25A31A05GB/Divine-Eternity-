@@ -45,7 +45,7 @@ export const GIFT_WRAPPING_SURCHARGE = 99;
 export const AVAILABLE_COUPONS: Coupon[] = [
   {
     code: 'DS1102',
-    description: 'First Order Special: Flat 60% OFF storewide (Gadgets Destiny)',
+    description: 'First Order Special: Flat 60% OFF storewide (Divine’s Eternity)',
     type: 'percentage',
     value: 60,
     minOrderValue: 499,
@@ -53,7 +53,7 @@ export const AVAILABLE_COUPONS: Coupon[] = [
   },
   {
     code: 'BUY3PAY2',
-    description: 'Buy 3 Cases, Get 1 FREE (Cheapest unit is 100% free)',
+    description: 'Buy 3 Gifts, Get 1 FREE (Lowest priced gift is 100% free)',
     type: 'buy3pay2',
     value: 100,
     minItems: 3,
@@ -61,7 +61,7 @@ export const AVAILABLE_COUPONS: Coupon[] = [
   },
   {
     code: 'FLAT849',
-    description: 'Any 2 Luxury Cases for flat ₹849',
+    description: 'Any 2 Luxury Gifts for flat ₹849',
     type: 'flat849',
     value: 849,
     minItems: 2,
@@ -257,7 +257,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (flatDiscount > (bestOffer?.discountAmount || 0)) {
         bestOffer = {
           code: 'FLAT849',
-          name: 'Flat ₹849 for Any 2 Cases',
+          name: 'Flat ₹849 for Any 2 Gifts',
           discountAmount: flatDiscount,
           description: 'Special duo promo applied!',
         };

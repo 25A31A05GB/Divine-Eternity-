@@ -1,5 +1,6 @@
 import React from 'react';
-import { Heart, Sparkles, Award, Star, ArrowRight, Instagram, Users } from 'lucide-react';
+import { Sparkles, Award, ArrowRight, Users } from 'lucide-react';
+import { useMediaCMS } from '../../context/MediaCMSContext';
 
 interface FounderNoteSectionProps {
   onExploreProducts?: () => void;
@@ -10,6 +11,19 @@ export const FounderNoteSection: React.FC<FounderNoteSectionProps> = ({
   onExploreProducts,
   onJoinCreatorClub,
 }) => {
+  const { founderData } = useMediaCMS();
+
+  const name = founderData?.name || 'Sonu';
+  const role = founderData?.role || 'Founder — Divine’s Eternity';
+  const badge1 = founderData?.badge1 || '20-Year-Old Founder';
+  const badge2 = founderData?.badge2 || 'Educator & Creator';
+  const imageUrl = founderData?.imageUrl || '/src/assets/images/founder_sonu_real_1791375717528.jpg';
+  const establishedDate = founderData?.establishedDate || 'EST. AUG 31';
+  const dreamAge = founderData?.dreamAge || 'Dreamed at Age 16';
+  const launchDate = founderData?.launchDate || 'August 31st';
+  const introText = founderData?.introText || 'Myself Sonu, a 20-year-old proud young founder, content creator, educator, and entrepreneur.';
+  const storyNote = founderData?.storyNote;
+
   return (
     <section className="py-16 sm:py-24 bg-gradient-to-br from-[#FFFDF8] via-[#FFF9EB] to-[#FFF0F5] border-y border-[#F3E8E2] relative overflow-hidden">
       {/* Background Ambient Glows */}
@@ -24,7 +38,7 @@ export const FounderNoteSection: React.FC<FounderNoteSectionProps> = ({
             <Sparkles className="w-3.5 h-3.5 text-[#FFD94A]" />
             <span>FOUNDER’S STORY</span>
             <span className="text-stone-300">•</span>
-            <span className="text-[#211D1C]">EST. AUG 31</span>
+            <span className="text-[#211D1C]">{establishedDate}</span>
           </div>
 
           <h2 className="font-serif-heading text-3xl sm:text-4xl lg:text-5xl font-bold text-[#211D1C]">
@@ -45,13 +59,13 @@ export const FounderNoteSection: React.FC<FounderNoteSectionProps> = ({
               <div className="relative rounded-3xl overflow-hidden p-2.5 bg-gradient-to-b from-[#FFD94A] via-[#FF2E93] to-[#211D1C] shadow-2xl">
                 <div className="aspect-[4/5] rounded-2xl overflow-hidden bg-stone-900 relative group">
                   <img
-                    src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80"
-                    alt="Sonu — Founder of Divine’s Eternity"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                    src={imageUrl}
+                    alt={`${name} — ${role}`}
+                    referrerPolicy="no-referrer"
+                    className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700"
                     onError={(e) => {
-                      // Fallback image if unsplash URL fails
                       (e.currentTarget as HTMLImageElement).src =
-                        'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=800&q=80';
+                        '/images/founder/founder_sonu_real_1791317591344.jpg';
                     }}
                   />
 
@@ -60,17 +74,17 @@ export const FounderNoteSection: React.FC<FounderNoteSectionProps> = ({
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
                         <span className="bg-[#FF2E93] text-white text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full tracking-wider">
-                          20-Year-Old Founder
+                          {badge1}
                         </span>
                         <span className="bg-[#FFD94A] text-[#211D1C] text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full tracking-wider">
-                          Educator & Creator
+                          {badge2}
                         </span>
                       </div>
                       <h3 className="font-serif-heading text-2xl font-bold text-white">
-                        Sonu
+                        {name}
                       </h3>
                       <p className="text-xs text-stone-300">
-                        Founder — Divine’s Eternity
+                        {role}
                       </p>
                     </div>
                   </div>
@@ -84,7 +98,7 @@ export const FounderNoteSection: React.FC<FounderNoteSectionProps> = ({
                 </div>
                 <div>
                   <span className="text-[10px] uppercase font-bold text-stone-400 block">Dream Seeded</span>
-                  <span className="text-xs font-bold text-[#211D1C]">Dreamed at Age 16</span>
+                  <span className="text-xs font-bold text-[#211D1C]">{dreamAge}</span>
                 </div>
               </div>
 
@@ -94,7 +108,7 @@ export const FounderNoteSection: React.FC<FounderNoteSectionProps> = ({
                 </div>
                 <div>
                   <span className="text-[10px] uppercase font-bold text-stone-400 block">Official Launch</span>
-                  <span className="text-xs font-bold text-[#211D1C]">August 31st</span>
+                  <span className="text-xs font-bold text-[#211D1C]">{launchDate}</span>
                 </div>
               </div>
             </div>
@@ -108,36 +122,30 @@ export const FounderNoteSection: React.FC<FounderNoteSectionProps> = ({
 
             <div className="space-y-4 text-xs sm:text-sm text-stone-700 leading-relaxed font-sans">
               <p className="font-bold text-stone-900 text-sm sm:text-base">
-                Myself <span className="text-[#FF2E93]">Sonu</span>, a 20-year-old proud young founder, content creator, educator, and entrepreneur.
+                {introText}
               </p>
 
-              <p>
-                <strong>Divine’s Eternity</strong> is more than just a brand to me — it is a dream I carried with me since I was 16 years old. After completing my 12th, I finally decided to take that dream seriously and started working towards building something of my own.
-              </p>
-
-              <p>
-                On <strong className="text-[#211D1C] underline decoration-[#FFD94A] decoration-2">August 31st</strong>, I officially started Divine’s Eternity, and that day will always remain one of the best days of my life. Today, after one and a half years of building this journey, seeing how far we have come feels like a true dream come true.
-              </p>
-
-              <p className="bg-[#FFF9EB] border-l-4 border-[#FF2E93] p-3.5 rounded-r-2xl italic text-stone-800">
-                The journey hasn't always been easy. I have faced failures, difficult phases, setbacks, and moments when giving up felt easier. But I never gave up on my passion or the vision I had for myself.
-              </p>
-
-              <p>
-                Today, I proudly stand as a full-time content creator, educator, and entrepreneur, while continuing to grow Divine’s Eternity with the same passion with which it began.
-              </p>
-
-              <p>
-                My vision goes beyond just building a successful brand. <strong className="text-[#211D1C]">I want to create opportunities and encourage women and students to become financially independent, confident, and capable of building something of their own.</strong>
-              </p>
-
-              <p>
-                Divine’s Eternity is my little world of creativity, dreams, gifts, opportunities, and growth. Every order, every creator who joins us, every collaboration, and every person who supports us becomes a part of this journey.
-              </p>
-
-              <p className="font-serif-heading text-base sm:text-lg font-bold text-[#211D1C]">
-                What started as a dream at 16 is now a reality I get to live every day.
-              </p>
+              {storyNote ? (
+                storyNote.split('\n\n').map((paragraph: string, pIdx: number) => {
+                  if (paragraph.includes('faced failures')) {
+                    return (
+                      <p key={pIdx} className="bg-[#FFF9EB] border-l-4 border-[#FF2E93] p-3.5 rounded-r-2xl italic text-stone-800">
+                        {paragraph}
+                      </p>
+                    );
+                  }
+                  return <p key={pIdx}>{paragraph}</p>;
+                })
+              ) : (
+                <>
+                  <p>
+                    <strong>Divine’s Eternity</strong> is more than just a brand to me — it is a dream I carried with me since I was 16 years old. After completing my 12th, I finally decided to take that dream seriously and started working towards building something of my own.
+                  </p>
+                  <p>
+                    On <strong className="text-[#211D1C] underline decoration-[#FFD94A] decoration-2">August 31st</strong>, I officially started Divine’s Eternity, and that day will always remain one of the best days of my life.
+                  </p>
+                </>
+              )}
 
               <div className="bg-[#FFF0F5] border border-pink-200 rounded-2xl p-4 text-center space-y-1 my-2">
                 <p className="font-bold text-[#211D1C] text-sm sm:text-base">
@@ -153,8 +161,8 @@ export const FounderNoteSection: React.FC<FounderNoteSectionProps> = ({
             <div className="pt-4 border-t border-stone-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
                 <span className="text-xs text-stone-400 block font-serif italic">With love,</span>
-                <span className="font-serif-heading text-2xl font-bold text-[#211D1C]">Sonu</span>
-                <span className="text-xs text-[#FF2E93] font-bold block">Founder — Divine’s Eternity</span>
+                <span className="font-serif-heading text-2xl font-bold text-[#211D1C]">{name}</span>
+                <span className="text-xs text-[#FF2E93] font-bold block">{role}</span>
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
@@ -163,7 +171,7 @@ export const FounderNoteSection: React.FC<FounderNoteSectionProps> = ({
                     onClick={onExploreProducts}
                     className="px-5 py-2.5 rounded-full bg-[#211D1C] hover:bg-[#FF2E93] text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
                   >
-                    <span>Explore Sonu’s Creations</span>
+                    <span>Explore {name}’s Creations</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </button>
                 )}
@@ -187,3 +195,4 @@ export const FounderNoteSection: React.FC<FounderNoteSectionProps> = ({
     </section>
   );
 };
+

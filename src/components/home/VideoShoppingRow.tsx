@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { ShoppingBag, Play, Pause, Sparkles, Heart, Eye } from 'lucide-react';
 import { Product } from '../../types';
-import { PhoneCaseMockup } from '../../utils/productVisuals';
 import { useMediaCMS } from '../../context/MediaCMSContext';
 
 interface VideoShoppingRowProps {
@@ -62,12 +61,12 @@ export const VideoShoppingRow: React.FC<VideoShoppingRowProps> = ({
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center p-4">
-                      <PhoneCaseMockup
-                        product={linkedProduct}
-                        className="w-full h-full"
-                      />
-                    </div>
+                    <img
+                      src={linkedProduct.images[0]}
+                      alt={linkedProduct.name}
+                      referrerPolicy="no-referrer"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
                   )}
 
                   {/* Shopping Bag Badge on top-right matching Screenshot 4 */}

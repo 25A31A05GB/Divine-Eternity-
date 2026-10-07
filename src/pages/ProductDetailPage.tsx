@@ -8,6 +8,7 @@ import { PhoneCaseMockup } from '../utils/productVisuals';
 import { ProductCard } from '../components/common/ProductCard';
 import { SocialShare } from '../components/common/SocialShare';
 import { GiftPersonalizer } from '../components/personalization/GiftPersonalizer';
+import { ProductReviews } from '../components/common/ProductReviews';
 import { SEO } from '../components/common/SEO';
 import {
   Star,
@@ -66,23 +67,15 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
   const [quantity, setQuantity] = useState<number>(1);
   const [addedSuccess, setAddedSuccess] = useState<boolean>(false);
 
-  // Review Form & Filter states
-  const [newAuthor, setNewAuthor] = useState('');
-  const [newTitle, setNewTitle] = useState('');
-  const [newComment, setNewComment] = useState('');
-  const [newRating, setNewRating] = useState(5);
-  const [reviewFilter, setReviewFilter] = useState<'all' | 'verified' | '5star'>('all');
-  const [reviewSubmitted, setReviewSubmitted] = useState(false);
-
   const wishlisted = isInWishlist(product.id);
   const discountPercent = Math.round(((product.mrp - product.price) / product.mrp) * 100);
 
-  const productReviews = getProductReviews(product.id);
-  const { averageRating, totalReviews, ratingBreakdown } = getProductRatingStats(
+  const { averageRating, totalReviews } = getProductRatingStats(
     product.id,
     product.rating,
     product.reviewCount
   );
+  const productReviews = getProductReviews(product.id);
 
   const handleAddToCart = () => {
     addToCart({
@@ -110,48 +103,11 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
     setTimeout(() => setAddedSuccess(false), 1500);
   };
 
-  const handleAddReviewSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newAuthor.trim() || !newComment.trim()) return;
-
-    addReview(product.id, {
-      author: newAuthor.trim(),
-      rating: newRating,
-      title: newTitle.trim() || 'Gorgeous aesthetic keepsake!',
-      comment: newComment.trim(),
-      verified: true,
-      giftTypeUsed: product.name,
-      phoneModelUsed: isPhoneCase ? `${selectedBrand} ${selectedModel}` : undefined,
-    });
-
-    try {
-      confetti({
-        particleCount: 50,
-        spread: 60,
-        origin: { y: 0.8 },
-      });
-    } catch {
-      // ignore
-    }
-
-    setNewAuthor('');
-    setNewTitle('');
-    setNewComment('');
-    setReviewSubmitted(true);
-    setTimeout(() => setReviewSubmitted(false), 4000);
-  };
-
-  const filteredReviews = productReviews.filter((r) => {
-    if (reviewFilter === 'verified') return r.verified;
-    if (reviewFilter === '5star') return r.rating === 5;
-    return true;
-  });
-
   const relatedProducts = allProducts
     .filter((p) => p.id !== product.id && (p.category === product.category || p.isBestSeller))
     .slice(0, 4);
 
-  const productUrl = typeof window !== 'undefined' ? window.location.href : `https://gadgetsdestiny.com/#product-${product.id}`;
+  const productUrl = typeof window !== 'undefined' ? window.location.href : `https://divineseternity.com/#product-${product.id}`;
 
   const productSchema = {
     '@context': 'https://schema.org',
@@ -162,7 +118,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
     sku: product.slug || product.id,
     brand: {
       '@type': 'Brand',
-      name: "Gadgets Destiny",
+      name: "Divine’s Eternity",
     },
     category: product.category,
     offers: {
@@ -204,16 +160,16 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
   return (
     <div className="py-8 sm:py-12">
       <SEO
-        title={`${product.name} — Gadgets Destiny`}
+        title={`${product.name} — Divine’s Eternity`}
         description={
           product.description
             ? `${product.name}: ${product.description.slice(0, 140)}`
-            : `Buy ${product.name} for ₹${product.price} at Gadgets Destiny. Cute phone covers with shockproof protection and express delivery.`
+            : `Buy ${product.name} for ₹${product.price} at Divine’s Eternity. Jewellery made personal, for moments that mean everything. Purely gold plated.✨💖`
         }
         image={product.images[0]}
         url={productUrl}
         type="product"
-        keywords={`${product.name}, ${product.category}, ${product.supportedBrands?.join(', ') || ''}, cute phone case, gadgets destiny`}
+        keywords={`${product.name}, ${product.category}, personalized jewellery, divines eternity`}
         structuredData={productSchema}
       />
 
@@ -249,14 +205,30 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
             </button>
 
             <div className="w-full flex items-center justify-center py-6">
-              <PhoneCaseMockup
-                product={product}
-                customText={customText}
-                customPhoto={customPhoto}
-                customSong={customSong}
-                customArtist={customArtist}
-                className="w-[240px] h-[390px] sm:w-[280px] sm:h-[440px] drop-shadow-xl"
-              />
+              {product.images && product.images.length > 0 ? (
+                <div className="relative w-full max-w-sm sm:max-w-md aspect-square rounded-3xl overflow-hidden shadow-2xl border-4 border-white group">
+                  <img
+                    src={product.images[0]}
+                    alt={product.name}
+                    referrerPolicy="no-referrer"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  {customText && (
+                    <div className="absolute bottom-4 inset-x-4 bg-black/60 backdrop-blur-md rounded-2xl p-2.5 text-center text-white text-sm font-bold border border-white/20">
+                      Engraved: &ldquo;{customText}&rdquo;
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <PhoneCaseMockup
+                  product={product}
+                  customText={customText}
+                  customPhoto={customPhoto}
+                  customSong={customSong}
+                  customArtist={customArtist}
+                  className="w-[240px] h-[390px] sm:w-[280px] sm:h-[440px] drop-shadow-xl"
+                />
+              )}
             </div>
 
             <div className="w-full bg-[#FFF9DE] rounded-2xl p-4 text-center border border-[#F5E6B8] mt-4">
@@ -450,197 +422,9 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
           </div>
         </div>
 
-        {/* Dynamic Reviews Section with Verified Buyer Badges */}
-        <div className="pt-12 border-t border-[#F5E6E8] dark:border-[#2D252A] space-y-8">
-          <div className="bg-white dark:bg-[#1E1A1D] p-6 sm:p-8 rounded-3xl border border-[#F5E6E8] dark:border-slate-800 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div>
-              <div className="flex items-baseline gap-3">
-                <span className="font-serif-heading text-4xl sm:text-5xl font-extrabold text-[#231F20] dark:text-white">
-                  {averageRating}
-                </span>
-                <div>
-                  <div className="flex text-[#FFD94A]">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <Star
-                        key={star}
-                        className={`w-4 h-4 ${star <= Math.round(averageRating) ? 'fill-current' : 'text-slate-300'}`}
-                      />
-                    ))}
-                  </div>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Based on {totalReviews} customer ratings
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-1 text-xs w-full max-w-xs">
-              {[5, 4, 3, 2, 1].map((s) => {
-                const count = ratingBreakdown[s] || 0;
-                const pct = totalReviews > 0 ? Math.round((count / totalReviews) * 100) : 0;
-                return (
-                  <div key={s} className="flex items-center gap-2">
-                    <span className="w-8 text-[11px] font-mono text-slate-600 dark:text-slate-400 flex items-center gap-0.5">
-                      <span>{s}</span>
-                      <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-400" />
-                    </span>
-                    <div className="flex-1 h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
-                      <div
-                        className="h-full bg-gradient-to-r from-[#E11D48] to-[#FFD94A] rounded-full transition-all duration-500"
-                        style={{ width: `${pct}%` }}
-                      />
-                    </div>
-                    <span className="w-8 text-[10px] text-slate-400 text-right font-mono">{pct}%</span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <div className="lg:col-span-7 space-y-4">
-              {filteredReviews.map((rev) => (
-                <div
-                  key={rev.id}
-                  className="bg-white dark:bg-[#1E1A1D] p-5 sm:p-6 rounded-2xl border border-[#F5E6E8] dark:border-slate-800 shadow-xs space-y-3"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1 text-[#FFD94A]">
-                      {Array.from({ length: 5 }).map((_, idx) => (
-                        <Star
-                          key={idx}
-                          className={`w-3.5 h-3.5 ${
-                            idx < rev.rating ? 'fill-current' : 'text-slate-300'
-                          }`}
-                        />
-                      ))}
-                    </div>
-                    <span className="text-[10px] text-slate-400 font-mono">{rev.date}</span>
-                  </div>
-
-                  <div>
-                    <h5 className="font-serif-heading text-sm sm:text-base font-bold text-slate-900 dark:text-white">
-                      {rev.title}
-                    </h5>
-                    <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
-                      {rev.comment}
-                    </p>
-                  </div>
-
-                  <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-xs text-slate-500">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-bold text-slate-800 dark:text-slate-200">{rev.author}</span>
-                      {rev.giftTypeUsed && (
-                        <span className="text-[10px] text-pink-600 font-semibold">
-                          ({rev.giftTypeUsed})
-                        </span>
-                      )}
-                      {rev.verified && (
-                        <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full flex items-center gap-1 border border-emerald-200">
-                          <CheckCircle2 className="w-3 h-3 text-emerald-500" />
-                          <span>Verified Buyer</span>
-                        </span>
-                      )}
-                    </div>
-
-                    <button
-                      onClick={() => likeReview(product.id, rev.id)}
-                      className="inline-flex items-center gap-1 text-[11px] text-slate-500 hover:text-[#E11D48] p-1"
-                    >
-                      <ThumbsUp className="w-3.5 h-3.5" />
-                      <span className="tabular-nums font-bold">{rev.likesCount}</span>
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Leave a review form */}
-            <div className="lg:col-span-5 bg-white dark:bg-[#1E1A1D] p-6 sm:p-8 rounded-3xl border border-[#F5E6E8] dark:border-slate-800 space-y-4 shadow-sm">
-              <h4 className="font-serif-heading text-lg font-bold text-slate-900 dark:text-white">
-                Leave a Verified Review
-              </h4>
-              {reviewSubmitted ? (
-                <div className="bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 p-6 rounded-2xl text-xs font-semibold text-center space-y-2 border border-emerald-200">
-                  <Check className="w-8 h-8 mx-auto text-emerald-600" />
-                  <p className="text-sm font-bold">Review Published with Verified Buyer Badge!</p>
-                </div>
-              ) : (
-                <form onSubmit={handleAddReviewSubmit} className="space-y-3.5 text-xs">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                      Your Rating *
-                    </label>
-                    <div className="flex gap-1.5 bg-slate-50 dark:bg-slate-900 p-2 rounded-xl w-fit border border-slate-200 dark:border-slate-800">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <button
-                          type="button"
-                          key={star}
-                          onClick={() => setNewRating(star)}
-                          className="p-0.5 text-slate-300 hover:text-[#FFD94A]"
-                        >
-                          <Star
-                            className={`w-6 h-6 ${
-                              star <= newRating ? 'text-[#FFD94A] fill-[#FFD94A]' : ''
-                            }`}
-                          />
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                      Your Full Name *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={newAuthor}
-                      onChange={(e) => setNewAuthor(e.target.value)}
-                      placeholder="e.g. Diya Patel"
-                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                      Review Title
-                    </label>
-                    <input
-                      type="text"
-                      value={newTitle}
-                      onChange={(e) => setNewTitle(e.target.value)}
-                      placeholder="e.g. Breathtaking gift packaging!"
-                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                      Your Review *
-                    </label>
-                    <textarea
-                      rows={4}
-                      required
-                      value={newComment}
-                      onChange={(e) => setNewComment(e.target.value)}
-                      placeholder="Share your unboxing experience, laser engraving quality, or how your loved one reacted..."
-                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white"
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    className="w-full bg-[#231F20] hover:bg-[#E11D48] text-white py-3 px-4 rounded-full text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-md"
-                  >
-                    <Send className="w-3.5 h-3.5" />
-                    <span>Post Verified Review</span>
-                  </button>
-                </form>
-              )}
-            </div>
-          </div>
+        {/* Customer Reviews & Feedback Component */}
+        <div className="pt-8 border-t border-[#F5E6E8] dark:border-[#2D252A]">
+          <ProductReviews product={product} />
         </div>
 
         {/* You May Also Like Row */}

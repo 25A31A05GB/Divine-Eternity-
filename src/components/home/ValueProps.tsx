@@ -15,7 +15,7 @@ export const ValueProps: React.FC = () => {
     {
       icon: '✦',
       title: 'Here when you need us',
-      desc: 'Friendly support for fits, orders and phone models.',
+      desc: 'Friendly WhatsApp support for custom names, orders & gifting.',
     },
     {
       icon: '✳',
@@ -28,13 +28,13 @@ export const ValueProps: React.FC = () => {
     <section className="bg-[#FFD94A] pt-12 pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
         
-        {/* Banner Strip matching Screenshot 8 */}
+        {/* Banner Strip */}
         <div className="text-center">
           <p className="font-serif-heading text-lg sm:text-2xl text-[#211D1C]">
             <span className="text-[#FF2E93] mr-2">✦</span>
-            Not just a phone case.{' '}
+            Not just a gift.{' '}
             <span className="font-serif italic text-[#FF2E93]">
-              A tiny outfit for the thing you hold all day.
+              A timeless memory for moments that mean everything.
             </span>{' '}
             <span className="text-[#FF2E93] ml-1">♡</span>
           </p>

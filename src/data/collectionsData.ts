@@ -22,6 +22,12 @@ export const STRICT_COLLECTIONS: MainCollection[] = [
     iconName: 'gift',
     subcategories: [
       {
+        name: 'Customize Your Gift',
+        slug: 'customize-your-gift',
+        description: 'Jewellery made personal, for moments that mean everything. Purely gold plated.✨💖',
+        iconName: 'sparkles',
+      },
+      {
         name: 'Names on Gifts',
         slug: 'names-on-gifts',
         description: 'Make your gifts extra special with personalized names, initials, or meaningful messages.',

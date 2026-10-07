@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { X, Trash2, Sparkles, Tag, ArrowRight, ShoppingBag, ShieldCheck, Check, Gift, MessageSquare } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
-import { PhoneCaseMockup } from '../../utils/productVisuals';
 
 interface CartDrawerProps {
   onProceedToCheckout: () => void;
@@ -135,19 +134,12 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onProceedToCheckout, onE
                   key={item.id}
                   className="flex gap-3 bg-white p-3 rounded-2xl border border-[#F3E8E2] shadow-2xs relative group"
                 >
-                  {/* Thumbnail Mockup */}
-                  <div className="w-20 h-24 rounded-xl bg-[#FFFDF8] overflow-hidden flex items-center justify-center border border-[#F3E8E2] shrink-0">
-                    <PhoneCaseMockup
-                      product={{
-                        designPattern: item.designPattern,
-                        themeColor: item.themeColor,
-                        secondaryColor: item.secondaryColor,
-                        name: item.name,
-                        category: item.category,
-                      }}
-                      customText={item.customText}
-                      className="w-full h-full scale-75"
-                    />
+                  {/* Thumbnail Badge */}
+                  <div className="w-16 h-16 rounded-xl bg-gradient-to-tr from-[#FFF9EB] to-[#FFF0F5] overflow-hidden flex flex-col items-center justify-center border border-[#FFD94A]/40 shrink-0 p-2 text-center shadow-2xs">
+                    <Sparkles className="w-5 h-5 text-[#FF2E93] mb-0.5" />
+                    <span className="text-[9px] font-extrabold text-[#211D1C] uppercase tracking-wider">
+                      Gold Plated
+                    </span>
                   </div>
 
                   {/* Details */}
@@ -166,17 +158,14 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onProceedToCheckout, onE
                         </button>
                       </div>
 
-                      <p className="text-[11px] text-stone-600 font-medium mt-0.5">
-                        {item.brand} · {item.model}
-                      </p>
-                      <p className="text-[10px] text-stone-400 truncate">
-                        Type: {item.caseType}
+                      <p className="text-[11px] text-[#FF2E93] font-semibold mt-0.5">
+                        {item.category || 'Customize Your Gift'}
                       </p>
 
                       {item.customText && (
-                        <p className="text-[10px] text-[#FF2E93] font-semibold mt-0.5 flex items-center gap-1">
-                          <Sparkles className="w-2.5 h-2.5 text-[#FF2E93]" />
-                          <span>Custom Tag: {item.customText}</span>
+                        <p className="text-[10px] text-stone-600 font-medium mt-0.5 flex items-center gap-1 bg-[#FFFDF8] px-2 py-0.5 rounded-md border border-[#F3E8E2] w-fit">
+                          <Sparkles className="w-2.5 h-2.5 text-[#FFD94A]" />
+                          <span>Engraving: &ldquo;{item.customText}&rdquo;</span>
                         </p>
                       )}
                     </div>

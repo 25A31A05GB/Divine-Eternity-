@@ -12,6 +12,8 @@ import { QuickViewModal } from './components/common/QuickViewModal';
 import { CartDrawer } from './components/common/CartDrawer';
 import { SearchModal } from './components/common/SearchModal';
 import { NewsletterModal } from './components/common/NewsletterModal';
+import { FloatingWhatsApp } from './components/common/FloatingWhatsApp';
+import { ScrollToTop } from './components/common/ScrollToTop';
 import { HomePage } from './pages/HomePage';
 import { CollectionsPage } from './pages/CollectionsPage';
 import { ProductDetailPage } from './pages/ProductDetailPage';
@@ -68,7 +70,17 @@ function formatHash(view: string, params?: Record<string, string>) {
 export function AppContent() {
   const [products, setProducts] = useState<Product[]>(() => {
     try {
-      const saved = localStorage.getItem('divines_eternity_products_v1');
+      // Clear old caches
+      localStorage.removeItem('divines_eternity_products_v1');
+      localStorage.removeItem('divines_eternity_products_v2');
+      localStorage.removeItem('divines_eternity_products_v3');
+      localStorage.removeItem('divines_eternity_products_v4');
+      localStorage.removeItem('divines_hero_slides_cms_v1');
+      localStorage.removeItem('divines_hero_slides_cms_v2');
+      localStorage.removeItem('divines_hero_slides_cms_v3');
+      localStorage.removeItem('divines_hero_slides_cms_v4');
+      localStorage.removeItem('divines_hero_slides_cms_v5');
+      const saved = localStorage.getItem('divines_eternity_products_v5');
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) return parsed;
@@ -81,7 +93,7 @@ export function AppContent() {
 
   useEffect(() => {
     try {
-      localStorage.setItem('divines_eternity_products_v1', JSON.stringify(products));
+      localStorage.setItem('divines_eternity_products_v5', JSON.stringify(products));
     } catch (e) {
       console.error('Failed to persist products to storage', e);
     }
@@ -177,6 +189,7 @@ export function AppContent() {
 
   const handleUpdateProduct = (updated: Product) => {
     setProducts((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
+    setSelectedProduct((prev) => (prev?.id === updated.id ? updated : prev));
   };
 
   const handleDeleteProduct = (productId: string) => {
@@ -318,6 +331,14 @@ export function AppContent() {
       {/* Non-intrusive Welcome Newsletter Offer Popup on Homepage */}
       {currentView === 'home' && !isSecretAdminView && (
         <NewsletterModal delayMs={10000} />
+      )}
+
+      {/* Global Floating WhatsApp Quick Inquiry & Scroll to Top Buttons */}
+      {!isSecretAdminView && (
+        <>
+          <ScrollToTop />
+          <FloatingWhatsApp phoneNumber="919353652043" storeName="Divine’s Eternity" />
+        </>
       )}
     </div>
   );

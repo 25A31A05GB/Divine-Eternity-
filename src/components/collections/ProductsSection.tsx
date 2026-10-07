@@ -19,6 +19,12 @@ const PRODUCT_CATEGORIES = [
     icon: Gift,
   },
   {
+    name: 'Customize Your Gift',
+    id: 'Customize Your Gift',
+    tagline: 'Jewellery made personal, for moments that mean everything. Purely gold plated.✨💖',
+    icon: Sparkles,
+  },
+  {
     name: 'Names on Gifts',
     id: 'Names on Gifts',
     tagline: 'Make your gifts extra special with personalized names, initials, or meaningful messages.',
@@ -78,9 +84,14 @@ export const ProductsSection: React.FC<ProductsSectionProps> = ({
 
     // Filter by category
     if (selectedCategory !== 'All' && selectedCategory !== 'all') {
-      list = list.filter(
-        (p) => p.category.toLowerCase() === selectedCategory.toLowerCase()
-      );
+      list = list.filter((p) => {
+        const cat = p.category.toLowerCase();
+        const sel = selectedCategory.toLowerCase();
+        if (sel === 'customize your gift' || sel === 'personalized jewellery') {
+          return cat.includes('customize') || cat.includes('jewel');
+        }
+        return cat === sel;
+      });
     }
 
     // Filter by search query

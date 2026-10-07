@@ -9,29 +9,29 @@ export const ReviewsSection: React.FC = () => {
     {
       id: 'rev-1',
       rating: 5,
-      comment: 'Build quality is solid. The volume buttons are clicky and not hard to press like other cheap covers I bought earlier.',
-      productName: 'Gadget Destiny Cover',
+      comment: 'The gold plating on the Cursive Name Bracelet is breathtaking! You can feel the quality and attention to detail. It made my anniversary unforgettable.',
+      productName: 'Dainty Cursive Name Bracelet',
       verified: true,
     },
     {
       id: 'rev-2',
       rating: 5,
-      comment: 'Good case. The bumper corners give decent drop protection. Color matches the product pictures properly.',
-      productName: 'Gadget Destiny Cover',
+      comment: 'The Figaro ID nameplate bracelet exceeded all my expectations. Heavy solid gold plated links with crisp clean laser engraving.',
+      productName: 'Gold Figaro Chain ID Bracelet',
       verified: true,
     },
     {
       id: 'rev-3',
       rating: 5,
-      comment: 'Got my parcel today in Mumbai. Case fits my phone snugly and the edges around the screen are raised enough for safety.',
-      productName: 'Gadget Destiny Cover',
+      comment: 'The Vintage Memoir Photo Locket made my mom cry happy tears! The custom photo inside was crystal clear and the velvet packaging is so royal.',
+      productName: 'Vintage Memoir Photo Book Locket',
       verified: true,
     },
     {
       id: 'rev-4',
       rating: 5,
-      comment: 'The wristlet charm is so sturdy! I carry my phone everywhere by the bracelet and get compliments every single day.',
-      productName: 'Gadget Destiny Cover',
+      comment: 'Our custom engraved tag pendant and initial necklace are stunning. Fast delivery and sweet customer service over WhatsApp. Truly grateful!',
+      productName: 'Bespoke Engraved Tag Pendant',
       verified: true,
     },
   ];
@@ -48,18 +48,18 @@ export const ReviewsSection: React.FC = () => {
     <section className="py-14 sm:py-20 bg-[#FFFDF8]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         
-        {/* Top Summary Card matching Screenshot 7 */}
+        {/* Top Summary Card */}
         <div className="bg-white rounded-3xl border border-[#F3E8E2] p-6 sm:p-10 shadow-xs flex flex-col lg:flex-row items-center justify-between gap-8">
           
           {/* Left: Tag, Heading, and 3 Stats */}
           <div className="space-y-6 flex-1">
             <div>
-              <div className="text-[11px] font-extrabold uppercase tracking-widest text-[#E05A47] mb-1">
-                THE CUTE COVERS CLUB HAS SPOKEN
+              <div className="text-[11px] font-extrabold uppercase tracking-widest text-[#FF2E93] mb-1">
+                DIVINE’S ETERNITY CUSTOMER LOVE
               </div>
               <h2 className="font-serif-heading text-3xl sm:text-5xl font-bold text-[#211D1C]">
-                Happy phones. <br />
-                <span className="font-serif italic text-[#FF2E93] font-normal">Happier people.</span>
+                Special moments. <br />
+                <span className="font-serif italic text-[#FF2E93] font-normal">Cherished forever.</span>
               </h2>
             </div>
 

@@ -69,8 +69,10 @@ import {
   Image as ImageIcon,
   Sliders,
   Menu,
+  Upload,
+  FolderPlus,
+  SlidersHorizontal,
 } from 'lucide-react';
-import { PhoneCaseMockup } from '../utils/productVisuals';
 import confetti from 'canvas-confetti';
 
 interface AdminDashboardProps {
@@ -181,18 +183,35 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     );
   };
 
-  // Product modal state
-  const [isAddProductOpen, setIsAddProductOpen] = useState(false);
-  const [newProductName, setNewProductName] = useState('');
-  const [newProductCategory, setNewProductCategory] = useState<Product['category']>('Personalized Name Jewelry');
-  const [newProductPrice, setNewProductPrice] = useState(849);
-  const [newProductMrp, setNewProductMrp] = useState(1899);
-  const [newProductPattern, setNewProductPattern] = useState<Product['designPattern']>('jewelry_necklace');
-  const [newProductTheme, setNewProductTheme] = useState('#FAF4EC');
-  const [newProductSecondary, setNewProductSecondary] = useState('#881337');
-  const [newProductDesc, setNewProductDesc] = useState('');
-  const [newProductBadge, setNewProductBadge] = useState('Atelier Special');
-  const [newProductCustomImage, setNewProductCustomImage] = useState<string>('');
+  // Product modal state & rich editing
+  const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+
+  const [formProductName, setFormProductName] = useState('');
+  const [formProductCategory, setFormProductCategory] = useState<string>('Customize Your Gift');
+  const [formProductCustomCategory, setFormProductCustomCategory] = useState('');
+  const [formProductPrice, setFormProductPrice] = useState<number>(849);
+  const [formProductMrp, setFormProductMrp] = useState<number>(1899);
+  const [formProductDesc, setFormProductDesc] = useState('');
+  const [formProductBadge, setFormProductBadge] = useState('Purely Gold Plated ✨💖');
+  const [formProductImages, setFormProductImages] = useState<string[]>([]);
+  const [formImageUrlInput, setFormImageUrlInput] = useState('');
+  const [formFeatures, setFormFeatures] = useState<string[]>([
+    '18k Anti-tarnish Gold Plating',
+    'Water & Sweat Resistant',
+    'Hypoallergenic & Nickel-Free',
+    'Luxury Suede Gifting Box',
+  ]);
+  const [newFeatureInput, setNewFeatureInput] = useState('');
+  const [formAllowsText, setFormAllowsText] = useState(true);
+  const [formTextLabel, setFormTextLabel] = useState('Custom Name / Monogram');
+  const [formTextPlaceholder, setFormTextPlaceholder] = useState('e.g. Aurelia, Sophia, 14.02');
+  const [formAllowsGiftMessage, setFormAllowsGiftMessage] = useState(true);
+  const [formAllowsPhotoUpload, setFormAllowsPhotoUpload] = useState(false);
+
+  const [productSearchQuery, setProductSearchQuery] = useState('');
+  const [productCategoryFilter, setProductCategoryFilter] = useState('All');
+  const [productSuccessToast, setProductSuccessToast] = useState<string | null>(null);
 
   // Coupon state with persistent store synchronization
   const [coupons, setCoupons] = useState<Coupon[]>(() => {
@@ -281,42 +300,199 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     return Array.from(map.values());
   }, [orders]);
 
-  const handleCreateProduct = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newProductName.trim()) return;
+  const openAddProductModal = () => {
+    setEditingProduct(null);
+    setFormProductName('');
+    setFormProductCategory('Customize Your Gift');
+    setFormProductCustomCategory('');
+    setFormProductPrice(849);
+    setFormProductMrp(1899);
+    setFormProductDesc('Jewellery made personal, for moments that mean everything.\nPurely gold plated.✨💖');
+    setFormProductBadge('Purely Gold Plated ✨💖');
+    setFormProductImages([]);
+    setFormImageUrlInput('');
+    setFormFeatures([
+      '18k Anti-tarnish Gold Plating',
+      'Water & Sweat Resistant',
+      'Hypoallergenic & Nickel-Free',
+      'Luxury Suede Gifting Box',
+    ]);
+    setNewFeatureInput('');
+    setFormAllowsText(true);
+    setFormTextLabel('Custom Name / Monogram');
+    setFormTextPlaceholder('e.g. Aurelia, Sophia, 14.02');
+    setFormAllowsGiftMessage(true);
+    setFormAllowsPhotoUpload(false);
+    setIsProductModalOpen(true);
+  };
 
-    const newProd: Product = {
-      id: `custom-prod-${Date.now()}`,
-      slug: newProductName.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-      name: newProductName.trim(),
-      category: newProductCategory,
-      price: Number(newProductPrice),
-      mrp: Number(newProductMrp),
-      rating: 5.0,
-      reviewCount: 1,
-      description: newProductDesc || 'Handcrafted bespoke gift made with fine craftsmanship and custom engraving.',
-      features: ['18k Vermeil Laser Plating', 'Custom Engraving Included', 'Archival Box Packaging'],
-      images: newProductCustomImage ? [newProductCustomImage, 'case_front'] : ['case_front', 'case_angle'],
-      badge: newProductBadge || 'New Arrival',
-      isBestSeller: true,
-      isNew: true,
-      themeColor: newProductTheme,
-      secondaryColor: newProductSecondary,
-      designPattern: newProductPattern,
-      allowsPersonalization: true,
-      supportedBrands: ['Apple', 'Samsung', 'OnePlus', 'Google'],
-      personalizationConfig: {
-        allowsText: true,
-        textLabel: 'Custom Name / Monogram',
-        textPlaceholder: 'e.g. Aurelia, Sophia, 14.02',
-        textMaxLength: 16,
-        allowsGiftMessage: true,
-      },
+  const openEditProductModal = (prod: Product) => {
+    setEditingProduct(prod);
+    setFormProductName(prod.name);
+    setFormProductCategory(prod.category);
+    setFormProductCustomCategory('');
+    setFormProductPrice(prod.price);
+    setFormProductMrp(prod.mrp);
+    setFormProductDesc(prod.description || '');
+    setFormProductBadge(prod.badge || '');
+    setFormProductImages(prod.images && prod.images.length > 0 ? [...prod.images] : []);
+    setFormImageUrlInput('');
+    setFormFeatures(
+      prod.features && prod.features.length > 0
+        ? [...prod.features]
+        : [
+            '18k Anti-tarnish Gold Plating',
+            'Water & Sweat Resistant',
+            'Hypoallergenic & Nickel-Free',
+            'Luxury Suede Gifting Box',
+          ]
+    );
+    setNewFeatureInput('');
+    setFormAllowsText(prod.personalizationConfig?.allowsText ?? true);
+    setFormTextLabel(prod.personalizationConfig?.textLabel || 'Custom Name / Monogram');
+    setFormTextPlaceholder(prod.personalizationConfig?.textPlaceholder || 'e.g. Aurelia, Sophia, 14.02');
+    setFormAllowsGiftMessage(prod.personalizationConfig?.allowsGiftMessage ?? true);
+    setFormAllowsPhotoUpload(prod.personalizationConfig?.allowsPhoto ?? false);
+    setIsProductModalOpen(true);
+  };
+
+  const handleDuplicateProduct = (prod: Product) => {
+    const duplicated: Product = {
+      ...prod,
+      id: `jewel-copy-${Date.now()}`,
+      slug: `${prod.slug}-copy-${Math.floor(Math.random() * 1000)}`,
+      name: `${prod.name} (Copy)`,
+      badge: 'New Arrival',
     };
+    onAddProduct(duplicated);
+    setProductSuccessToast(`✓ Created duplicate of "${prod.name}"`);
+    confetti({ particleCount: 40, spread: 50, origin: { y: 0.6 } });
+    setTimeout(() => setProductSuccessToast(null), 4000);
+  };
 
-    onAddProduct(newProd);
-    setIsAddProductOpen(false);
-    confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
+  const handleImageFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    Array.from(files).forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        if (evt.target?.result && typeof evt.target.result === 'string') {
+          const resultStr = evt.target.result;
+          setFormProductImages((prev) => [...prev, resultStr]);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+    e.target.value = '';
+  };
+
+  const handleAddImageUrl = () => {
+    if (!formImageUrlInput.trim()) return;
+    setFormProductImages((prev) => [...prev, formImageUrlInput.trim()]);
+    setFormImageUrlInput('');
+  };
+
+  const handleRemoveImage = (indexToRemove: number) => {
+    setFormProductImages((prev) => prev.filter((_, idx) => idx !== indexToRemove));
+  };
+
+  const handleMakePrimaryImage = (indexToPrimary: number) => {
+    setFormProductImages((prev) => {
+      const item = prev[indexToPrimary];
+      const rest = prev.filter((_, idx) => idx !== indexToPrimary);
+      return [item, ...rest];
+    });
+  };
+
+  const handleAddFeature = () => {
+    if (!newFeatureInput.trim()) return;
+    setFormFeatures((prev) => [...prev, newFeatureInput.trim()]);
+    setNewFeatureInput('');
+  };
+
+  const handleRemoveFeature = (idxToRemove: number) => {
+    setFormFeatures((prev) => prev.filter((_, idx) => idx !== idxToRemove));
+  };
+
+  const handleSaveProduct = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formProductName.trim()) return;
+
+    const finalCategory =
+      formProductCategory === '__custom__' && formProductCustomCategory.trim()
+        ? formProductCustomCategory.trim()
+        : formProductCategory;
+
+    const finalImages =
+      formProductImages.length > 0
+        ? formProductImages
+        : ['/src/assets/images/jewel_evil_eye_1791316200000.jpg'];
+
+    if (editingProduct) {
+      const updatedProd: Product = {
+        ...editingProduct,
+        name: formProductName.trim(),
+        slug: formProductName.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+        category: finalCategory,
+        price: Number(formProductPrice),
+        mrp: Number(formProductMrp),
+        description: formProductDesc.trim(),
+        badge: formProductBadge.trim() || undefined,
+        images: finalImages,
+        features: formFeatures.filter((f) => f.trim().length > 0),
+        allowsPersonalization: formAllowsText || formAllowsGiftMessage || formAllowsPhotoUpload,
+        personalizationConfig: {
+          allowsText: formAllowsText,
+          textLabel: formTextLabel,
+          textPlaceholder: formTextPlaceholder,
+          textMaxLength: 20,
+          allowsGiftMessage: formAllowsGiftMessage,
+          allowsPhoto: formAllowsPhotoUpload,
+        },
+      };
+      onUpdateProduct(updatedProd);
+      setProductSuccessToast(`✓ Updated "${updatedProd.name}". Changes are live on the main page!`);
+    } else {
+      const newProd: Product = {
+        id: `prod-${Date.now()}`,
+        name: formProductName.trim(),
+        slug:
+          formProductName.toLowerCase().replace(/[^a-z0-9]+/g, '-') +
+          `-${Math.floor(Math.random() * 1000)}`,
+        category: finalCategory,
+        price: Number(formProductPrice),
+        mrp: Number(formProductMrp),
+        rating: 5.0,
+        reviewCount: 1,
+        description:
+          formProductDesc.trim() ||
+          'Jewellery made personal, for moments that mean everything.\nPurely gold plated.✨💖',
+        badge: formProductBadge.trim() || 'New Arrival',
+        isBestSeller: true,
+        isNew: true,
+        themeColor: '#FFFDF8',
+        secondaryColor: '#D4AF37',
+        designPattern: 'jewelry_necklace',
+        images: finalImages,
+        features: formFeatures.filter((f) => f.trim().length > 0),
+        allowsPersonalization: formAllowsText || formAllowsGiftMessage || formAllowsPhotoUpload,
+        personalizationConfig: {
+          allowsText: formAllowsText,
+          textLabel: formTextLabel,
+          textPlaceholder: formTextPlaceholder,
+          textMaxLength: 20,
+          allowsGiftMessage: formAllowsGiftMessage,
+          allowsPhoto: formAllowsPhotoUpload,
+        },
+      };
+      onAddProduct(newProd);
+      setProductSuccessToast(`✓ Added "${newProd.name}". Now live on the main page!`);
+    }
+
+    setIsProductModalOpen(false);
+    confetti({ particleCount: 60, spread: 70, origin: { y: 0.6 } });
+    setTimeout(() => setProductSuccessToast(null), 5000);
   };
 
   const handleCreateCoupon = (e: React.FormEvent) => {
@@ -991,24 +1167,101 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         {/* ============================================================ */}
         {activeTab === 'products' && (
           <div className="space-y-6 animate-in fade-in duration-150">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-[#181418] p-5 rounded-2xl border border-[#EFE7DE] dark:border-[#2C242A] shadow-xs">
+            {/* Live feedback toast */}
+            {productSuccessToast && (
+              <div className="bg-emerald-600 text-white px-5 py-3.5 rounded-2xl flex items-center justify-between shadow-xl animate-in slide-in-from-top-2 duration-200">
+                <div className="flex items-center gap-3 font-bold text-xs sm:text-sm">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-200 shrink-0" />
+                  <span>{productSuccessToast}</span>
+                </div>
+                <button
+                  onClick={() => setProductSuccessToast(null)}
+                  className="text-white/80 hover:text-white p-1"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-[#181418] p-5 sm:p-6 rounded-2xl border border-[#EFE7DE] dark:border-[#2C242A] shadow-xs">
               <div>
-                <h3 className="font-serif font-bold text-lg text-stone-900 dark:text-white flex items-center gap-2">
+                <h3 className="font-serif font-bold text-lg sm:text-xl text-stone-900 dark:text-white flex items-center gap-2">
                   <Package className="w-5 h-5 text-[#881337] dark:text-[#FB7185]" /> Product Catalog Studio
                 </h3>
-                <p className="text-xs text-stone-500">
-                  Manage live prices, custom engraving fields, stock status, and product listings
+                <p className="text-xs text-stone-500 mt-1">
+                  Upload custom product photos, edit live selling prices & MRP, update titles & descriptions. Changes update the main page in real-time.
                 </p>
               </div>
 
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => setIsAddProductOpen(true)}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-[#881337] text-white hover:bg-[#700f2d] transition-all shadow-sm"
+                  onClick={openAddProductModal}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold bg-[#881337] text-white hover:bg-[#700f2d] transition-all shadow-md active:scale-95"
                 >
                   <Plus className="w-4 h-4" />
-                  Add New Keepsake
+                  <span>Add New Product</span>
                 </button>
+              </div>
+            </div>
+
+            {/* Filter & Search Bar */}
+            <div className="bg-white dark:bg-[#181418] p-4 rounded-2xl border border-[#EFE7DE] dark:border-[#2C242A] shadow-xs space-y-3">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                <div className="relative flex-1">
+                  <Search className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    value={productSearchQuery}
+                    onChange={(e) => setProductSearchQuery(e.target.value)}
+                    placeholder="Search products by title, description, or category..."
+                    className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl pl-9 pr-4 py-2 text-xs text-stone-900 dark:text-white placeholder-stone-400 outline-none focus:border-[#881337]"
+                  />
+                  {productSearchQuery && (
+                    <button
+                      onClick={() => setProductSearchQuery('')}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+
+                <div className="text-xs font-medium text-stone-500 shrink-0">
+                  Total Products:{' '}
+                  <strong className="text-stone-900 dark:text-white font-mono font-bold">
+                    {products.length}
+                  </strong>
+                </div>
+              </div>
+
+              {/* Category Pills */}
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-[11px] scrollbar-none">
+                {[
+                  'All',
+                  'Customize Your Gift',
+                  'Personalized Jewellery',
+                  'Names on Gifts',
+                  'Customize Your Caricature or Miniature',
+                  'Personalize Your Bouquets',
+                  'Special Hampers',
+                  'Hair Accessories',
+                  'Paradise of Jewels',
+                ].map((cat) => {
+                  const isSelected = productCategoryFilter === cat;
+                  return (
+                    <button
+                      key={cat}
+                      onClick={() => setProductCategoryFilter(cat)}
+                      className={`px-3 py-1.5 rounded-lg whitespace-nowrap font-bold transition-colors ${
+                        isSelected
+                          ? 'bg-[#881337] text-white'
+                          : 'bg-[#FAF7F2] dark:bg-stone-900 text-stone-600 dark:text-stone-400 hover:bg-[#F3ECE4]'
+                      }`}
+                    >
+                      {cat}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -1018,64 +1271,162 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
                     <tr className="bg-[#FAF7F2] dark:bg-[#1C181C] text-stone-500 uppercase font-semibold text-[10px] tracking-wider border-b border-[#EFE7DE] dark:border-[#2C242A]">
-                      <th className="py-3.5 px-4">Item & Category</th>
+                      <th className="py-3.5 px-4">Product & Image</th>
+                      <th className="py-3.5 px-4">Category</th>
                       <th className="py-3.5 px-4">Price & MRP</th>
-                      <th className="py-3.5 px-4">Rating & Proof</th>
-                      <th className="py-3.5 px-4">Custom Engraving</th>
+                      <th className="py-3.5 px-4">Rating</th>
+                      <th className="py-3.5 px-4">Personalization</th>
                       <th className="py-3.5 px-4 text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#EFE7DE] dark:divide-[#282127]">
-                    {products.map((p, idx) => (
-                      <tr
-                        key={p.id}
-                        className={`hover:bg-[#FAF7F2] dark:hover:bg-stone-900/60 transition-colors ${
-                          idx % 2 === 0 ? 'bg-white dark:bg-[#181418]' : 'bg-[#FAF7F2]/40 dark:bg-stone-950/30'
-                        }`}
-                      >
-                        <td className="py-4 px-4 align-top">
-                          <div className="font-bold text-sm text-stone-900 dark:text-white">
-                            {p.name}
-                          </div>
-                          <div className="text-[11px] text-[#881337] dark:text-[#FB7185] font-semibold mt-0.5">
-                            {p.category}
-                          </div>
-                        </td>
-
-                        <td className="py-4 px-4 align-top">
-                          <div className="font-bold text-sm text-stone-900 dark:text-white tabular-nums">
-                            ₹{p.price}
-                          </div>
-                          <div className="text-[10px] text-stone-400 line-through tabular-nums">
-                            ₹{p.mrp}
-                          </div>
-                        </td>
-
-                        <td className="py-4 px-4 align-top">
-                          <div className="flex items-center gap-1 font-bold text-stone-800 dark:text-stone-200">
-                            <Star className="w-3.5 h-3.5 text-[#C5A059] fill-[#C5A059]" />
-                            <span>{p.rating}</span>
-                            <span className="text-stone-400 font-normal">({p.reviewCount} reviews)</span>
-                          </div>
-                        </td>
-
-                        <td className="py-4 px-4 align-top">
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200">
-                            <Check className="w-3 h-3" /> Laser Enabled
-                          </span>
-                        </td>
-
-                        <td className="py-4 px-4 align-top text-right">
-                          <button
-                            onClick={() => onDeleteProduct(p.id)}
-                            className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
-                            title="Delete Product"
+                    {products
+                      .filter((p) => {
+                        if (
+                          productCategoryFilter !== 'All' &&
+                          p.category.toLowerCase() !== productCategoryFilter.toLowerCase()
+                        ) {
+                          return false;
+                        }
+                        if (productSearchQuery.trim()) {
+                          const q = productSearchQuery.toLowerCase();
+                          return (
+                            p.name.toLowerCase().includes(q) ||
+                            (p.description && p.description.toLowerCase().includes(q)) ||
+                            p.category.toLowerCase().includes(q)
+                          );
+                        }
+                        return true;
+                      })
+                      .map((p, idx) => {
+                        const coverImg = p.images && p.images.length > 0 ? p.images[0] : null;
+                        const discountPct = p.mrp > p.price ? Math.round(((p.mrp - p.price) / p.mrp) * 100) : 0;
+                        return (
+                          <tr
+                            key={p.id}
+                            className={`hover:bg-[#FAF7F2] dark:hover:bg-stone-900/60 transition-colors ${
+                              idx % 2 === 0 ? 'bg-white dark:bg-[#181418]' : 'bg-[#FAF7F2]/40 dark:bg-stone-950/30'
+                            }`}
                           >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
+                            <td className="py-3.5 px-4 align-middle">
+                              <div className="flex items-center gap-3">
+                                <div className="w-14 h-14 rounded-xl overflow-hidden bg-stone-100 dark:bg-stone-800 border border-[#EFE7DE] dark:border-stone-700 shrink-0 relative group">
+                                  {coverImg ? (
+                                    <img
+                                      src={coverImg}
+                                      alt={p.name}
+                                      referrerPolicy="no-referrer"
+                                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-stone-400">
+                                      <ImageIcon className="w-5 h-5" />
+                                    </div>
+                                  )}
+                                  {p.images && p.images.length > 1 && (
+                                    <span className="absolute bottom-0.5 right-0.5 bg-black/75 text-[9px] font-bold text-white px-1 rounded">
+                                      +{p.images.length - 1}
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="min-w-0">
+                                  <div className="font-bold text-sm text-stone-900 dark:text-white truncate max-w-xs">
+                                    {p.name}
+                                  </div>
+                                  {p.badge && (
+                                    <span className="inline-block mt-0.5 px-2 py-0.5 text-[9px] font-bold uppercase rounded-md bg-[#881337]/10 text-[#881337] dark:text-[#FB7185]">
+                                      {p.badge}
+                                    </span>
+                                  )}
+                                  {p.description && (
+                                    <p className="text-[11px] text-stone-500 truncate max-w-sm mt-0.5">
+                                      {p.description}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                            </td>
+
+                            <td className="py-3.5 px-4 align-middle">
+                              <span className="inline-block px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 text-stone-700 dark:text-stone-300">
+                                {p.category}
+                              </span>
+                            </td>
+
+                            <td className="py-3.5 px-4 align-middle">
+                              <div className="flex items-baseline gap-1.5">
+                                <span className="font-bold text-sm text-stone-900 dark:text-white tabular-nums">
+                                  ₹{p.price}
+                                </span>
+                                {p.mrp > p.price && (
+                                  <span className="text-[10px] text-stone-400 line-through tabular-nums">
+                                    ₹{p.mrp}
+                                  </span>
+                                )}
+                              </div>
+                              {discountPct > 0 && (
+                                <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                                  {discountPct}% OFF
+                                </span>
+                              )}
+                            </td>
+
+                            <td className="py-3.5 px-4 align-middle">
+                              <div className="flex items-center gap-1 font-bold text-stone-800 dark:text-stone-200">
+                                <Star className="w-3.5 h-3.5 text-[#C5A059] fill-[#C5A059]" />
+                                <span>{p.rating}</span>
+                                <span className="text-stone-400 font-normal">({p.reviewCount})</span>
+                              </div>
+                            </td>
+
+                            <td className="py-3.5 px-4 align-middle">
+                              <div className="flex flex-col gap-1">
+                                {p.personalizationConfig?.allowsText !== false && (
+                                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 dark:text-emerald-300">
+                                    <Check className="w-3 h-3" /> Laser Engraving
+                                  </span>
+                                )}
+                                {p.personalizationConfig?.allowsGiftMessage && (
+                                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-purple-700 dark:text-purple-300">
+                                    <Check className="w-3 h-3" /> Gift Card
+                                  </span>
+                                )}
+                              </div>
+                            </td>
+
+                            <td className="py-3.5 px-4 align-middle text-right">
+                              <div className="flex items-center justify-end gap-1.5">
+                                <button
+                                  onClick={() => openEditProductModal(p)}
+                                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-stone-100 dark:bg-stone-800 hover:bg-[#881337] hover:text-white text-stone-700 dark:text-stone-300 font-bold transition-all shadow-2xs"
+                                  title="Edit Product Details & Images"
+                                >
+                                  <Edit3 className="w-3.5 h-3.5" />
+                                  <span>Edit</span>
+                                </button>
+                                <button
+                                  onClick={() => handleDuplicateProduct(p)}
+                                  className="p-1.5 rounded-lg text-stone-500 hover:bg-stone-200 dark:hover:bg-stone-800 transition-colors"
+                                  title="Duplicate / Copy Product"
+                                >
+                                  <Copy className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    if (confirm(`Are you sure you want to delete "${p.name}"?`)) {
+                                      onDeleteProduct(p.id);
+                                    }
+                                  }}
+                                  className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
+                                  title="Delete Product"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
                   </tbody>
                 </table>
               </div>
@@ -1645,144 +1996,358 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       )}
 
       {/* ============================================================ */}
-      {/* MODAL: ADD NEW PRODUCT */}
+      {/* MODAL: ADD / EDIT PRODUCT */}
       {/* ============================================================ */}
-      {isAddProductOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#181418] w-full max-w-xl rounded-3xl border border-[#EFE7DE] dark:border-[#2C242A] shadow-2xl p-6 sm:p-8 space-y-5 animate-in fade-in duration-150">
-            <div className="flex items-center justify-between pb-3 border-b border-[#EFE7DE] dark:border-[#282127]">
-              <h3 className="font-serif font-bold text-lg text-stone-900 dark:text-white">
-                Add New Personalized Keepsake
-              </h3>
+      {isProductModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-white dark:bg-[#181418] w-full max-w-2xl rounded-3xl border border-[#EFE7DE] dark:border-[#2C242A] shadow-2xl p-5 sm:p-7 space-y-5 animate-in fade-in duration-150 my-auto max-h-[92vh] flex flex-col">
+            <div className="flex items-center justify-between pb-3 border-b border-[#EFE7DE] dark:border-[#282127] shrink-0">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-[#881337]/10 text-[#881337] dark:text-[#FB7185] flex items-center justify-center">
+                  <Package className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="font-serif font-bold text-base sm:text-lg text-stone-900 dark:text-white">
+                    {editingProduct ? `Edit Product: ${editingProduct.name}` : 'Add New Personalized Keepsake'}
+                  </h3>
+                  <p className="text-[11px] text-stone-500">
+                    {editingProduct
+                      ? 'Update pricing, upload new photos, and edit description.'
+                      : 'Create a new product listing. Changes are live on the main page immediately.'}
+                  </p>
+                </div>
+              </div>
               <button
-                onClick={() => setIsAddProductOpen(false)}
-                className="p-1 rounded-full text-stone-400 hover:text-stone-600"
+                onClick={() => setIsProductModalOpen(false)}
+                className="p-1.5 rounded-full text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleCreateProduct} className="space-y-4 text-xs">
+            <form onSubmit={handleSaveProduct} className="space-y-4 text-xs overflow-y-auto pr-1 flex-1">
+              {/* Product Name */}
               <div className="space-y-1">
-                <label className="font-bold text-stone-700 dark:text-stone-300">Product Name *</label>
+                <label className="font-bold text-stone-700 dark:text-stone-300 flex items-center justify-between">
+                  <span>Product Title / Name *</span>
+                  <span className="text-[10px] text-stone-400 font-normal">Displayed prominently across store</span>
+                </label>
                 <input
                   type="text"
                   required
-                  value={newProductName}
-                  onChange={(e) => setNewProductName(e.target.value)}
-                  placeholder="e.g. 18k Rose Gold Handwriting Script Locket"
-                  className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 text-stone-900 dark:text-white font-semibold"
+                  value={formProductName}
+                  onChange={(e) => setFormProductName(e.target.value)}
+                  placeholder="e.g. 18k Gold Plated Personalized Evil Eye Initial Pendant Necklace"
+                  className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3.5 py-2.5 text-stone-900 dark:text-white font-semibold text-sm outline-none focus:border-[#881337]"
                 />
               </div>
 
+              {/* Category & Badge */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <label className="font-bold text-stone-700 dark:text-stone-300">Category *</label>
                   <select
-                    value={newProductCategory}
-                    onChange={(e) => setNewProductCategory(e.target.value as any)}
-                    className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 text-stone-900 dark:text-white font-semibold"
+                    value={formProductCategory}
+                    onChange={(e) => setFormProductCategory(e.target.value)}
+                    className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 text-stone-900 dark:text-white font-semibold outline-none focus:border-[#881337]"
                   >
-                    <option value="Personalized Name Jewelry">Personalized Name Jewelry</option>
-                    <option value="Preserved Eternal Roses & Dome Displays">Preserved Eternal Roses & Dome Displays</option>
-                    <option value="Custom Acrylic Song Plaques & Photo Frames">Custom Acrylic Song Plaques & Photo Frames</option>
-                    <option value="Memory Photo Lamps & Crystal Cubes">Memory Photo Lamps & Crystal Cubes</option>
-                    <option value="Engraved Wooden Gift Boxes & Keepsakes">Engraved Wooden Gift Boxes & Keepsakes</option>
-                    <option value="Romantic Couple Hampers & Scented Candle Sets">Romantic Couple Hampers & Scented Candle Sets</option>
-                    <option value="Personalized Phone Cases & Pocket Accessories">Personalized Phone Cases & Pocket Accessories</option>
+                    <option value="Customize Your Gift">Customize Your Gift</option>
+                    <option value="Personalized Jewellery">Personalized Jewellery</option>
+                    <option value="Names on Gifts">Names on Gifts</option>
+                    <option value="Customize Your Caricature or Miniature">Customize Your Caricature or Miniature</option>
+                    <option value="Personalize Your Bouquets">Personalize Your Bouquets</option>
+                    <option value="Special Hampers">Special Hampers</option>
+                    <option value="Hair Accessories">Hair Accessories</option>
+                    <option value="Paradise of Jewels">Paradise of Jewels</option>
+                    <option value="__custom__">+ Add Custom Category...</option>
                   </select>
+                  {formProductCategory === '__custom__' && (
+                    <input
+                      type="text"
+                      required
+                      value={formProductCustomCategory}
+                      onChange={(e) => setFormProductCustomCategory(e.target.value)}
+                      placeholder="Type new category name..."
+                      className="w-full mt-1.5 bg-[#FAF7F2] dark:bg-stone-900 border border-[#881337] rounded-xl px-3 py-2 text-stone-900 dark:text-white text-xs font-semibold"
+                    />
+                  )}
                 </div>
 
                 <div className="space-y-1">
                   <label className="font-bold text-stone-700 dark:text-stone-300">Promotional Badge</label>
                   <input
                     type="text"
-                    value={newProductBadge}
-                    onChange={(e) => setNewProductBadge(e.target.value)}
-                    placeholder="e.g. Atelier Edition, Best Seller"
-                    className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 text-stone-900 dark:text-white"
+                    value={formProductBadge}
+                    onChange={(e) => setFormProductBadge(e.target.value)}
+                    placeholder="e.g. Purely Gold Plated ✨💖, Best Seller, New Arrival"
+                    className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 text-stone-900 dark:text-white outline-none focus:border-[#881337]"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Price & MRP */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-[#FAF7F2] dark:bg-stone-900/50 p-3.5 rounded-2xl border border-[#EFE7DE] dark:border-stone-800">
                 <div className="space-y-1">
-                  <label className="font-bold text-stone-700 dark:text-stone-300">Selling Price (₹) *</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 flex items-center justify-between">
+                    <span>Selling Price (₹) *</span>
+                    <span className="text-[10px] text-emerald-600 font-bold">Customer pays this</span>
+                  </label>
                   <input
                     type="number"
                     required
-                    value={newProductPrice}
-                    onChange={(e) => setNewProductPrice(Number(e.target.value))}
-                    className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 font-mono text-stone-900 dark:text-white"
+                    min={1}
+                    value={formProductPrice}
+                    onChange={(e) => setFormProductPrice(Number(e.target.value))}
+                    className="w-full bg-white dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 font-mono font-bold text-stone-900 dark:text-white text-sm outline-none focus:border-[#881337]"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="font-bold text-stone-700 dark:text-stone-300">MRP / List Price (₹) *</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 flex items-center justify-between">
+                    <span>Original MRP (₹) *</span>
+                    {formProductMrp > formProductPrice && (
+                      <span className="text-[10px] font-bold text-[#881337] dark:text-[#FB7185]">
+                        {Math.round(((formProductMrp - formProductPrice) / formProductMrp) * 100)}% Discount
+                      </span>
+                    )}
+                  </label>
                   <input
                     type="number"
                     required
-                    value={newProductMrp}
-                    onChange={(e) => setNewProductMrp(Number(e.target.value))}
-                    className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 font-mono text-stone-900 dark:text-white"
+                    min={1}
+                    value={formProductMrp}
+                    onChange={(e) => setFormProductMrp(Number(e.target.value))}
+                    className="w-full bg-white dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 font-mono text-stone-900 dark:text-white text-sm outline-none focus:border-[#881337]"
                   />
                 </div>
               </div>
 
-              <div className="space-y-1">
-                <label className="font-bold text-stone-700 dark:text-stone-300">Product Image File or URL (optional)</label>
+              {/* Product Images Upload & Management */}
+              <div className="space-y-2 bg-[#FFFDF8] dark:bg-[#1E191E] p-4 rounded-2xl border-2 border-dashed border-[#E8DDD5] dark:border-[#382E36]">
+                <div className="flex items-center justify-between">
+                  <label className="font-bold text-stone-800 dark:text-stone-200 flex items-center gap-1.5">
+                    <ImageIcon className="w-4 h-4 text-[#881337] dark:text-[#FB7185]" />
+                    <span>Product Images & Photos</span>
+                  </label>
+                  <span className="text-[10px] text-stone-500">
+                    {formProductImages.length} image{formProductImages.length === 1 ? '' : 's'} attached
+                  </span>
+                </div>
+
+                {/* Upload Buttons */}
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                  <input
-                    type="text"
-                    value={newProductCustomImage}
-                    onChange={(e) => setNewProductCustomImage(e.target.value)}
-                    placeholder="Paste image URL or choose photo from device..."
-                    className="flex-1 bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 text-stone-900 dark:text-white"
-                  />
-                  <label className="px-3 py-2 rounded-xl bg-[#211D1C] hover:bg-black text-white text-xs font-bold shrink-0 cursor-pointer text-center flex items-center justify-center gap-1.5 shadow-xs transition-colors">
-                    <span>📁 Upload Image</span>
+                  <label className="px-4 py-2.5 rounded-xl bg-[#881337] hover:bg-[#700f2d] text-white text-xs font-bold cursor-pointer text-center flex items-center justify-center gap-2 shadow-xs transition-colors shrink-0">
+                    <Upload className="w-4 h-4" />
+                    <span>📁 Upload from Computer / Phone</span>
                     <input
                       type="file"
+                      multiple
                       accept="image/*"
                       className="hidden"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          const reader = new FileReader();
-                          reader.onload = (evt) => {
-                            if (evt.target?.result) {
-                              setNewProductCustomImage(evt.target.result as string);
-                            }
-                          };
-                          reader.readAsDataURL(file);
-                        }
-                      }}
+                      onChange={handleImageFileUpload}
                     />
                   </label>
+
+                  <div className="flex items-center gap-1.5 flex-1">
+                    <input
+                      type="text"
+                      value={formImageUrlInput}
+                      onChange={(e) => setFormImageUrlInput(e.target.value)}
+                      placeholder="Or paste web image link (URL / path)..."
+                      className="flex-1 bg-white dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 text-stone-900 dark:text-white text-xs"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleAddImageUrl}
+                      className="px-3 py-2 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-200 font-bold shrink-0 text-xs"
+                    >
+                      Add URL
+                    </button>
+                  </div>
                 </div>
-                {newProductCustomImage && (
-                  <div className="mt-1 flex items-center gap-2">
-                    <div className="w-12 h-12 rounded-lg overflow-hidden border border-[#EFE7DE] bg-stone-100 shrink-0">
-                      <img src={newProductCustomImage} alt="Preview" className="w-full h-full object-cover" />
-                    </div>
-                    <span className="text-[10px] text-emerald-600 font-bold">✓ Product Image Uploaded</span>
+
+                {/* Attached Images Grid */}
+                {formProductImages.length > 0 ? (
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-2">
+                    {formProductImages.map((imgSrc, imgIdx) => (
+                      <div
+                        key={imgIdx}
+                        className="relative group rounded-xl overflow-hidden border border-[#EFE7DE] dark:border-stone-700 bg-stone-100 dark:bg-stone-900 aspect-square"
+                      >
+                        <img
+                          src={imgSrc}
+                          alt={`Product photo ${imgIdx + 1}`}
+                          referrerPolicy="no-referrer"
+                          className="w-full h-full object-cover"
+                        />
+                        {imgIdx === 0 ? (
+                          <span className="absolute top-1.5 left-1.5 bg-[#881337] text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow-sm">
+                            ★ Cover Photo
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleMakePrimaryImage(imgIdx)}
+                            className="absolute top-1.5 left-1.5 bg-black/70 hover:bg-[#881337] text-white text-[9px] font-bold px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+                          >
+                            Set Cover
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveImage(imgIdx)}
+                          className="absolute top-1.5 right-1.5 bg-rose-600 hover:bg-rose-700 text-white p-1 rounded-full opacity-90 group-hover:opacity-100 transition-opacity shadow-sm"
+                          title="Remove Photo"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="py-4 text-center text-stone-400 text-xs bg-[#FAF7F2] dark:bg-stone-900/40 rounded-xl border border-dashed border-[#EFE7DE] dark:border-stone-800">
+                    No custom images added yet. Click &ldquo;Upload from Computer / Phone&rdquo; above to add your photos.
                   </div>
                 )}
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#EFE7DE] dark:border-[#282127]">
+              {/* Description & Story */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="font-bold text-stone-700 dark:text-stone-300">
+                    Product Description & Note *
+                  </label>
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setFormProductDesc(
+                          'Jewellery made personal, for moments that mean everything.\nPurely gold plated.✨💖'
+                        )
+                      }
+                      className="text-[10px] text-[#881337] dark:text-[#FB7185] hover:underline font-semibold"
+                    >
+                      Use Standard Signature Note
+                    </button>
+                  </div>
+                </div>
+                <textarea
+                  rows={3}
+                  required
+                  value={formProductDesc}
+                  onChange={(e) => setFormProductDesc(e.target.value)}
+                  placeholder="Enter detailed description, styling ideas, materials, and occasion suggestions..."
+                  className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 text-stone-900 dark:text-white outline-none focus:border-[#881337]"
+                />
+              </div>
+
+              {/* Specifications / Highlights */}
+              <div className="space-y-2">
+                <label className="font-bold text-stone-700 dark:text-stone-300">
+                  Key Specifications & Features
+                </label>
+                <div className="space-y-1.5">
+                  {formFeatures.map((feat, fIdx) => (
+                    <div key={fIdx} className="flex items-center gap-2">
+                      <span className="text-stone-400 text-xs">✦</span>
+                      <input
+                        type="text"
+                        value={feat}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setFormFeatures((prev) =>
+                            prev.map((item, idx) => (idx === fIdx ? val : item))
+                          );
+                        }}
+                        className="flex-1 bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-lg px-2.5 py-1.5 text-xs text-stone-900 dark:text-white"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveFeature(fIdx)}
+                        className="text-stone-400 hover:text-rose-500 p-1"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                  <div className="flex items-center gap-2 pt-1">
+                    <input
+                      type="text"
+                      value={newFeatureInput}
+                      onChange={(e) => setNewFeatureInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleAddFeature();
+                        }
+                      }}
+                      placeholder="Add another highlight (e.g. Hypoallergenic, Water Resistant)..."
+                      className="flex-1 bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-lg px-2.5 py-1.5 text-xs text-stone-900 dark:text-white"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleAddFeature}
+                      className="px-3 py-1.5 rounded-lg bg-stone-200 dark:bg-stone-800 text-stone-700 dark:text-stone-300 font-bold text-xs hover:bg-stone-300"
+                    >
+                      + Add
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Personalization Options */}
+              <div className="space-y-2 pt-2 border-t border-[#EFE7DE] dark:border-[#282127]">
+                <label className="font-bold text-stone-700 dark:text-stone-300 block">
+                  Customer Personalization Controls
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                  <label className="flex items-center gap-2 p-2.5 rounded-xl border border-[#EFE7DE] dark:border-stone-800 bg-[#FAF7F2] dark:bg-stone-900/40 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formAllowsText}
+                      onChange={(e) => setFormAllowsText(e.target.checked)}
+                      className="rounded text-[#881337] focus:ring-[#881337]"
+                    />
+                    <div>
+                      <span className="font-bold text-stone-800 dark:text-stone-200 block">
+                        Custom Text / Laser Engraving
+                      </span>
+                      <span className="text-[10px] text-stone-500">Allows name/initials input</span>
+                    </div>
+                  </label>
+
+                  <label className="flex items-center gap-2 p-2.5 rounded-xl border border-[#EFE7DE] dark:border-stone-800 bg-[#FAF7F2] dark:bg-stone-900/40 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formAllowsGiftMessage}
+                      onChange={(e) => setFormAllowsGiftMessage(e.target.checked)}
+                      className="rounded text-[#881337] focus:ring-[#881337]"
+                    />
+                    <div>
+                      <span className="font-bold text-stone-800 dark:text-stone-200 block">
+                        Complimentary Gift Card Message
+                      </span>
+                      <span className="text-[10px] text-stone-500">Include wax-sealed note</span>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#EFE7DE] dark:border-[#282127] shrink-0">
                 <button
                   type="button"
-                  onClick={() => setIsAddProductOpen(false)}
-                  className="px-4 py-2 rounded-xl font-bold bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300"
+                  onClick={() => setIsProductModalOpen(false)}
+                  className="px-4 py-2.5 rounded-xl font-bold bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-200 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 rounded-xl font-bold bg-[#881337] text-white hover:bg-[#700f2d] transition-colors shadow-sm"
+                  className="px-6 py-2.5 rounded-xl font-bold bg-[#881337] text-white hover:bg-[#700f2d] transition-all shadow-md active:scale-95 flex items-center gap-2"
                 >
-                  Create Product
+                  <Sparkles className="w-4 h-4" />
+                  <span>{editingProduct ? 'Save & Publish Changes' : 'Create Product & Publish'}</span>
                 </button>
               </div>
             </form>

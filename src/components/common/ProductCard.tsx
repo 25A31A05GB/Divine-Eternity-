@@ -33,16 +33,27 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView, 
     >
       {/* Top Media Area with Product Mockup & Editorial Badges */}
       <div className="relative aspect-[4/5] w-full bg-[#FFFDF8] overflow-hidden cursor-pointer border-b border-[#F8ECE5]">
-        {/* Visual Mockup */}
+        {/* Visual Media */}
         <div
           onClick={() => (onOpenDetail ? onOpenDetail(product) : onQuickView(product))}
-          className="w-full h-full p-2 flex items-center justify-center"
+          className="w-full h-full flex items-center justify-center overflow-hidden"
         >
-          <PhoneCaseMockup
-            product={product}
-            isHovered={isHovered}
-            className="w-full h-full transform transition-transform duration-500 group-hover:scale-105"
-          />
+          {product.images && product.images.length > 0 ? (
+            <img
+              src={product.images[0]}
+              alt={product.name}
+              referrerPolicy="no-referrer"
+              className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-108"
+            />
+          ) : (
+            <div className="p-2 w-full h-full">
+              <PhoneCaseMockup
+                product={product}
+                isHovered={isHovered}
+                className="w-full h-full transform transition-transform duration-500 group-hover:scale-105"
+              />
+            </div>
+          )}
         </div>
 
         {/* Editorial Text Badge */}
