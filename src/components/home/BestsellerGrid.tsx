@@ -55,7 +55,7 @@ export const BestsellerGrid: React.FC<BestsellerGridProps> = ({
               Meet the <span className="font-serif italic text-[#FF2E93] font-normal">Best sellers</span>
             </h2>
             <p className="text-xs sm:text-sm text-stone-600 mt-1">
-              Over 40,000+ happy phones styled this month. Buy 3 Pay For 2 on all bestsellers!
+              Over 40,000+ cherished memories handcrafted. Buy 3 Pay For 2 on all bestsellers!
             </p>
           </div>
 

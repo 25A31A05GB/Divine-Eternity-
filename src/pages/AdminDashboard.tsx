@@ -201,6 +201,145 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [newProductBadge, setNewProductBadge] = useState('Atelier Special');
   const [newProductCustomImage, setNewProductCustomImage] = useState<string>('');
 
+  // Quick Paste Raw Text / JSON Auto-Filler State
+  const [quickPasteText, setQuickPasteText] = useState('');
+  const [showQuickPasteBox, setShowQuickPasteBox] = useState(false);
+
+  // Smart Parser for Pasted Product Text (JSON, WhatsApp, Key-Value, Supplier List)
+  const handleApplyQuickPasteText = (rawInput?: string) => {
+    const textToParse = (rawInput !== undefined ? rawInput : quickPasteText).trim();
+    if (!textToParse) {
+      setBulkFeedbackToast('⚠️ Paste some text or product details first.');
+      setTimeout(() => setBulkFeedbackToast(null), 3000);
+      return;
+    }
+
+    try {
+      // 1. Try parsing JSON format
+      if (textToParse.startsWith('{') && textToParse.endsWith('}')) {
+        const json = JSON.parse(textToParse);
+        if (json.name || json.title) setNewProductName(json.name || json.title);
+        if (json.price) setNewProductPrice(Number(json.price));
+        if (json.mrp) setNewProductMrp(Number(json.mrp || json.price * 2));
+        if (json.category) setNewProductCategory(json.category);
+        if (json.description || json.desc) setNewProductDesc(json.description || json.desc);
+        if (json.badge) setNewProductBadge(json.badge);
+        if (json.image || json.imageUrl || (Array.isArray(json.images) && json.images[0])) {
+          setNewProductCustomImage(json.image || json.imageUrl || json.images[0]);
+        }
+        setBulkFeedbackToast('✨ Auto-filled product details from JSON data!');
+        setTimeout(() => setBulkFeedbackToast(null), 3000);
+        return;
+      }
+
+      // 2. Parse Key-Value or Multi-Line Text
+      const lines = textToParse.split('\n').map((l) => l.trim()).filter(Boolean);
+      let parsedName = '';
+      let parsedPrice = 0;
+      let parsedMrp = 0;
+      let parsedCategory: Product['category'] | '' = '';
+      let parsedBadge = '';
+      let parsedDesc = '';
+      let parsedImage = '';
+
+      lines.forEach((line) => {
+        const lower = line.toLowerCase();
+
+        // Image link detection
+        if ((lower.startsWith('http://') || lower.startsWith('https://') || lower.startsWith('data:image')) && !parsedImage) {
+          parsedImage = line.trim();
+          return;
+        }
+
+        // Key: Value matching
+        if (lower.startsWith('name:') || lower.startsWith('title:') || lower.startsWith('product:')) {
+          parsedName = line.replace(/^(name|title|product)\s*:\s*/i, '').trim();
+        } else if (lower.startsWith('price:') || lower.startsWith('selling price:') || lower.startsWith('offer price:')) {
+          const numMatch = line.match(/\d+[\d,]*/);
+          if (numMatch) parsedPrice = Number(numMatch[0].replace(/,/g, ''));
+        } else if (lower.startsWith('mrp:') || lower.startsWith('original price:') || lower.startsWith('list price:')) {
+          const numMatch = line.match(/\d+[\d,]*/);
+          if (numMatch) parsedMrp = Number(numMatch[0].replace(/,/g, ''));
+        } else if (lower.startsWith('category:') || lower.startsWith('collection:')) {
+          const rawCat = line.replace(/^(category|collection)\s*:\s*/i, '').trim();
+          const match = SEVEN_COLLECTIONS.find((c) => c.toLowerCase().includes(rawCat.toLowerCase()) || rawCat.toLowerCase().includes(c.toLowerCase()));
+          if (match) parsedCategory = match;
+          else parsedCategory = rawCat as any;
+        } else if (lower.startsWith('badge:') || lower.startsWith('tag:')) {
+          parsedBadge = line.replace(/^(badge|tag)\s*:\s*/i, '').trim();
+        } else if (lower.startsWith('desc:') || lower.startsWith('description:')) {
+          parsedDesc = line.replace(/^(desc|description)\s*:\s*/i, '').trim();
+        } else if (lower.startsWith('image:') || lower.startsWith('photo:')) {
+          parsedImage = line.replace(/^(image|photo)\s*:\s*/i, '').trim();
+        } else {
+          // If no prefix, inspect line contents
+          if (!parsedName && line.length > 3 && !line.match(/^₹?\s*\d+$/)) {
+            parsedName = line;
+          } else if (!parsedPrice && line.match(/^₹?\s*\d+/)) {
+            const numMatch = line.match(/\d+/);
+            if (numMatch) parsedPrice = Number(numMatch[0]);
+          } else if (!parsedDesc && line.length > 15) {
+            parsedDesc = line;
+          }
+        }
+      });
+
+      if (parsedName) setNewProductName(parsedName);
+      if (parsedPrice > 0) {
+        setNewProductPrice(parsedPrice);
+        if (!parsedMrp) setNewProductMrp(Math.round(parsedPrice * 1.8));
+      }
+      if (parsedMrp > 0) setNewProductMrp(parsedMrp);
+      if (parsedCategory) setNewProductCategory(parsedCategory);
+      if (parsedBadge) setNewProductBadge(parsedBadge);
+      if (parsedDesc) setNewProductDesc(parsedDesc);
+      if (parsedImage) setNewProductCustomImage(parsedImage);
+
+      setBulkFeedbackToast('✨ Product fields auto-filled from pasted details!');
+      setTimeout(() => setBulkFeedbackToast(null), 3500);
+    } catch (err) {
+      console.error('Quick paste parsing error', err);
+      setBulkFeedbackToast('⚠️ Could not parse text automatically. Please check values.');
+      setTimeout(() => setBulkFeedbackToast(null), 3000);
+    }
+  };
+
+  // Direct 1-Click Clipboard Text Auto-Fill Helper
+  const handlePasteDetailsFromClipboard = async () => {
+    try {
+      if (navigator.clipboard && navigator.clipboard.readText) {
+        const text = await navigator.clipboard.readText();
+        if (text) {
+          setQuickPasteText(text);
+          handleApplyQuickPasteText(text);
+          return;
+        }
+      }
+      setBulkFeedbackToast('ℹ️ Copy product text or JSON first, then click Paste.');
+      setTimeout(() => setBulkFeedbackToast(null), 3000);
+    } catch {
+      setBulkFeedbackToast('ℹ️ Paste your text directly into the Quick Paste box below.');
+      setTimeout(() => setBulkFeedbackToast(null), 3000);
+    }
+  };
+
+  // Duplicate / Clone Existing Product Helper
+  const handleDuplicateProduct = (p: Product) => {
+    setNewProductName(`${p.name} (Copy)`);
+    setNewProductCategory(p.category);
+    setNewProductPrice(p.price);
+    setNewProductMrp(p.mrp);
+    setNewProductDesc(p.description || '');
+    setNewProductBadge(p.badge || 'Atelier Special');
+    setNewProductCustomImage(p.images?.[0] || '');
+    setNewProductPattern(p.designPattern || 'jewelry_necklace');
+    setNewProductTheme(p.themeColor || '#FAF4EC');
+    setNewProductSecondary(p.secondaryColor || '#881337');
+    setIsAddProductOpen(true);
+    setBulkFeedbackToast(`📋 Cloned "${p.name}". Edit details & click Create to publish!`);
+    setTimeout(() => setBulkFeedbackToast(null), 3500);
+  };
+
   // Single Product Edit State
   const [isEditProductOpen, setIsEditProductOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -1368,7 +1507,22 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 </button>
 
                 <button
-                  onClick={() => setIsAddProductOpen(true)}
+                  onClick={() => {
+                    setShowQuickPasteBox(true);
+                    setIsAddProductOpen(true);
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold bg-[#FFF0F5] hover:bg-[#ffe4ee] text-[#FF2E93] border border-[#FF2E93]/40 transition-all shadow-2xs cursor-pointer"
+                  title="Quickly Paste Product text or JSON to auto-fill all fields"
+                >
+                  <Sparkles className="w-4 h-4 text-[#FF2E93]" />
+                  <span>✨ Quick Paste & Add</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setShowQuickPasteBox(false);
+                    setIsAddProductOpen(true);
+                  }}
                   className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-[#881337] dark:bg-[#FF2E93] text-white hover:bg-[#700f2d] dark:hover:bg-[#e02680] transition-all shadow-xs cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
@@ -1656,6 +1810,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
                             {/* Actions */}
                             <td className="py-4 px-4 align-top text-right space-x-1">
+                              <button
+                                onClick={() => handleDuplicateProduct(p)}
+                                className="p-1.5 rounded-lg text-stone-600 hover:text-[#FF2E93] hover:bg-[#FFF0F5] transition-colors cursor-pointer inline-flex items-center gap-1 font-bold text-xs"
+                                title="Duplicate / Copy Product to create new variant"
+                              >
+                                <Copy className="w-3.5 h-3.5 text-[#D97706]" />
+                                <span className="hidden sm:inline text-[11px]">Copy</span>
+                              </button>
                               <button
                                 onClick={() => handleOpenEditProduct(p)}
                                 className="p-1.5 rounded-lg text-stone-700 hover:text-[#FF2E93] hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer inline-flex items-center gap-1 font-bold text-xs"
@@ -2314,43 +2476,116 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       )}
 
       {/* ============================================================ */}
-      {/* MODAL: ADD NEW PRODUCT */}
+      {/* MODAL: ADD NEW PRODUCT (WITH SMART QUICK-PASTE & CLIPBOARD AUTO-FILL) */}
       {/* ============================================================ */}
       {isAddProductOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#181418] w-full max-w-xl rounded-3xl border border-[#EFE7DE] dark:border-[#2C242A] shadow-2xl p-6 sm:p-8 space-y-5 animate-in fade-in duration-150">
-            <div className="flex items-center justify-between pb-3 border-b border-[#EFE7DE] dark:border-[#282127]">
-              <h3 className="font-serif font-bold text-lg text-stone-900 dark:text-white">
-                Add New Personalized Keepsake
-              </h3>
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
+          <div className="bg-[#FFFDF8] w-full max-w-xl rounded-3xl border border-[#F3E8E2] shadow-2xl p-6 sm:p-8 space-y-4 animate-in fade-in duration-150 max-h-[92vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-[#F3E8E2]">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-[#FF2E93] text-white flex items-center justify-center shadow-xs font-serif-heading font-black text-sm">
+                  DE
+                </div>
+                <div>
+                  <h3 className="font-serif-heading font-bold text-lg text-[#211D1C]">
+                    Add New Product
+                  </h3>
+                  <p className="text-[11px] text-[#FF2E93] font-semibold">
+                    Instant Real-Time Sync to Storefront & Home Page
+                  </p>
+                </div>
+              </div>
               <button
                 onClick={() => setIsAddProductOpen(false)}
-                className="p-1 rounded-full text-stone-400 hover:text-stone-600"
+                className="p-1.5 rounded-full text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
+            {/* Smart Quick Paste & Auto-Fill Accelerator */}
+            <div className="p-3.5 rounded-2xl bg-[#FFF9EB] border border-[#F5E6CE] space-y-2.5 shadow-2xs">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-[#211D1C]">
+                  <Sparkles className="w-4 h-4 text-[#FF2E93]" />
+                  <span>✨ Quick Paste Product Data & Auto-Fill</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowQuickPasteBox(!showQuickPasteBox)}
+                  className="text-[11px] font-bold text-[#FF2E93] hover:underline cursor-pointer"
+                >
+                  {showQuickPasteBox ? 'Hide Box ▲' : 'Open Paste Box ▼'}
+                </button>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handlePasteDetailsFromClipboard}
+                  className="px-3 py-1.5 rounded-xl bg-[#FF2E93] hover:bg-[#e02680] text-white font-bold text-xs flex items-center gap-1.5 shadow-xs cursor-pointer transition-all active:scale-95"
+                  title="Reads text or JSON from your clipboard and fills all fields automatically"
+                >
+                  <Clipboard className="w-3.5 h-3.5" />
+                  <span>📋 Paste & Auto-Fill from Clipboard</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const sample = `Name: 18k Rose Gold Micro-Engraved Name Pendant\nPrice: 1299\nMRP: 2499\nCategory: Personalized Name Jewelry\nBadge: Best Seller\nDescription: Handcrafted 18k gold vermeil necklace with micro-laser precision engraving.\nImage: https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=800&q=80`;
+                    setQuickPasteText(sample);
+                    setShowQuickPasteBox(true);
+                    handleApplyQuickPasteText(sample);
+                  }}
+                  className="px-2.5 py-1.5 rounded-xl bg-white border border-[#F5E6CE] text-[#211D1C] hover:border-[#FF2E93] font-bold text-[11px] transition-all cursor-pointer shadow-2xs"
+                >
+                  Insert Sample Template
+                </button>
+              </div>
+
+              {showQuickPasteBox && (
+                <div className="space-y-2 pt-1 animate-in fade-in duration-150">
+                  <textarea
+                    rows={4}
+                    value={quickPasteText}
+                    onChange={(e) => setQuickPasteText(e.target.value)}
+                    placeholder="Paste product info from WhatsApp, Excel, supplier sheets, or JSON here...&#10;e.g.&#10;Name: Preserved Rose Dome&#10;Price: 1499&#10;MRP: 2999&#10;Category: Preserved Eternal Roses & Dome Displays&#10;Badge: Trending&#10;Description: Real preserved rose in ambient glass bell jar.&#10;Image: https://images.unsplash.com/..."
+                    className="w-full bg-white border border-[#F5E6CE] focus:border-[#FF2E93] rounded-xl p-2.5 text-xs text-[#211D1C] placeholder:text-stone-400 font-mono outline-none shadow-inner"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleApplyQuickPasteText()}
+                    className="w-full py-2 rounded-xl bg-[#211D1C] hover:bg-black text-[#FFD94A] font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs"
+                  >
+                    <Check className="w-3.5 h-3.5 text-[#FFD94A]" />
+                    <span>Apply & Auto-Fill Fields</span>
+                  </button>
+                </div>
+              )}
+            </div>
+
             <form onSubmit={handleCreateProduct} className="space-y-4 text-xs">
               <div className="space-y-1">
-                <label className="font-bold text-stone-700 dark:text-stone-300">Product Name *</label>
+                <label className="font-bold text-[#211D1C]">Product Name *</label>
                 <input
                   type="text"
                   required
                   value={newProductName}
                   onChange={(e) => setNewProductName(e.target.value)}
                   placeholder="e.g. 18k Rose Gold Handwriting Script Locket"
-                  className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 text-stone-900 dark:text-white font-semibold"
+                  className="w-full bg-[#FFF9EB] border border-[#F5E6CE] focus:border-[#FF2E93] rounded-xl px-3 py-2 text-[#211D1C] font-semibold outline-none"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="font-bold text-stone-700 dark:text-stone-300">Collection / Category *</label>
+                  <label className="font-bold text-[#211D1C]">Collection / Category *</label>
                   <select
                     value={newProductCategory}
                     onChange={(e) => setNewProductCategory(e.target.value as any)}
-                    className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 text-stone-900 dark:text-white font-semibold"
+                    className="w-full bg-[#FFF9EB] border border-[#F5E6CE] focus:border-[#FF2E93] rounded-xl px-3 py-2 text-[#211D1C] font-semibold outline-none"
                   >
                     <optgroup label="🌟 7 Official Store Collections">
                       {SEVEN_COLLECTIONS.map((cat) => (
@@ -2372,49 +2607,49 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 </div>
 
                 <div className="space-y-1">
-                  <label className="font-bold text-stone-700 dark:text-stone-300">Promotional Badge</label>
+                  <label className="font-bold text-[#211D1C]">Promotional Badge</label>
                   <input
                     type="text"
                     value={newProductBadge}
                     onChange={(e) => setNewProductBadge(e.target.value)}
                     placeholder="e.g. Best Seller, Atelier Special, Limited"
-                    className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 text-stone-900 dark:text-white"
+                    className="w-full bg-[#FFF9EB] border border-[#F5E6CE] focus:border-[#FF2E93] rounded-xl px-3 py-2 text-[#211D1C] outline-none"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="font-bold text-stone-700 dark:text-stone-300">Selling Price (₹) *</label>
+                  <label className="font-bold text-[#211D1C]">Selling Price (₹) *</label>
                   <input
                     type="number"
                     required
                     value={newProductPrice}
                     onChange={(e) => setNewProductPrice(Number(e.target.value))}
-                    className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 font-mono text-stone-900 dark:text-white font-bold"
+                    className="w-full bg-[#FFF9EB] border border-[#F5E6CE] focus:border-[#FF2E93] rounded-xl px-3 py-2 font-mono text-[#211D1C] font-bold outline-none"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="font-bold text-stone-700 dark:text-stone-300">MRP / List Price (₹) *</label>
+                  <label className="font-bold text-[#211D1C]">MRP / List Price (₹) *</label>
                   <input
                     type="number"
                     required
                     value={newProductMrp}
                     onChange={(e) => setNewProductMrp(Number(e.target.value))}
-                    className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 font-mono text-stone-900 dark:text-white"
+                    className="w-full bg-[#FFF9EB] border border-[#F5E6CE] focus:border-[#FF2E93] rounded-xl px-3 py-2 font-mono text-[#211D1C] outline-none"
                   />
                 </div>
               </div>
 
               {/* Product Image Paste & Upload Suite */}
-              <div className="space-y-2 p-3.5 rounded-2xl bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800">
+              <div className="space-y-2 p-3.5 rounded-2xl bg-[#FFF9EB] border border-[#F5E6CE]">
                 <div className="flex items-center justify-between">
-                  <label className="font-bold text-stone-800 dark:text-stone-200 flex items-center gap-1.5">
+                  <label className="font-bold text-[#211D1C] flex items-center gap-1.5">
                     <ImageIcon className="w-4 h-4 text-[#FF2E93]" />
                     <span>Product Image (Paste or Upload)</span>
                   </label>
-                  <span className="text-[10px] text-stone-500 font-medium">Auto-syncs to Home Page</span>
+                  <span className="text-[10px] text-[#FF2E93] font-medium">Auto-syncs to Home Page</span>
                 </div>
 
                 {/* Quick Action Buttons */}
@@ -2422,14 +2657,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   <button
                     type="button"
                     onClick={() => handlePasteImageFromClipboard(setNewProductCustomImage)}
-                    className="px-3 py-1.5 rounded-xl bg-[#FF2E93] hover:bg-[#e02680] text-white font-bold text-xs flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors"
+                    className="px-3 py-1.5 rounded-xl bg-[#FF2E93] hover:bg-[#e02680] text-white font-bold text-xs flex items-center gap-1.5 shadow-xs cursor-pointer transition-all active:scale-95"
                   >
                     <Clipboard className="w-3.5 h-3.5" />
                     <span>📋 Paste from Clipboard</span>
                   </button>
 
                   <label className="px-3 py-1.5 rounded-xl bg-[#211D1C] hover:bg-black text-white text-xs font-bold shrink-0 cursor-pointer flex items-center gap-1.5 shadow-xs transition-colors">
-                    <ImagePlus className="w-3.5 h-3.5" />
+                    <ImagePlus className="w-3.5 h-3.5 text-[#FFD94A]" />
                     <span>📁 Upload from Device</span>
                     <input
                       type="file"
@@ -2456,7 +2691,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     <button
                       type="button"
                       onClick={() => setNewProductCustomImage('')}
-                      className="px-2.5 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300 font-bold text-xs flex items-center gap-1 transition-colors cursor-pointer"
+                      className="px-2.5 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs flex items-center gap-1 transition-colors cursor-pointer"
                     >
                       <X className="w-3 h-3" />
                       <span>Remove</span>
@@ -2475,26 +2710,26 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     onChange={(e) => setNewProductCustomImage(e.target.value)}
                     onPaste={(e) => handleContainerPaste(e, setNewProductCustomImage)}
                     placeholder="Click here & press Ctrl+V to paste image, or enter image link..."
-                    className="w-full bg-white dark:bg-stone-950 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 text-stone-900 dark:text-white text-xs placeholder:text-stone-400"
+                    className="w-full bg-white border border-[#F5E6CE] focus:border-[#FF2E93] rounded-xl px-3 py-2 text-[#211D1C] text-xs placeholder:text-stone-400 outline-none"
                   />
                 </div>
 
                 {/* Live Preview Card */}
                 {newProductCustomImage ? (
-                  <div className="flex items-center gap-3 p-2.5 rounded-xl bg-white dark:bg-stone-950 border border-emerald-200 dark:border-emerald-900/50">
-                    <div className="w-16 h-16 rounded-xl overflow-hidden border border-[#EFE7DE] bg-stone-100 shrink-0 shadow-xs">
+                  <div className="flex items-center gap-3 p-2.5 rounded-xl bg-white border border-emerald-300">
+                    <div className="w-16 h-16 rounded-xl overflow-hidden border border-[#F3E8E2] bg-stone-100 shrink-0 shadow-xs flex items-center justify-center p-0.5">
                       <img
                         src={newProductCustomImage}
                         alt="Product Preview"
-                        className="w-full h-full object-cover"
+                        className="max-h-full max-w-full object-contain rounded-lg"
                         onError={(e) => {
                           (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=300&q=80';
                         }}
                       />
                     </div>
                     <div className="space-y-0.5 flex-1">
-                      <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-bold text-xs">
-                        <CheckCircle2 className="w-3.5 h-3.5" />
+                      <div className="flex items-center gap-1.5 text-emerald-700 font-bold text-xs">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                         <span>Image Attached Successfully</span>
                       </div>
                       <p className="text-[11px] text-stone-500">
@@ -2510,27 +2745,27 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </div>
 
               <div className="space-y-1">
-                <label className="font-bold text-stone-700 dark:text-stone-300">Description</label>
+                <label className="font-bold text-[#211D1C]">Description</label>
                 <textarea
                   rows={2}
                   value={newProductDesc}
                   onChange={(e) => setNewProductDesc(e.target.value)}
                   placeholder="Handcrafted luxury keepsake customized with laser precision..."
-                  className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 text-stone-900 dark:text-white"
+                  className="w-full bg-[#FFF9EB] border border-[#F5E6CE] focus:border-[#FF2E93] rounded-xl px-3 py-2 text-[#211D1C] outline-none"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#EFE7DE] dark:border-[#282127]">
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#F3E8E2]">
                 <button
                   type="button"
                   onClick={() => setIsAddProductOpen(false)}
-                  className="px-4 py-2 rounded-xl font-bold bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 cursor-pointer"
+                  className="px-4 py-2 rounded-xl font-bold bg-white border border-[#F3E8E2] text-stone-700 hover:bg-stone-50 cursor-pointer transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 rounded-xl font-bold bg-[#881337] hover:bg-[#700f2d] text-white transition-colors shadow-sm cursor-pointer"
+                  className="px-6 py-2.5 rounded-xl font-bold bg-[#FF2E93] hover:bg-[#e02680] text-white transition-all shadow-md active:scale-95 cursor-pointer"
                 >
                   Create & Publish Product
                 </button>
@@ -2545,17 +2780,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       {/* ============================================================ */}
       {isEditProductOpen && editingProduct && (
         <div className="fixed inset-0 z-50 bg-black/65 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
-          <div className="bg-white dark:bg-[#181418] w-full max-w-lg rounded-3xl border border-[#EFE7DE] dark:border-[#2C242A] shadow-2xl p-6 sm:p-8 space-y-5 animate-in fade-in duration-150 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-3 border-b border-[#EFE7DE] dark:border-[#282127]">
+          <div className="bg-[#FFFDF8] w-full max-w-lg rounded-3xl border border-[#F3E8E2] shadow-2xl p-6 sm:p-8 space-y-5 animate-in fade-in duration-150 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-[#F3E8E2]">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-xl bg-[#FF2E93] text-white flex items-center justify-center shadow-xs">
                   <Edit3 className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="font-serif font-bold text-lg text-stone-900 dark:text-white">
+                  <h3 className="font-serif-heading font-bold text-lg text-[#211D1C]">
                     Edit Product & Photos
                   </h3>
-                  <p className="text-[11px] text-stone-500">ID: {editingProduct.id}</p>
+                  <p className="text-[11px] text-[#FF2E93] font-mono font-bold">ID: {editingProduct.id}</p>
                 </div>
               </div>
               <button
@@ -2563,7 +2798,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   setIsEditProductOpen(false);
                   setEditingProduct(null);
                 }}
-                className="p-1 rounded-full text-stone-400 hover:text-stone-600 cursor-pointer"
+                className="p-1.5 rounded-full text-stone-400 hover:text-stone-700 hover:bg-stone-100 cursor-pointer transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -2571,24 +2806,24 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
             <form onSubmit={handleSaveEditedProduct} className="space-y-4 text-xs">
               <div className="space-y-1">
-                <label className="font-bold text-stone-700 dark:text-stone-300">Product Name *</label>
+                <label className="font-bold text-[#211D1C]">Product Name *</label>
                 <input
                   type="text"
                   required
                   value={editProductName}
                   onChange={(e) => setEditProductName(e.target.value)}
                   placeholder="Product name"
-                  className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 text-stone-900 dark:text-white font-semibold"
+                  className="w-full bg-[#FFF9EB] border border-[#F5E6CE] focus:border-[#FF2E93] rounded-xl px-3 py-2 text-[#211D1C] font-semibold outline-none"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="font-bold text-stone-700 dark:text-stone-300">Collection / Category *</label>
+                  <label className="font-bold text-[#211D1C]">Collection / Category *</label>
                   <select
                     value={editProductCategory}
                     onChange={(e) => setEditProductCategory(e.target.value as any)}
-                    className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 text-stone-900 dark:text-white font-semibold"
+                    className="w-full bg-[#FFF9EB] border border-[#F5E6CE] focus:border-[#FF2E93] rounded-xl px-3 py-2 text-[#211D1C] font-semibold outline-none"
                   >
                     <optgroup label="🌟 7 Official Store Collections">
                       {SEVEN_COLLECTIONS.map((cat) => (
@@ -2610,11 +2845,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 </div>
 
                 <div className="space-y-1">
-                  <label className="font-bold text-stone-700 dark:text-stone-300">Stock Status</label>
+                  <label className="font-bold text-[#211D1C]">Stock Status</label>
                   <select
                     value={editProductStock}
                     onChange={(e) => setEditProductStock(e.target.value as any)}
-                    className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 text-stone-900 dark:text-white font-semibold"
+                    className="w-full bg-[#FFF9EB] border border-[#F5E6CE] focus:border-[#FF2E93] rounded-xl px-3 py-2 text-[#211D1C] font-semibold outline-none"
                   >
                     <option value="in_stock">🟢 In Stock</option>
                     <option value="low_stock">🟡 Low Stock</option>
@@ -2625,63 +2860,51 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="font-bold text-stone-700 dark:text-stone-300">Selling Price (₹) *</label>
+                  <label className="font-bold text-[#211D1C]">Selling Price (₹) *</label>
                   <input
                     type="number"
                     required
                     value={editProductPrice}
                     onChange={(e) => setEditProductPrice(Number(e.target.value))}
-                    className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 font-mono text-stone-900 dark:text-white font-bold"
+                    className="w-full bg-[#FFF9EB] border border-[#F5E6CE] focus:border-[#FF2E93] rounded-xl px-3 py-2 font-mono text-[#211D1C] font-bold outline-none"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="font-bold text-stone-700 dark:text-stone-300">MRP / List Price (₹) *</label>
+                  <label className="font-bold text-[#211D1C]">MRP / List Price (₹) *</label>
                   <input
                     type="number"
                     required
                     value={editProductMrp}
                     onChange={(e) => setEditProductMrp(Number(e.target.value))}
-                    className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 font-mono text-stone-900 dark:text-white"
+                    className="w-full bg-[#FFF9EB] border border-[#F5E6CE] focus:border-[#FF2E93] rounded-xl px-3 py-2 font-mono text-[#211D1C] outline-none"
                   />
                 </div>
               </div>
 
-              <div className="space-y-1">
-                <label className="font-bold text-stone-700 dark:text-stone-300">Promotional Badge</label>
-                <input
-                  type="text"
-                  value={editProductBadge}
-                  onChange={(e) => setEditProductBadge(e.target.value)}
-                  placeholder="e.g. Best Seller, New Arrival, Handcrafted"
-                  className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 text-stone-900 dark:text-white"
-                />
-              </div>
-
-              {/* Product Image Paste & Upload Section */}
-              <div className="space-y-2 p-3.5 rounded-2xl bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800">
+              {/* Edit Image Upload & Paste Block */}
+              <div className="space-y-2 p-3.5 rounded-2xl bg-[#FFF9EB] border border-[#F5E6CE]">
                 <div className="flex items-center justify-between">
-                  <label className="font-bold text-stone-800 dark:text-stone-200 flex items-center gap-1.5">
+                  <label className="font-bold text-[#211D1C] flex items-center gap-1.5">
                     <ImageIcon className="w-4 h-4 text-[#FF2E93]" />
-                    <span>Product Photo (Paste or Upload)</span>
+                    <span>Product Image (Paste or Upload)</span>
                   </label>
-                  <span className="text-[10px] text-stone-500 font-medium">Instant Home Page Sync</span>
+                  <span className="text-[10px] text-[#FF2E93] font-medium">Real-Time Sync</span>
                 </div>
 
-                {/* Buttons */}
                 <div className="flex flex-wrap items-center gap-2">
                   <button
                     type="button"
                     onClick={() => handlePasteImageFromClipboard(setEditProductImage)}
-                    className="px-3 py-1.5 rounded-xl bg-[#FF2E93] hover:bg-[#e02680] text-white font-bold text-xs flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors"
+                    className="px-3 py-1.5 rounded-xl bg-[#FF2E93] hover:bg-[#e02680] text-white font-bold text-xs flex items-center gap-1.5 shadow-xs cursor-pointer transition-all active:scale-95"
                   >
                     <Clipboard className="w-3.5 h-3.5" />
                     <span>📋 Paste from Clipboard</span>
                   </button>
 
                   <label className="px-3 py-1.5 rounded-xl bg-[#211D1C] hover:bg-black text-white text-xs font-bold shrink-0 cursor-pointer flex items-center gap-1.5 shadow-xs transition-colors">
-                    <ImagePlus className="w-3.5 h-3.5" />
-                    <span>📁 Upload from Device</span>
+                    <ImagePlus className="w-3.5 h-3.5 text-[#FFD94A]" />
+                    <span>📁 Upload Image</span>
                     <input
                       type="file"
                       accept="image/*"
@@ -2707,7 +2930,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     <button
                       type="button"
                       onClick={() => setEditProductImage('')}
-                      className="px-2.5 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300 font-bold text-xs flex items-center gap-1 transition-colors cursor-pointer"
+                      className="px-2.5 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs flex items-center gap-1 cursor-pointer"
                     >
                       <X className="w-3 h-3" />
                       <span>Remove</span>
@@ -2715,7 +2938,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   )}
                 </div>
 
-                {/* Input & Paste area */}
                 <div
                   onPaste={(e) => handleContainerPaste(e, setEditProductImage)}
                   className="relative"
@@ -2725,68 +2947,74 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     value={editProductImage}
                     onChange={(e) => setEditProductImage(e.target.value)}
                     onPaste={(e) => handleContainerPaste(e, setEditProductImage)}
-                    placeholder="Paste image URL or press Ctrl+V to paste image from clipboard..."
-                    className="w-full bg-white dark:bg-stone-950 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 text-stone-900 dark:text-white text-xs placeholder:text-stone-400"
+                    placeholder="Click & press Ctrl+V to paste image, or enter image link..."
+                    className="w-full bg-white border border-[#F5E6CE] focus:border-[#FF2E93] rounded-xl px-3 py-2 text-[#211D1C] text-xs placeholder:text-stone-400 outline-none"
                   />
                 </div>
 
-                {/* Preview */}
-                {editProductImage ? (
-                  <div className="flex items-center gap-3 p-2.5 rounded-xl bg-white dark:bg-stone-950 border border-emerald-200 dark:border-emerald-900/50">
-                    <div className="w-16 h-16 rounded-xl overflow-hidden border border-[#EFE7DE] bg-stone-100 shrink-0 shadow-xs">
+                {editProductImage && (
+                  <div className="flex items-center gap-3 p-2.5 rounded-xl bg-white border border-emerald-300">
+                    <div className="w-16 h-16 rounded-xl overflow-hidden border border-[#F3E8E2] bg-stone-100 shrink-0 shadow-xs flex items-center justify-center p-0.5">
                       <img
                         src={editProductImage}
                         alt="Preview"
-                        className="w-full h-full object-cover"
+                        className="max-h-full max-w-full object-contain rounded-lg"
                         onError={(e) => {
                           (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=300&q=80';
                         }}
                       />
                     </div>
                     <div className="space-y-0.5 flex-1">
-                      <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-bold text-xs">
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                        <span>Product Photo Updated</span>
+                      <div className="flex items-center gap-1.5 text-emerald-700 font-bold text-xs">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>Image Attached</span>
                       </div>
                       <p className="text-[11px] text-stone-500">
-                        Will appear on the storefront instantly when saved.
+                        Updates in real-time across Home Page and catalog.
                       </p>
                     </div>
-                  </div>
-                ) : (
-                  <div className="text-[11px] text-stone-500 italic">
-                    No custom photo set. Uses default luxury packaging visual.
                   </div>
                 )}
               </div>
 
               <div className="space-y-1">
-                <label className="font-bold text-stone-700 dark:text-stone-300">Description</label>
+                <label className="font-bold text-[#211D1C]">Promotional Badge</label>
+                <input
+                  type="text"
+                  value={editProductBadge}
+                  onChange={(e) => setEditProductBadge(e.target.value)}
+                  placeholder="e.g. Best Seller, Limited"
+                  className="w-full bg-[#FFF9EB] border border-[#F5E6CE] focus:border-[#FF2E93] rounded-xl px-3 py-2 text-[#211D1C] outline-none"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-bold text-[#211D1C]">Description</label>
                 <textarea
                   rows={2}
                   value={editProductDesc}
                   onChange={(e) => setEditProductDesc(e.target.value)}
                   placeholder="Product description..."
-                  className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 text-stone-900 dark:text-white"
+                  className="w-full bg-[#FFF9EB] border border-[#F5E6CE] focus:border-[#FF2E93] rounded-xl px-3 py-2 text-[#211D1C] outline-none"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#EFE7DE] dark:border-[#282127]">
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#F3E8E2]">
                 <button
                   type="button"
                   onClick={() => {
                     setIsEditProductOpen(false);
                     setEditingProduct(null);
                   }}
-                  className="px-4 py-2 rounded-xl font-bold bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 cursor-pointer"
+                  className="px-4 py-2 rounded-xl font-bold bg-white border border-[#F3E8E2] text-stone-700 hover:bg-stone-50 cursor-pointer transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 rounded-xl font-bold bg-[#FF2E93] hover:bg-[#e02680] text-white transition-colors shadow-sm cursor-pointer"
+                  className="px-6 py-2.5 rounded-xl font-bold bg-[#FF2E93] hover:bg-[#e02680] text-white transition-all shadow-md active:scale-95 cursor-pointer"
                 >
-                  Save & Sync to Store
+                  Save & Update Storefront
                 </button>
               </div>
             </form>
