@@ -14,6 +14,7 @@ import { QuickViewModal } from './components/common/QuickViewModal';
 import { CartDrawer } from './components/common/CartDrawer';
 import { SearchModal } from './components/common/SearchModal';
 import { NewsletterModal } from './components/common/NewsletterModal';
+import { FloatingWhatsApp } from './components/common/FloatingWhatsApp';
 import { HomePage } from './pages/HomePage';
 import { CollectionsPage } from './pages/CollectionsPage';
 import { ProductDetailPage } from './pages/ProductDetailPage';
@@ -21,6 +22,7 @@ import { CheckoutPage } from './pages/CheckoutPage';
 import { OrderConfirmationPage } from './pages/OrderConfirmationPage';
 import { TrackOrderPage } from './pages/TrackOrderPage';
 import { WishlistPage } from './pages/WishlistPage';
+import { PersonalizationPage } from './pages/PersonalizationPage';
 import { ContactPage } from './pages/ContactPage';
 import { CreatorCollabPage } from './pages/CreatorCollabPage';
 import { PolicyPage } from './pages/PolicyPage';
@@ -28,7 +30,7 @@ import { SecretAdminPortal } from './pages/SecretAdminPortal';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { INITIAL_PRODUCTS } from './data/products';
 import { Product, Order } from './types';
-import { db } from './lib/db';
+import { db, getStoredProducts } from './lib/db';
 
 const VALID_VIEWS = new Set([
   'home',
@@ -38,6 +40,9 @@ const VALID_VIEWS = new Set([
   'order-confirmation',
   'track-order',
   'wishlist',
+  'personalization',
+  'bespoke',
+  'hamper-builder',
   'contact',
   'creator-club',
   'policy',
@@ -104,7 +109,17 @@ function formatHash(view: string, params?: Record<string, string>) {
 }
 
 export function AppContent() {
-  const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
+  const [products, setProducts] = useState<Product[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = getStoredProducts();
+        if (stored && stored.length > 0) return stored;
+      } catch {
+        // ignore
+      }
+    }
+    return INITIAL_PRODUCTS;
+  });
 
   // Initialize and load products via Database Access Layer
   useEffect(() => {
@@ -214,8 +229,11 @@ export function AppContent() {
   };
 
   const handleBulkUpdateProducts = (updatedProducts: Product[]) => {
-    setProducts(updatedProducts);
-    updatedProducts.forEach((p) => db.saveProduct(p));
+    setProducts((prev) => {
+      const updateMap = new Map(updatedProducts.map((p) => [p.id, p]));
+      return prev.map((p) => updateMap.get(p.id) || p);
+    });
+    db.saveProducts(updatedProducts);
   };
 
   const handleDeleteProduct = (productId: string) => {
@@ -306,6 +324,13 @@ export function AppContent() {
           />
         )}
 
+        {(currentView === 'personalization' || currentView === 'bespoke' || currentView === 'hamper-builder') && (
+          <PersonalizationPage
+            onExploreProducts={(cat) => handleNavigate('collections', { category: cat || 'all' })}
+            initialTab={currentView === 'hamper-builder' ? 'hamper' : (viewParams.tab as any) || 'hamper'}
+          />
+        )}
+
         {currentView === 'contact' && <ContactPage />}
 
         {currentView === 'creator-club' && (
@@ -371,6 +396,16 @@ export function AppContent() {
       {/* Non-intrusive Welcome Newsletter Offer Popup on Homepage */}
       {currentView === 'home' && !isSecretAdminView && (
         <NewsletterModal delayMs={10000} />
+      )}
+
+      {/* Luxury WhatsApp Concierge with Audio Ping Feedback & Dynamic Context Intelligence */}
+      {!isSecretAdminView && (
+        <FloatingWhatsApp
+          currentView={currentView}
+          viewParams={viewParams}
+          activeProduct={selectedProduct}
+          products={products}
+        />
       )}
     </div>
   );

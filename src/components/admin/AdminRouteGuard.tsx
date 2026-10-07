@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase, isSupabaseConfigured } from '../../lib/supabase';
 import { ForbiddenPage } from '../../pages/ForbiddenPage';
-import { Lock, KeyRound, ShieldCheck, ArrowLeft, Eye, EyeOff, Sparkles, AlertCircle, Loader2 } from 'lucide-react';
+import { Lock, Eye, EyeOff, Sparkles, AlertCircle, Loader2 } from 'lucide-react';
 import { SEO } from '../common/SEO';
 
 interface AdminRouteGuardProps {
@@ -18,15 +18,11 @@ export const AdminRouteGuard: React.FC<AdminRouteGuardProps> = ({
   const [isForbidden, setIsForbidden] = useState(false);
 
   // Login Form States
-  const [email, setEmail] = useState('admin@divineseternity.com');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loginError, setLoginError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Fallback PIN state for offline/demo developer mode
-  const [pinCode, setPinCode] = useState('');
-  const [usePinMode, setUsePinMode] = useState(false);
 
   useEffect(() => {
     checkAdminSession();
@@ -35,19 +31,17 @@ export const AdminRouteGuard: React.FC<AdminRouteGuardProps> = ({
   const checkAdminSession = async () => {
     setLoading(true);
 
-    // 1. Check Supabase Auth session if configured
     if (isSupabaseConfigured() && supabase) {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (session && session.user) {
-          // Query user profile role
           const { data: profile } = await supabase
             .from('profiles')
             .select('role')
             .eq('id', session.user.id)
             .maybeSingle();
 
-          if (profile?.role === 'admin' || session.user.email?.toLowerCase().includes('admin')) {
+          if (profile?.role === 'admin' || profile?.role === 'staff') {
             setIsAdmin(true);
             setIsForbidden(false);
             setLoading(false);
@@ -60,24 +54,11 @@ export const AdminRouteGuard: React.FC<AdminRouteGuardProps> = ({
           }
         }
       } catch (err) {
-        console.warn('Session verification fallback', err);
+        console.warn('Admin session check warning:', err);
       }
     }
 
-    // 2. Check local session storage fallback
-    try {
-      const localAuth = sessionStorage.getItem('de_admin_authenticated');
-      const localRole = sessionStorage.getItem('de_admin_role');
-      if (localAuth === 'true' && localRole !== 'guest') {
-        setIsAdmin(true);
-        setIsForbidden(false);
-      } else {
-        setIsAdmin(false);
-      }
-    } catch {
-      setIsAdmin(false);
-    }
-
+    setIsAdmin(false);
     setLoading(false);
   };
 
@@ -86,27 +67,12 @@ export const AdminRouteGuard: React.FC<AdminRouteGuardProps> = ({
     setLoginError('');
     setIsSubmitting(true);
 
-    // If using PIN shortcut (developer emergency unlock)
-    if (usePinMode) {
-      if (pinCode.trim() === '7788') {
-        setIsAdmin(true);
-        setIsForbidden(false);
-        try {
-          sessionStorage.setItem('de_admin_authenticated', 'true');
-          sessionStorage.setItem('de_admin_role', 'director');
-        } catch {
-          // ignore
-        }
-        setIsSubmitting(false);
-        return;
-      } else {
-        setLoginError('Invalid Atelier Security PIN. Contact chief curator.');
-        setIsSubmitting(false);
-        return;
-      }
+    if (!email.trim() || !password.trim()) {
+      setLoginError('Email and password are required');
+      setIsSubmitting(false);
+      return;
     }
 
-    // Supabase Email + Password Login
     if (isSupabaseConfigured() && supabase) {
       try {
         const { data, error } = await supabase.auth.signInWithPassword({
@@ -121,41 +87,24 @@ export const AdminRouteGuard: React.FC<AdminRouteGuardProps> = ({
         }
 
         if (data.user) {
-          // Check role from profiles table
           const { data: profile } = await supabase
             .from('profiles')
             .select('role')
             .eq('id', data.user.id)
             .maybeSingle();
 
-          if (profile?.role === 'admin' || data.user.email?.toLowerCase().includes('admin')) {
+          if (profile?.role === 'admin' || profile?.role === 'staff') {
             setIsAdmin(true);
             setIsForbidden(false);
           } else {
             setIsForbidden(true);
           }
         }
-        setIsSubmitting(false);
-        return;
       } catch (err: any) {
         setLoginError(err.message || 'Authentication failed');
-        setIsSubmitting(false);
-        return;
-      }
-    }
-
-    // Offline / Standalone Fallback credentials
-    if (email.toLowerCase().includes('admin') && (password === 'admin123' || password === 'admin@123' || password.length >= 6)) {
-      setIsAdmin(true);
-      setIsForbidden(false);
-      try {
-        sessionStorage.setItem('de_admin_authenticated', 'true');
-        sessionStorage.setItem('de_admin_role', 'director');
-      } catch {
-        // ignore
       }
     } else {
-      setLoginError('Invalid credentials. Default: admin@divineseternity.com / admin123');
+      setLoginError('Supabase is not configured. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your environment.');
     }
 
     setIsSubmitting(false);
@@ -168,12 +117,6 @@ export const AdminRouteGuard: React.FC<AdminRouteGuardProps> = ({
       } catch (e) {
         console.warn('Sign out error', e);
       }
-    }
-    try {
-      sessionStorage.removeItem('de_admin_authenticated');
-      sessionStorage.removeItem('de_admin_role');
-    } catch {
-      // ignore
     }
     setIsAdmin(false);
     setIsForbidden(false);
@@ -202,145 +145,105 @@ export const AdminRouteGuard: React.FC<AdminRouteGuardProps> = ({
     );
   }
 
-  // Authorized Admin View
-  if (isAdmin) {
-    return <>{children}</>;
-  }
+  // Not logged in -> Show secure admin credentials login page
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen bg-[#181514] text-white flex items-center justify-center p-4 sm:p-6 relative overflow-hidden">
+        <SEO
+          title="Atelier Management Portal — Divine’s Eternity"
+          description="Restricted Administrator Access"
+          noindex={true}
+        />
 
-  // Unauthenticated: Present Luxury Atelier Admin Login
-  return (
-    <div className="min-h-screen bg-[#FFFDF8] flex items-center justify-center p-4 sm:p-6 text-[#211D1C]">
-      <SEO
-        title="Atelier Admin Portal Authentication — Divine’s Eternity"
-        description="Secure management portal for Divine’s Eternity store administrators."
-        noindex={true}
-      />
-      <div className="max-w-md w-full bg-white rounded-3xl border border-[#F3E8E2] shadow-2xl p-6 sm:p-10 space-y-6 animate-in fade-in duration-200">
-        
-        {/* Brand Crest */}
-        <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-[#211D1C] to-[#FF2E93] text-white shadow-md mx-auto">
-            <Lock className="w-6 h-6 text-[#FFD94A]" />
+        {/* Ambient luxury lighting */}
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#FF2E93]/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#D4AF37]/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="w-full max-w-md bg-[#211D1C] border border-[#3A3331] rounded-3xl p-6 sm:p-8 shadow-2xl relative z-10 space-y-6">
+          <div className="text-center space-y-2">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#FF2E93] to-[#D4AF37] mx-auto flex items-center justify-center shadow-lg">
+              <Lock className="w-6 h-6 text-white" />
+            </div>
+            <div className="flex items-center justify-center gap-1.5 text-[#FF2E93] text-xs font-extrabold tracking-widest uppercase">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Divine’s Eternity</span>
+            </div>
+            <h1 className="text-xl sm:text-2xl font-serif font-bold text-white tracking-wide">
+              Atelier Management Login
+            </h1>
+            <p className="text-xs text-stone-400">
+              Authorized personnel only. Sessions are monitored and verified via Supabase Auth & RLS.
+            </p>
           </div>
-          <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#FF2E93] block">
-            Executive Curator Access
-          </span>
-          <h1 className="font-serif-heading text-2xl font-bold text-[#211D1C]">
-            Divine’s Eternity Admin
-          </h1>
-          <p className="text-xs text-stone-500">
-            Sign in with verified administrator credentials to access catalog studio & order pipeline.
-          </p>
-        </div>
 
-        {loginError && (
-          <div className="p-3 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
-            <span>{loginError}</span>
-          </div>
-        )}
-
-        <form onSubmit={handleLogin} className="space-y-4">
-          {!usePinMode ? (
-            <>
-              <div>
-                <label className="block text-xs font-bold text-stone-700 mb-1">
-                  Administrator Email
-                </label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@divineseternity.com"
-                  required
-                  className="w-full px-4 py-2.5 rounded-xl border border-[#F3E8E2] focus:border-[#FF2E93] focus:ring-1 focus:ring-[#FF2E93] text-xs outline-hidden bg-[#FFFDF8]"
-                />
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs font-bold text-stone-700">
-                    Staff Password
-                  </label>
-                  <button
-                    type="button"
-                    onClick={() => setUsePinMode(true)}
-                    className="text-[10px] text-[#FF2E93] hover:underline cursor-pointer"
-                  >
-                    Use Fast 4-Digit PIN
-                  </button>
-                </div>
-                <div className="relative">
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Enter password (default: admin123)"
-                    required
-                    className="w-full px-4 py-2.5 rounded-xl border border-[#F3E8E2] focus:border-[#FF2E93] focus:ring-1 focus:ring-[#FF2E93] text-xs outline-hidden bg-[#FFFDF8] pr-10"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 cursor-pointer"
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-              </div>
-            </>
-          ) : (
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="text-xs font-bold text-stone-700">
-                  4-Digit Atelier Master PIN
-                </label>
-                <button
-                  type="button"
-                  onClick={() => setUsePinMode(false)}
-                  className="text-[10px] text-[#FF2E93] hover:underline cursor-pointer"
-                >
-                  Use Email & Password
-                </button>
-              </div>
-              <input
-                type="password"
-                maxLength={4}
-                value={pinCode}
-                onChange={(e) => setPinCode(e.target.value)}
-                placeholder="•••• (Default: 7788)"
-                autoFocus
-                required
-                className="w-full px-4 py-3 text-center tracking-[0.5em] font-mono text-lg rounded-xl border border-[#F3E8E2] focus:border-[#FF2E93] focus:ring-1 focus:ring-[#FF2E93] outline-hidden bg-[#FFFDF8]"
-              />
+          {loginError && (
+            <div className="p-3.5 rounded-xl bg-rose-950/60 border border-rose-800 text-rose-300 text-xs flex items-center gap-2.5">
+              <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+              <span>{loginError}</span>
             </div>
           )}
 
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full py-3.5 px-4 rounded-2xl bg-[#211D1C] hover:bg-[#FF2E93] text-white text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-          >
-            {isSubmitting ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <ShieldCheck className="w-4 h-4 text-[#FFD94A]" />
-            )}
-            <span>Authenticate & Launch Studio</span>
-          </button>
-        </form>
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-stone-300 block">
+                Administrator Email
+              </label>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="admin@divineseternity.com"
+                className="w-full bg-[#181514] border border-[#3A3331] focus:border-[#FF2E93] rounded-xl px-4 py-3 text-xs text-white placeholder-stone-600 outline-none"
+              />
+            </div>
 
-        <div className="pt-2 text-center">
-          <button
-            type="button"
-            onClick={onReturnToStore}
-            className="text-xs text-stone-500 hover:text-[#211D1C] inline-flex items-center gap-1.5 transition-colors cursor-pointer"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Return to Divine’s Eternity Boutique</span>
-          </button>
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-stone-300 block">
+                Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••••••"
+                  className="w-full bg-[#181514] border border-[#3A3331] focus:border-[#FF2E93] rounded-xl pl-4 pr-10 py-3 text-xs text-white placeholder-stone-600 outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-500 hover:text-stone-300"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full py-3.5 rounded-xl bg-[#FF2E93] hover:bg-[#e02680] text-white font-bold text-xs uppercase tracking-wider transition-all shadow-lg active:scale-98 cursor-pointer disabled:opacity-50"
+            >
+              {isSubmitting ? 'Authenticating...' : 'Sign In to Management'}
+            </button>
+          </form>
+
+          <div className="pt-4 border-t border-[#3A3331] flex items-center justify-between text-xs text-stone-500">
+            <button
+              onClick={onReturnToStore}
+              className="hover:text-stone-300 transition-colors cursor-pointer"
+            >
+              ← Back to Storefront
+            </button>
+            <span className="text-[11px] font-mono">Role: admin / staff</span>
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  }
+
+  // Authorized Admin Session
+  return <>{children}</>;
 };

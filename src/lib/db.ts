@@ -7,7 +7,7 @@ const ORDERS_STORAGE_KEY = 'divines_orders_v1';
 const COUPONS_STORAGE_KEY = 'divines_coupons_v1';
 
 // In-memory / localStorage fallback helpers
-const getStoredProducts = (): Product[] => {
+export const getStoredProducts = (): Product[] => {
   try {
     const raw = localStorage.getItem(PRODUCTS_STORAGE_KEY);
     if (raw) {
@@ -20,7 +20,7 @@ const getStoredProducts = (): Product[] => {
   return INITIAL_PRODUCTS;
 };
 
-const setStoredProducts = (products: Product[]) => {
+export const setStoredProducts = (products: Product[]) => {
   try {
     localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(products));
   } catch (e) {
@@ -140,6 +140,46 @@ export const db = {
           theme_colors: product.themeColors,
           updated_at: new Date().toISOString(),
         });
+        if (error) return { success: false, error: error.message };
+      } catch (err: any) {
+        return { success: false, error: err.message };
+      }
+    }
+
+    return { success: true, error: null };
+  },
+
+  async saveProducts(productsToSave: Product[]): Promise<{ success: boolean; error: string | null }> {
+    const current = getStoredProducts();
+    const updatedMap = new Map(current.map((p) => [p.id, p]));
+    productsToSave.forEach((p) => updatedMap.set(p.id, p));
+    const merged = Array.from(updatedMap.values());
+    setStoredProducts(merged);
+
+    if (isSupabaseConfigured() && supabase) {
+      try {
+        const rows = productsToSave.map((product) => ({
+          id: product.id,
+          slug: product.slug,
+          name: product.name,
+          tagline: product.tagline || '',
+          description: product.description,
+          price: product.price,
+          mrp: product.mrp,
+          category: product.category,
+          badge: product.badge,
+          images: product.images,
+          is_active: true,
+          in_stock: product.inStock ?? true,
+          stock_quantity: product.stockQuantity ?? 50,
+          rating: product.rating,
+          review_count: product.reviewCount,
+          features: product.features,
+          customizable: product.customizable,
+          theme_colors: product.themeColors,
+          updated_at: new Date().toISOString(),
+        }));
+        const { error } = await supabase.from('products').upsert(rows);
         if (error) return { success: false, error: error.message };
       } catch (err: any) {
         return { success: false, error: err.message };

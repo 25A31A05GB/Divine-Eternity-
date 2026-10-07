@@ -1,10 +1,12 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { Search, Heart, ShoppingBag, Menu, X, Sun, Moon, ChevronDown, Sparkles, ShieldCheck, ArrowRight, Star, Lock, Package, User } from 'lucide-react';
+import { Search, Heart, ShoppingBag, Menu, X, Sun, Moon, ChevronDown, Sparkles, ShieldCheck, ArrowRight, Star, Lock, Package, User, LogIn, LogOut } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WishlistContext';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
+import { CustomerAccountModal } from '../common/CustomerAccountModal';
+import { AuthModal } from '../common/AuthModal';
 import { CATEGORIES, INITIAL_PRODUCTS } from '../../data/products';
 import { Product } from '../../types';
 import { PhoneCaseMockup } from '../../utils/productVisuals';
@@ -20,12 +22,13 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, ope
   const { totalItemsCount, openCart } = useCart();
   const { wishlistCount } = useWishlist();
   const { theme, toggleTheme } = useTheme();
-  const { user } = useAuth();
+  const { user, openAuthModal, isAuthModalOpen, closeAuthModal, authModalMode, logout } = useAuth();
   
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isCollectionsHovered, setIsCollectionsHovered] = useState(false);
   const [headerSearchQuery, setHeaderSearchQuery] = useState('');
   const [isSearchDropdownOpen, setIsSearchDropdownOpen] = useState(false);
+  const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
 
   const dropdownTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const searchContainerRef = useRef<HTMLDivElement | null>(null);
@@ -216,7 +219,15 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, ope
                   {STRICT_HEADER_COLLECTIONS.map((col, idx) => (
                     <button
                       key={col.id}
-                      onClick={() => navigateTo('collections', { category: col.id })}
+                      onClick={() => {
+                        if (col.id === 'personalization') {
+                          navigateTo('personalization');
+                        } else if (col.id === 'creator-club') {
+                          navigateTo('creator-club');
+                        } else {
+                          navigateTo('collections', { category: col.id });
+                        }
+                      }}
                       className="w-full text-left p-2.5 rounded-2xl hover:bg-[#FFF0F5] group transition-all cursor-pointer flex items-start justify-between gap-2"
                     >
                       <div className="min-w-0">
@@ -245,15 +256,19 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, ope
             </div>
 
             <button
-              onClick={() => navigateTo('collections', { category: 'personalization' })}
-              className="transition-colors hover:text-[#FF2E93] cursor-pointer"
+              onClick={() => navigateTo('personalization')}
+              className={`transition-colors hover:text-[#FF2E93] cursor-pointer ${
+                currentView === 'personalization' ? 'text-[#FF2E93] font-bold' : 'text-[#211D1C]'
+              }`}
             >
-              Personalization
+              Personalization Studio
             </button>
 
             <button
-              onClick={() => navigateTo('collections', { category: 'creator-club' })}
-              className="transition-colors hover:text-[#FF2E93] cursor-pointer flex items-center gap-1"
+              onClick={() => navigateTo('creator-club')}
+              className={`transition-colors hover:text-[#FF2E93] cursor-pointer flex items-center gap-1 ${
+                currentView === 'creator-club' ? 'text-[#FF2E93] font-bold' : 'text-[#211D1C]'
+              }`}
             >
               <span>Creator Club</span>
               <span className="text-[9px] px-1 py-0.2 rounded-full bg-[#FF2E93] text-white">₹7k</span>
@@ -301,6 +316,27 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, ope
               <span className="absolute -top-1 -right-1 bg-[#FF2E93] text-white text-[9px] font-extrabold w-4 h-4 rounded-full flex items-center justify-center">
                 {wishlistCount}
               </span>
+            )}
+          </button>
+
+          {/* Account Button (Login / Profile) */}
+          <button
+            onClick={() => {
+              if (user) {
+                setIsAccountModalOpen(true);
+              } else {
+                openAuthModal('login');
+              }
+            }}
+            aria-label="Account"
+            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-[#E7E2DA] flex items-center justify-center text-[#211D1C] hover:border-[#FF2E93] hover:text-[#FF2E93] shadow-xs transition-colors cursor-pointer relative"
+          >
+            {user ? (
+              <div className="w-5 h-5 rounded-full bg-gradient-to-tr from-[#FF2E93] to-[#D4AF37] text-white text-[10px] font-bold flex items-center justify-center">
+                {user.name ? user.name[0].toUpperCase() : 'U'}
+              </div>
+            ) : (
+              <User className="w-4 h-4" />
             )}
           </button>
 
@@ -471,10 +507,10 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, ope
                 {[
                   { label: 'Home Page', view: 'home' },
                   { label: '1. Products (All Gift Categories)', view: 'collections', params: { category: 'products' } },
-                  { label: '2. Personalization (WhatsApp Direct)', view: 'collections', params: { category: 'personalization' } },
+                  { label: '2. Personalization & Hamper Studio', view: 'personalization' },
                   { label: '3. Collaboration (UGC & Creators)', view: 'collections', params: { category: 'collaboration' } },
                   { label: '4. Upcoming Campaigns (@divineseternity)', view: 'collections', params: { category: 'upcoming-campaigns' } },
-                  { label: '5. Creator Club (Earn up to ₹7k)', view: 'collections', params: { category: 'creator-club' } },
+                  { label: '5. Creator Club (Earn up to ₹7k)', view: 'creator-club' },
                   { label: '6. Affiliate Marketing (15-20% Comm.)', view: 'collections', params: { category: 'affiliate-marketing' } },
                   { label: '7. Podcast & Stories', view: 'collections', params: { category: 'podcast' } },
                   { label: 'Track Order', view: 'track-order' },
@@ -507,6 +543,23 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, ope
           </div>,
           document.body
         )}
+
+      {/* Customer Account & Order History Modal */}
+      <CustomerAccountModal
+        isOpen={isAccountModalOpen}
+        onClose={() => setIsAccountModalOpen(false)}
+        onTrackOrder={(orderId) => {
+          setIsAccountModalOpen(false);
+          navigateTo('track-order');
+        }}
+      />
+
+      {/* Supabase Patron Auth Modal */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={closeAuthModal}
+        defaultMode={authModalMode}
+      />
     </header>
   );
 };

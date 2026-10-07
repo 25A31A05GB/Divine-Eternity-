@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { CartItem, AppliedOffer, Coupon } from '../types';
+import { computeAuthoritativePricing, FREE_SHIPPING_THRESHOLD, STANDARD_SHIPPING_FEE, GIFT_WRAPPING_FEE } from '../shared/pricing';
+import { soundFeedback } from '../lib/soundFeedback';
 
 interface CartContextType {
   cart: CartItem[];
@@ -173,6 +175,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       return [...prev, { ...itemData, id: itemId }];
     });
+    soundFeedback.playAddToCartChime(0.12);
     setIsCartOpen(true);
   };
 
@@ -308,12 +311,19 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setCouponCode('');
   };
 
-  const discountTotal = bestOffer ? bestOffer.discountAmount : 0;
-  const taxableAmount = Math.max(0, subtotal - discountTotal);
-  const shippingFee = cart.length === 0 || taxableAmount >= FREE_SHIPPING_MIN ? 0 : STANDARD_SHIPPING;
-  const giftWrappingFee = isGiftWrapped && cart.length > 0 ? GIFT_WRAPPING_SURCHARGE : 0;
-  const totalAmount = cart.length === 0 ? 0 : taxableAmount + shippingFee + giftWrappingFee;
-  const amountNeededForFreeShipping = Math.max(0, FREE_SHIPPING_MIN - taxableAmount);
+  // Authoritative Pricing Breakdown
+  const authoritativeBreakdown = computeAuthoritativePricing({
+    items: cart,
+    couponCode: couponCode || (bestOffer ? bestOffer.code : undefined),
+    isGiftWrapped,
+  });
+
+  const discountTotal = authoritativeBreakdown.discountTotal > 0 ? authoritativeBreakdown.discountTotal : (bestOffer ? bestOffer.discountAmount : 0);
+  const shippingFee = authoritativeBreakdown.shippingFee;
+  const giftWrappingFee = authoritativeBreakdown.giftWrappingFee;
+  const totalAmount = authoritativeBreakdown.totalAmount;
+  const amountNeededForFreeShipping = authoritativeBreakdown.amountNeededForFreeShipping;
+  const appliedOffer = authoritativeBreakdown.appliedOffer || bestOffer;
 
   return (
     <CartContext.Provider

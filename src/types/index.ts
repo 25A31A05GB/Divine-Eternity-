@@ -142,6 +142,7 @@ export interface CartItem {
 export interface AppliedOffer {
   code: string;
   name: string;
+  title?: string;
   discountAmount: number;
   description: string;
 }

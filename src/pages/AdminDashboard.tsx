@@ -6,6 +6,7 @@ import { useMediaCMS } from '../context/MediaCMSContext';
 import { Product, Order, Coupon, OrderStatus, PhoneBrand, CreatorApplication, Campaign, HeroSlideCMS, VideoReelCMS, AdminRole, GiftCategory } from '../types';
 import { AVAILABLE_COUPONS } from '../context/CartContext';
 import { INITIAL_CREATOR_APPLICATIONS, INITIAL_CAMPAIGNS } from '../data/campaigns';
+import { db } from '../lib/db';
 import { SEO } from '../components/common/SEO';
 import { MediaStudioCMS } from '../components/admin/MediaStudioCMS';
 import {
@@ -99,7 +100,33 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onReturnToStore,
   initialRole = 'director',
 }) => {
-  const { user, isAdmin, orders, updateOrderStatus } = useAuth();
+  const { user, isAdmin } = useAuth();
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [isLoadingOrders, setIsLoadingOrders] = useState(false);
+
+  useEffect(() => {
+    setIsLoadingOrders(true);
+    db.getOrders().then(({ data }) => {
+      if (data) setOrders(data);
+      setIsLoadingOrders(false);
+    });
+  }, []);
+
+  const updateOrderStatus = async (orderId: string, status: OrderStatus, trackingNumber?: string) => {
+    await db.updateOrderStatus(orderId, status, trackingNumber);
+    setOrders((prev) =>
+      prev.map((o) =>
+        o.id === orderId
+          ? {
+              ...o,
+              status,
+              trackingNumber: trackingNumber || o.trackingNumber,
+            }
+          : o
+      )
+    );
+  };
+
   const { reviews, toggleVerifiedBadge, deleteReview } = useReviews();
   const {
     heroSlides,

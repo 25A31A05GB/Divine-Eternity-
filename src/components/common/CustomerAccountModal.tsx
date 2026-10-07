@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User, Package, MapPin, Heart, Award, X, LogOut, ChevronRight, FileText, CheckCircle2, Truck, Sparkles } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { Order } from '../../types';
+import { db } from '../../lib/db';
 import { InvoiceModal } from './InvoiceModal';
 
 interface CustomerAccountModalProps {
@@ -15,19 +16,26 @@ export const CustomerAccountModal: React.FC<CustomerAccountModalProps> = ({
   onClose,
   onTrackOrder,
 }) => {
-  const { user, orders, logout } = useAuth();
+  const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState<'orders' | 'profile' | 'rewards'>('orders');
   const [selectedInvoiceOrder, setSelectedInvoiceOrder] = useState<Order | null>(null);
+  const [accountOrders, setAccountOrders] = useState<Order[]>([]);
+  const [isLoadingOrders, setIsLoadingOrders] = useState(false);
+
+  useEffect(() => {
+    if (isOpen && user?.id) {
+      setIsLoadingOrders(true);
+      db.getOrders(user.id)
+        .then(({ data }) => {
+          if (data) setAccountOrders(data);
+        })
+        .finally(() => setIsLoadingOrders(false));
+    }
+  }, [isOpen, user?.id]);
 
   if (!isOpen) return null;
 
-  const customerOrders = orders.filter(
-    (o) =>
-      o.customerEmail === user?.email ||
-      o.customer?.email === user?.email ||
-      (user?.email && o.shippingAddress?.email === user.email)
-  );
-  const displayOrders = customerOrders.length > 0 ? customerOrders : orders.slice(0, 3);
+  const displayOrders = accountOrders;
 
   return (
     <>
