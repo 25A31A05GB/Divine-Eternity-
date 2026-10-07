@@ -102,6 +102,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const {
     heroSlides,
     videoReels,
+    categoryCircles,
     updateHeroSlide,
     addHeroSlide,
     deleteHeroSlide,
@@ -1193,7 +1194,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             { id: 'overview', label: 'Store Overview', icon: BarChart3, count: null },
             { id: 'orders', label: 'Orders & Pipeline', icon: ShoppingBag, count: orders.length },
             { id: 'products', label: 'Catalog Studio', icon: Package, count: products.length },
-            { id: 'media-cms', label: 'Media & Video CMS', icon: Film, count: heroSlides.length + videoReels.length },
+            { id: 'media-cms', label: 'Homepage Sections & CMS', icon: Film, count: heroSlides.length + categoryCircles.length + videoReels.length },
             { id: 'coupons', label: 'Offers & Coupons', icon: Tag, count: coupons.length },
             { id: 'reviews', label: 'Reviews & Proof', icon: Star, count: allReviewsList.length },
             { id: 'customers', label: 'Client Directory', icon: Users, count: customersList.length },

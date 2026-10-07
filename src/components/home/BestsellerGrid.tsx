@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { Product } from '../../types';
 import { ProductCard } from '../common/ProductCard';
-import { Sparkles, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
+import { useMediaCMS } from '../../context/MediaCMSContext';
 
 interface BestsellerGridProps {
   products: Product[];
@@ -27,6 +28,7 @@ export const BestsellerGrid: React.FC<BestsellerGridProps> = ({
   onOpenDetail,
   onViewAll,
 }) => {
+  const { bestsellerSection } = useMediaCMS();
   const [selectedFilter, setSelectedFilter] = useState('All Gifts');
 
   const filteredProducts = useMemo(() => {
@@ -40,22 +42,30 @@ export const BestsellerGrid: React.FC<BestsellerGridProps> = ({
     });
   }, [products, selectedFilter]);
 
+  if (bestsellerSection?.isVisible === false) {
+    return null;
+  }
+
+  const eyebrow = bestsellerSection?.eyebrow || '✦ THE ONES EVERYONE IS ASKING ABOUT';
+  const titlePrefix = bestsellerSection?.titlePrefix || 'Meet the';
+  const titleHighlight = bestsellerSection?.titleHighlight || 'Best sellers';
+  const subtitle = bestsellerSection?.subtitle || 'Over 40,000+ cherished memories handcrafted. Buy 3 Pay For 2 on all bestsellers!';
+
   return (
     <section className="py-14 sm:py-20 bg-[#FFF9DE]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Section Header matching Screenshot 2 */}
+        {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
           <div>
             <div className="text-[11px] font-extrabold uppercase tracking-widest text-[#E05A47] flex items-center gap-1.5 mb-1">
-              <span>✦</span>
-              <span>THE ONES EVERYONE IS ASKING ABOUT</span>
+              <span>{eyebrow}</span>
             </div>
             <h2 className="font-serif-heading text-3xl sm:text-4xl lg:text-5xl font-bold text-[#211D1C]">
-              Meet the <span className="font-serif italic text-[#FF2E93] font-normal">Best sellers</span>
+              {titlePrefix} <span className="font-serif italic text-[#FF2E93] font-normal">{titleHighlight}</span>
             </h2>
             <p className="text-xs sm:text-sm text-stone-600 mt-1">
-              Over 40,000+ cherished memories handcrafted. Buy 3 Pay For 2 on all bestsellers!
+              {subtitle}
             </p>
           </div>
 

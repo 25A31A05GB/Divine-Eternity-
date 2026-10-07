@@ -13,6 +13,10 @@ export const FounderNoteSection: React.FC<FounderNoteSectionProps> = ({
 }) => {
   const { founderData } = useMediaCMS();
 
+  if (founderData?.isVisible === false) {
+    return null;
+  }
+
   const name = founderData?.name || 'Sonu';
   const role = founderData?.role || 'Founder — Divine’s Eternity';
   const badge1 = founderData?.badge1 || '20-Year-Old Founder';
@@ -23,6 +27,10 @@ export const FounderNoteSection: React.FC<FounderNoteSectionProps> = ({
   const launchDate = founderData?.launchDate || 'August 31st';
   const introText = founderData?.introText || 'Myself Sonu, a 20-year-old proud young founder, content creator, educator, and entrepreneur.';
   const storyNote = founderData?.storyNote;
+  const highlightQuote = founderData?.highlightQuote || 'What started as a dream at 16 is now a reality I get to live every single day with Divine’s Eternity.';
+  const signatureText = founderData?.signatureText || 'With gratitude & love, Sonu';
+  const ctaPrimaryText = founderData?.ctaPrimaryText || 'Explore Handcrafted Gifts';
+  const ctaSecondaryText = founderData?.ctaSecondaryText || 'Join Creator Club';
 
   return (
     <section className="py-16 sm:py-24 bg-gradient-to-br from-[#FFFDF8] via-[#FFF9EB] to-[#FFF0F5] border-y border-[#F3E8E2] relative overflow-hidden">
@@ -45,7 +53,7 @@ export const FounderNoteSection: React.FC<FounderNoteSectionProps> = ({
             A Note From <span className="font-serif italic text-[#FF2E93]">Founder</span>
           </h2>
           <p className="text-xs sm:text-sm text-stone-600 mt-2 max-w-lg mx-auto">
-            What started as a dream at 16 is now a reality lived every single day.
+            {highlightQuote}
           </p>
         </div>
 
@@ -97,102 +105,85 @@ export const FounderNoteSection: React.FC<FounderNoteSectionProps> = ({
                   16
                 </div>
                 <div>
-                  <span className="text-[10px] uppercase font-bold text-stone-400 block">Dream Seeded</span>
-                  <span className="text-xs font-bold text-[#211D1C]">{dreamAge}</span>
+                  <span className="text-[10px] uppercase font-bold text-stone-400 block">{dreamAge}</span>
+                  <span className="text-xs font-extrabold text-[#211D1C]">Vision Sparked</span>
                 </div>
               </div>
 
               <div className="absolute -bottom-4 -right-4 bg-white border border-[#F3E8E2] rounded-2xl p-3 shadow-lg flex items-center gap-2.5 z-20">
-                <div className="w-8 h-8 rounded-full bg-[#FFF9EB] text-[#D97706] flex items-center justify-center">
-                  <Award className="w-4 h-4" />
+                <div className="w-8 h-8 rounded-full bg-[#FFF9EB] text-[#FFD94A] flex items-center justify-center font-bold text-xs">
+                  ★
                 </div>
                 <div>
-                  <span className="text-[10px] uppercase font-bold text-stone-400 block">Official Launch</span>
-                  <span className="text-xs font-bold text-[#211D1C]">{launchDate}</span>
+                  <span className="text-[10px] uppercase font-bold text-stone-400 block">Launched</span>
+                  <span className="text-xs font-extrabold text-[#211D1C]">{launchDate}</span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Right Column: Founder's Personal Letter / Note */}
-          <div className="lg:col-span-7 bg-white/90 backdrop-blur-md border border-[#F3E8E2] rounded-3xl p-6 sm:p-10 shadow-sm space-y-6 relative">
-            <div className="text-5xl font-serif text-[#FF2E93]/20 absolute top-4 right-6 pointer-events-none select-none">
-              “
-            </div>
+          {/* Right Column: Sonu's Letter */}
+          <div className="lg:col-span-7 space-y-6">
+            <div className="bg-white rounded-3xl p-6 sm:p-8 md:p-10 border border-[#F3E8E2] shadow-xl space-y-6 relative">
+              <div className="text-5xl font-serif text-[#FF2E93]/20 absolute top-4 right-6 select-none">
+                “
+              </div>
 
-            <div className="space-y-4 text-xs sm:text-sm text-stone-700 leading-relaxed font-sans">
-              <p className="font-bold text-stone-900 text-sm sm:text-base">
-                {introText}
-              </p>
-
-              {storyNote ? (
-                storyNote.split('\n\n').map((paragraph: string, pIdx: number) => {
-                  if (paragraph.includes('faced failures')) {
-                    return (
-                      <p key={pIdx} className="bg-[#FFF9EB] border-l-4 border-[#FF2E93] p-3.5 rounded-r-2xl italic text-stone-800">
-                        {paragraph}
-                      </p>
-                    );
-                  }
-                  return <p key={pIdx}>{paragraph}</p>;
-                })
-              ) : (
-                <>
-                  <p>
-                    <strong>Divine’s Eternity</strong> is more than just a brand to me — it is a dream I carried with me since I was 16 years old. After completing my 12th, I finally decided to take that dream seriously and started working towards building something of my own.
-                  </p>
-                  <p>
-                    On <strong className="text-[#211D1C] underline decoration-[#FFD94A] decoration-2">August 31st</strong>, I officially started Divine’s Eternity, and that day will always remain one of the best days of my life.
-                  </p>
-                </>
-              )}
-
-              <div className="bg-[#FFF0F5] border border-pink-200 rounded-2xl p-4 text-center space-y-1 my-2">
-                <p className="font-bold text-[#211D1C] text-sm sm:text-base">
-                  This is not just my brand.
+              <div className="space-y-3">
+                <p className="text-xs font-extrabold uppercase tracking-widest text-[#FF2E93] flex items-center gap-2">
+                  <Award className="w-4 h-4 text-[#FFD94A]" />
+                  <span>A PERSONAL MESSAGE FROM SONU</span>
                 </p>
-                <p className="font-serif italic text-[#FF2E93] font-bold text-base sm:text-lg">
-                  This is my dream, my journey, and my Divine’s Eternity. ❤️
-                </p>
+                <h3 className="font-serif-heading text-xl sm:text-2xl font-bold text-[#211D1C]">
+                  {introText}
+                </h3>
+              </div>
+
+              {/* Letter Paragraphs */}
+              <div className="space-y-4 text-xs sm:text-sm text-stone-700 leading-relaxed max-h-96 overflow-y-auto pr-2">
+                {storyNote?.split('\n\n').map((paragraph, index) => (
+                  <p key={index} className="text-stone-700">
+                    {paragraph}
+                  </p>
+                ))}
+              </div>
+
+              {/* Sonu Signature Row */}
+              <div className="pt-4 border-t border-[#F3E8E2] flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <div className="font-serif italic font-bold text-xl text-[#FF2E93]">
+                    {signatureText}
+                  </div>
+                  <span className="text-[11px] text-stone-500 font-medium">
+                    Content Creator • Educator • Founder, Divine’s Eternity
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  {onExploreProducts && (
+                    <button
+                      onClick={onExploreProducts}
+                      className="px-4 py-2 rounded-xl bg-[#211D1C] hover:bg-[#FF2E93] text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+                    >
+                      <span>{ctaPrimaryText}</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                  {onJoinCreatorClub && (
+                    <button
+                      onClick={onJoinCreatorClub}
+                      className="px-4 py-2 rounded-xl bg-[#FFF0F5] hover:bg-[#FFE0E6] text-[#FF2E93] border border-[#FF2E93]/30 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer"
+                    >
+                      <Users className="w-3.5 h-3.5" />
+                      <span>{ctaSecondaryText}</span>
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
-
-            {/* Founder Signature */}
-            <div className="pt-4 border-t border-stone-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div>
-                <span className="text-xs text-stone-400 block font-serif italic">With love,</span>
-                <span className="font-serif-heading text-2xl font-bold text-[#211D1C]">{name}</span>
-                <span className="text-xs text-[#FF2E93] font-bold block">{role}</span>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-2">
-                {onExploreProducts && (
-                  <button
-                    onClick={onExploreProducts}
-                    className="px-5 py-2.5 rounded-full bg-[#211D1C] hover:bg-[#FF2E93] text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
-                  >
-                    <span>Explore {name}’s Creations</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
-                )}
-                {onJoinCreatorClub && (
-                  <button
-                    onClick={onJoinCreatorClub}
-                    className="px-5 py-2.5 rounded-full bg-[#FFF0F5] hover:bg-[#FF2E93] text-[#FF2E93] hover:text-white border border-[#FF2E93]/30 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
-                  >
-                    <Users className="w-3.5 h-3.5" />
-                    <span>Join Creator Club</span>
-                  </button>
-                )}
-              </div>
-            </div>
-
           </div>
-
         </div>
-
       </div>
     </section>
   );
 };
-

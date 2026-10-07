@@ -13,6 +13,16 @@ export interface MainCollection {
   }[];
 }
 
+export const SEVEN_COLLECTIONS: string[] = [
+  'Products',
+  'Personalization',
+  'Collaboration',
+  'Upcoming Campaigns',
+  'Creator Club',
+  'Affiliate Marketing',
+  'Podcast',
+];
+
 export const STRICT_COLLECTIONS: MainCollection[] = [
   {
     id: 'products',

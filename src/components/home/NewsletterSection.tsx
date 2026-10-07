@@ -1,11 +1,23 @@
 import React, { useState } from 'react';
-import { Mail, Sparkles, Check, ArrowRight } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { useMediaCMS } from '../../context/MediaCMSContext';
 
 export const NewsletterSection: React.FC = () => {
+  const { newsletterData } = useMediaCMS();
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
+
+  if (newsletterData?.isVisible === false) {
+    return null;
+  }
+
+  const eyebrow = newsletterData?.eyebrow || '✦ LITTLE NOTES, BIG MOODS';
+  const title = newsletterData?.title || 'Cute things are coming your way!';
+  const subtitle = newsletterData?.subtitle || 'New personalized jewellery drops, luxury gift hampers & private discounts—only the good stuff.';
+  const discountBadge = newsletterData?.discountBadge || 'Flat ₹100 Off';
+  const couponCode = newsletterData?.couponCode || 'LOVE100';
+  const buttonText = newsletterData?.buttonText || 'Join the club →';
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,31 +45,32 @@ export const NewsletterSection: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
           
-          {/* Left Column matching Screenshot 8 */}
+          {/* Left Column */}
           <div className="lg:col-span-6 space-y-3">
             <div className="text-[11px] font-extrabold uppercase tracking-widest text-[#E05A47] flex items-center gap-1.5">
-              <span>✦</span>
-              <span>LITTLE NOTES, BIG MOODS</span>
+              <span>{eyebrow}</span>
             </div>
             <h2 className="font-serif-heading text-3xl sm:text-4xl lg:text-5xl font-bold text-[#211D1C]">
-              Cute things are <br />
-              <span className="font-serif italic text-[#FF2E93] font-normal">coming your way!</span>
+              {title}
             </h2>
             <p className="text-xs sm:text-sm text-stone-700 max-w-md">
-              New personalized jewellery drops, luxury gift hampers & private discounts—only the good stuff.
+              {subtitle}
             </p>
           </div>
 
           {/* Right Column: Big Pill Input */}
           <div className="lg:col-span-6 space-y-2">
-            <div className="text-[11px] font-bold text-[#211D1C] ml-4">
-              Your email address
+            <div className="text-[11px] font-bold text-[#211D1C] ml-4 flex items-center justify-between">
+              <span>Your email address</span>
+              <span className="bg-[#211D1C] text-[#FFD94A] px-2 py-0.5 rounded-full text-[10px] font-extrabold">
+                {discountBadge}
+              </span>
             </div>
 
             {status === 'success' ? (
               <div className="bg-white p-4 rounded-full shadow-md border border-white flex items-center justify-between px-6">
                 <span className="text-xs font-bold text-[#211D1C]">
-                  🌸 Welcome to the Divine’s Eternity Club! Use code <strong className="text-[#FF2E93]">LOVE100</strong> at checkout.
+                  🌸 Welcome to the Divine’s Eternity Club! Use code <strong className="text-[#FF2E93]">{couponCode}</strong> at checkout.
                 </span>
               </div>
             ) : (
@@ -77,21 +90,17 @@ export const NewsletterSection: React.FC = () => {
                     type="submit"
                     className="bg-[#211D1C] hover:bg-black text-white px-7 py-3 rounded-full text-xs font-bold whitespace-nowrap transition-all active:scale-95 cursor-pointer shadow-xs"
                   >
-                    Join the club →
+                    {buttonText}
                   </button>
                 </div>
-
-                <div className="text-[10px] text-stone-600 ml-4">
-                  No spam. We have better things to design.
-                </div>
-
                 {status === 'error' && (
-                  <p className="text-xs font-bold text-rose-700 ml-4">{errorMessage}</p>
+                  <p className="text-xs text-rose-700 font-bold ml-4">
+                    {errorMessage}
+                  </p>
                 )}
               </form>
             )}
           </div>
-
         </div>
       </div>
     </section>

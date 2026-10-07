@@ -20,10 +20,37 @@ import {
   ArrowRight,
   ShieldCheck,
   X,
+  Clipboard,
+  ImagePlus,
+  Award,
+  Palette,
+  Users,
+  Calendar,
+  TrendingUp,
+  Headphones,
+  Truck,
+  MessageSquare,
+  Gift,
+  Heart,
+  CheckCircle2,
+  Sliders,
+  Type,
+  Mail,
+  ToggleLeft,
+  ToggleRight,
+  HelpCircle,
 } from 'lucide-react';
-import { Product, HeroSlideCMS, VideoReelCMS, AnnouncementCMS, BrandStoryCMS } from '../../types';
+import {
+  Product,
+  HeroSlideCMS,
+  VideoReelCMS,
+  AnnouncementCMS,
+  CategoryCircleCMS,
+  ValuePropCMS,
+  ChoiceTabCMS,
+} from '../../types';
 import { useMediaCMS } from '../../context/MediaCMSContext';
-import { PhoneCaseMockup } from '../../utils/productVisuals';
+import { SEVEN_COLLECTIONS } from '../../data/collectionsData';
 import confetti from 'canvas-confetti';
 
 interface MediaStudioCMSProps {
@@ -33,493 +60,482 @@ interface MediaStudioCMSProps {
 export const MediaStudioCMS: React.FC<MediaStudioCMSProps> = ({ products }) => {
   const {
     heroSlides,
-    videoReels,
-    announcements,
-    brandStory,
     updateHeroSlide,
     addHeroSlide,
     deleteHeroSlide,
+
+    categoryCircles,
+    updateCategoryCircle,
+    addCategoryCircle,
+    deleteCategoryCircle,
+
+    bestsellerSection,
+    updateBestsellerSection,
+
+    videoSection,
+    updateVideoSection,
+    videoReels,
     updateVideoReel,
     addVideoReel,
     deleteVideoReel,
+
+    founderData,
+    updateFounderData,
+
+    spotlightSection,
+    updateSpotlightSection,
+
+    choiceSection,
+    updateChoiceSection,
+    updateChoiceTab,
+    addChoiceTab,
+    deleteChoiceTab,
+
+    valueProps,
+    updateValueProp,
+    addValueProp,
+    deleteValueProp,
+
+    announcements,
     updateAnnouncement,
     addAnnouncement,
     deleteAnnouncement,
-    updateBrandStory,
+    marqueeData,
+    updateMarqueeData,
+
+    newsletterData,
+    updateNewsletterData,
+
     resetToDefaults,
   } = useMediaCMS();
 
-  // Active sub-section within media CMS
-  const [activeMediaSection, setActiveMediaSection] = useState<'slots' | 'hero' | 'reels' | 'announcements' | 'story'>('slots');
-  const [previewViewport, setPreviewViewport] = useState<'desktop' | 'mobile'>('desktop');
-  const [selectedPreviewSlide, setSelectedPreviewSlide] = useState(0);
+  // Active section tab
+  const [activeTab, setActiveTab] = useState<
+    | 'hero'
+    | 'circles'
+    | 'bestsellers'
+    | 'video'
+    | 'founder'
+    | 'spotlight'
+    | 'choice'
+    | 'valueprops'
+    | 'announcements'
+    | 'newsletter'
+  >('hero');
 
-  // Modals & Forms State
-  const [isAddSlideOpen, setIsAddSlideOpen] = useState(false);
-  const [isAddReelOpen, setIsAddReelOpen] = useState(false);
-  const [isAddAnnouncementOpen, setIsAddAnnouncementOpen] = useState(false);
+  const [feedbackToast, setFeedbackToast] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setFeedbackToast(msg);
+    setTimeout(() => setFeedbackToast(null), 3500);
+  };
+
+  // Helper for clipboard image paste
+  const handlePasteImageFromClipboard = async (setter: (url: string) => void) => {
+    try {
+      if (!navigator.clipboard?.read) {
+        const text = await navigator.clipboard.readText();
+        if (text && (text.startsWith('http') || text.startsWith('data:image'))) {
+          setter(text);
+          showToast('📋 Image URL pasted from clipboard!');
+          return;
+        }
+      }
+      const items = await navigator.clipboard.read();
+      for (const item of items) {
+        const imageType = item.types.find((t) => t.startsWith('image/'));
+        if (imageType) {
+          const blob = await item.getType(imageType);
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            if (e.target?.result) {
+              setter(e.target.result as string);
+              showToast('✨ Screenshot / Photo pasted from clipboard!');
+            }
+          };
+          reader.readAsDataURL(blob);
+          return;
+        }
+      }
+      const text = await navigator.clipboard.readText();
+      if (text && (text.startsWith('http') || text.startsWith('data:image'))) {
+        setter(text);
+        showToast('📋 Image link pasted!');
+      } else {
+        showToast('⚠️ No image or image link found in clipboard.');
+      }
+    } catch {
+      showToast('⚠️ Clipboard access error. Please use manual link or file upload.');
+    }
+  };
+
+  // Section 1: Hero Modals & Form
+  const [isSlideModalOpen, setIsSlideModalOpen] = useState(false);
   const [editingSlide, setEditingSlide] = useState<HeroSlideCMS | null>(null);
-  const [editingReel, setEditingReel] = useState<VideoReelCMS | null>(null);
-  const [editingAnnouncement, setEditingAnnouncement] = useState<AnnouncementCMS | null>(null);
-
-  // Hero Slide Form Fields
-  const [slideTitle, setSlideTitle] = useState('');
-  const [slideEyebrow, setSlideEyebrow] = useState('Atelier Spotlight');
-  const [slideTagline, setSlideTagline] = useState('');
   const [slideImageUrl, setSlideImageUrl] = useState('');
-  const [slideVideoUrl, setSlideVideoUrl] = useState('');
-  const [slideCoupon, setSlideCoupon] = useState('LOVE100');
-  const [slideCtaText, setSlideCtaText] = useState('Personalize Yours');
-  const [slideCtaCategory, setSlideCtaCategory] = useState('Personalized Name Jewelry');
+  const [slideTitle, setSlideTitle] = useState('');
+  const [slideEyebrow, setSlideEyebrow] = useState('');
+  const [slideTagline, setSlideTagline] = useState('');
+  const [slideCtaCategory, setSlideCtaCategory] = useState('products');
+  const [slideCoupon, setSlideCoupon] = useState('');
 
-  // Video Reel Form Fields
-  const [reelTitle, setReelTitle] = useState('');
-  const [reelTagline, setReelTagline] = useState('');
-  const [reelVideoUrl, setReelVideoUrl] = useState('');
-  const [reelPosterImage, setReelPosterImage] = useState('');
-  const [reelLinkedProduct, setReelLinkedProduct] = useState(products[0]?.id || 'gift-1');
-  const [reelDuration, setReelDuration] = useState(15);
-
-  // Announcement Form Fields
-  const [annText, setAnnText] = useState('');
-  const [annCode, setAnnCode] = useState('');
-  const [annHighlight, setAnnHighlight] = useState('');
-
-  // Brand Story Form Fields
-  const [storyTitle, setStoryTitle] = useState(brandStory.title);
-  const [storySubtitle, setStorySubtitle] = useState(brandStory.subtitle);
-  const [storyDesc, setStoryDesc] = useState(brandStory.description);
-  const [storyMediaUrl, setStoryMediaUrl] = useState(brandStory.mediaUrl);
-  const [storyPosterUrl, setStoryPosterUrl] = useState(brandStory.posterUrl);
-
-  // Curated Royalty-Free Luxury Media Presets
-  const PRESET_MEDIA = [
-    {
-      title: '18k Gold Casket Unboxing (Video)',
-      type: 'video',
-      url: 'https://assets.mixkit.co/videos/preview/mixkit-hands-of-a-woman-opening-a-jewelry-box-43306-large.mp4',
-      poster: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=600&q=80',
-    },
-    {
-      title: 'Preserved Rose Fairy Lights (Video)',
-      type: 'video',
-      url: 'https://assets.mixkit.co/videos/preview/mixkit-red-rose-in-a-glass-jar-with-lights-42907-large.mp4',
-      poster: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80',
-    },
-    {
-      title: 'Crystal Laser Prism Reflection (Video)',
-      type: 'video',
-      url: 'https://assets.mixkit.co/videos/preview/mixkit-crystal-glass-reflecting-colored-light-43224-large.mp4',
-      poster: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b675?auto=format&fit=crop&w=600&q=80',
-    },
-    {
-      title: 'Gold Vermeil Atelier Showcase (Image)',
-      type: 'image',
-      url: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=1200&q=80',
-      poster: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=600&q=80',
-    },
-  ];
+  const handleOpenSlideModal = (slide?: HeroSlideCMS) => {
+    if (slide) {
+      setEditingSlide(slide);
+      setSlideImageUrl(slide.customImageUrl || '');
+      setSlideTitle(slide.title);
+      setSlideEyebrow(slide.eyebrow);
+      setSlideTagline(slide.tagline);
+      setSlideCtaCategory(slide.ctaCategory || 'products');
+      setSlideCoupon(slide.coupon || '');
+    } else {
+      setEditingSlide(null);
+      setSlideImageUrl('');
+      setSlideTitle('NEW LUXURY COLLECTION');
+      setSlideEyebrow('Cute Things Inside ♡');
+      setSlideTagline('Thoughtful gifts for every special moment.');
+      setSlideCtaCategory('products');
+      setSlideCoupon('LOVE100');
+    }
+    setIsSlideModalOpen(true);
+  };
 
   const handleSaveSlide = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!slideTitle.trim()) return;
-
     if (editingSlide) {
       updateHeroSlide(editingSlide.id, {
-        title: slideTitle.trim(),
-        eyebrow: slideEyebrow.trim(),
-        tagline: slideTagline.trim(),
-        customImageUrl: slideImageUrl.trim() || undefined,
-        customVideoUrl: slideVideoUrl.trim() || undefined,
-        coupon: slideCoupon.trim().toUpperCase(),
-        ctaText: slideCtaText.trim(),
+        customImageUrl: slideImageUrl,
+        title: slideTitle,
+        eyebrow: slideEyebrow,
+        tagline: slideTagline,
         ctaCategory: slideCtaCategory,
+        coupon: slideCoupon,
       });
-      setEditingSlide(null);
+      showToast('✅ Hero Slide updated in real time!');
     } else {
       addHeroSlide({
-        title: slideTitle.trim(),
-        eyebrow: slideEyebrow.trim(),
-        tagline: slideTagline.trim(),
-        customImageUrl: slideImageUrl.trim() || undefined,
-        customVideoUrl: slideVideoUrl.trim() || undefined,
-        coupon: slideCoupon.trim().toUpperCase(),
-        ctaText: slideCtaText.trim(),
+        title: slideTitle,
+        eyebrow: slideEyebrow,
+        tagline: slideTagline,
+        coupon: slideCoupon,
+        highlightBadge: 'Special Collection',
+        ctaText: 'Explore Collection',
         ctaCategory: slideCtaCategory,
-        highlightBadge: 'Special Edition',
-        bgGradient: 'from-[#FAF4EC] via-[#FFFDF9] to-[#F7EFE5] dark:from-[#1A1417] dark:via-[#0F0D10] dark:to-[#171115]',
+        customImageUrl: slideImageUrl,
+        bgGradient: 'from-[#FFF9EB] via-[#FFF0F5] to-[#FFF9EB]',
         isActive: true,
       });
-      setIsAddSlideOpen(false);
+      showToast('🎉 New Hero Slide published to Home page!');
     }
-    confetti({ particleCount: 40, spread: 60, origin: { y: 0.5 } });
+    setIsSlideModalOpen(false);
+  };
+
+  // Section 2: Circle Modals & Form
+  const [isCircleModalOpen, setIsCircleModalOpen] = useState(false);
+  const [editingCircle, setEditingCircle] = useState<CategoryCircleCMS | null>(null);
+  const [circleName, setCircleName] = useState('');
+  const [circleSubtitle, setCircleSubtitle] = useState('');
+  const [circleImage, setCircleImage] = useState('');
+  const [circleBadge, setCircleBadge] = useState('');
+  const [circleRoute, setCircleRoute] = useState('products');
+
+  const handleOpenCircleModal = (circle?: CategoryCircleCMS) => {
+    if (circle) {
+      setEditingCircle(circle);
+      setCircleName(circle.name);
+      setCircleSubtitle(circle.subtitle);
+      setCircleImage(circle.image);
+      setCircleBadge(circle.badge);
+      setCircleRoute(circle.route);
+    } else {
+      setEditingCircle(null);
+      setCircleName('');
+      setCircleSubtitle('');
+      setCircleImage('');
+      setCircleBadge('Explore');
+      setCircleRoute('products');
+    }
+    setIsCircleModalOpen(true);
+  };
+
+  const handleSaveCircle = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editingCircle) {
+      updateCategoryCircle(editingCircle.id, {
+        name: circleName,
+        subtitle: circleSubtitle,
+        image: circleImage,
+        badge: circleBadge,
+        route: circleRoute,
+      });
+      showToast('✅ Collection Circle updated!');
+    } else {
+      addCategoryCircle({
+        name: circleName,
+        subtitle: circleSubtitle,
+        image: circleImage || 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=400&q=80',
+        badge: circleBadge,
+        route: circleRoute,
+        isActive: true,
+      });
+      showToast('🎉 New Collection Circle added!');
+    }
+    setIsCircleModalOpen(false);
+  };
+
+  // Section 4: Video Reel Modal & Form
+  const [isReelModalOpen, setIsReelModalOpen] = useState(false);
+  const [editingReel, setEditingReel] = useState<VideoReelCMS | null>(null);
+  const [reelTitle, setReelTitle] = useState('');
+  const [reelVideoUrl, setReelVideoUrl] = useState('');
+  const [reelPosterImage, setReelPosterImage] = useState('');
+  const [reelLinkedProduct, setReelLinkedProduct] = useState(products[0]?.id || 'gift-1');
+  const [reelViewsCount, setReelViewsCount] = useState('48.2k');
+
+  const handleOpenReelModal = (reel?: VideoReelCMS) => {
+    if (reel) {
+      setEditingReel(reel);
+      setReelTitle(reel.title);
+      setReelVideoUrl(reel.videoUrl);
+      setReelPosterImage(reel.posterImage);
+      setReelLinkedProduct(reel.linkedProductId);
+      setReelViewsCount(reel.viewsCount || '50k');
+    } else {
+      setEditingReel(null);
+      setReelTitle('');
+      setReelVideoUrl('https://assets.mixkit.co/videos/preview/mixkit-hands-of-a-woman-opening-a-jewelry-box-43306-large.mp4');
+      setReelPosterImage('');
+      setReelLinkedProduct(products[0]?.id || 'gift-1');
+      setReelViewsCount('45.5k');
+    }
+    setIsReelModalOpen(true);
   };
 
   const handleSaveReel = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!reelTitle.trim() || !reelVideoUrl.trim()) return;
-
     if (editingReel) {
       updateVideoReel(editingReel.id, {
-        title: reelTitle.trim(),
-        tagline: reelTagline.trim(),
-        videoUrl: reelVideoUrl.trim(),
-        posterImage: reelPosterImage.trim(),
+        title: reelTitle,
+        videoUrl: reelVideoUrl,
+        posterImage: reelPosterImage,
         linkedProductId: reelLinkedProduct,
-        durationSeconds: Number(reelDuration),
+        viewsCount: reelViewsCount,
       });
-      setEditingReel(null);
+      showToast('✅ Video Reel updated!');
     } else {
       addVideoReel({
-        title: reelTitle.trim(),
-        tagline: reelTagline.trim(),
-        videoUrl: reelVideoUrl.trim(),
-        posterImage: reelPosterImage.trim() || 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=600&q=80',
+        title: reelTitle,
+        tagline: 'Live customer unboxing',
+        videoUrl: reelVideoUrl,
+        posterImage: reelPosterImage,
         linkedProductId: reelLinkedProduct,
-        viewsCount: '1.2k',
-        durationSeconds: Number(reelDuration) || 15,
+        viewsCount: reelViewsCount,
+        durationSeconds: 15,
         isActive: true,
       });
-      setIsAddReelOpen(false);
+      showToast('🎉 New Video Reel published!');
     }
-    confetti({ particleCount: 40, spread: 60, origin: { y: 0.5 } });
+    setIsReelModalOpen(false);
   };
 
-  const handleSaveAnnouncement = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!annText.trim()) return;
+  // Section 8: Value Prop Modal
+  const [isValuePropModalOpen, setIsValuePropModalOpen] = useState(false);
+  const [editingProp, setEditingProp] = useState<ValuePropCMS | null>(null);
+  const [propTitle, setPropTitle] = useState('');
+  const [propDesc, setPropDesc] = useState('');
+  const [propIcon, setPropIcon] = useState<ValuePropCMS['icon']>('Sparkles');
+  const [propBadge, setPropBadge] = useState('');
 
-    if (editingAnnouncement) {
-      updateAnnouncement(editingAnnouncement.id, {
-        text: annText.trim(),
-        code: annCode.trim().toUpperCase(),
-        highlight: annHighlight.trim(),
+  const handleOpenPropModal = (prop?: ValuePropCMS) => {
+    if (prop) {
+      setEditingProp(prop);
+      setPropTitle(prop.title);
+      setPropDesc(prop.description);
+      setPropIcon(prop.icon);
+      setPropBadge(prop.highlightBadge);
+    } else {
+      setEditingProp(null);
+      setPropTitle('');
+      setPropDesc('');
+      setPropIcon('Sparkles');
+      setPropBadge('Guaranteed');
+    }
+    setIsValuePropModalOpen(true);
+  };
+
+  const handleSaveProp = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editingProp) {
+      updateValueProp(editingProp.id, {
+        title: propTitle,
+        description: propDesc,
+        icon: propIcon,
+        highlightBadge: propBadge,
       });
-      setEditingAnnouncement(null);
+      showToast('✅ Value Pillar updated!');
+    } else {
+      addValueProp({
+        title: propTitle,
+        description: propDesc,
+        icon: propIcon,
+        highlightBadge: propBadge,
+        isActive: true,
+      });
+      showToast('🎉 New Value Pillar added!');
+    }
+    setIsValuePropModalOpen(false);
+  };
+
+  // Section 9: Announcement Modal
+  const [isAnnModalOpen, setIsAnnModalOpen] = useState(false);
+  const [editingAnn, setEditingAnn] = useState<AnnouncementCMS | null>(null);
+  const [annText, setAnnText] = useState('');
+  const [annCode, setAnnCode] = useState('');
+  const [annHighlight, setAnnHighlight] = useState('');
+
+  const handleOpenAnnModal = (ann?: AnnouncementCMS) => {
+    if (ann) {
+      setEditingAnn(ann);
+      setAnnText(ann.text);
+      setAnnCode(ann.code);
+      setAnnHighlight(ann.highlight);
+    } else {
+      setEditingAnn(null);
+      setAnnText('');
+      setAnnCode('');
+      setAnnHighlight('');
+    }
+    setIsAnnModalOpen(true);
+  };
+
+  const handleSaveAnn = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editingAnn) {
+      updateAnnouncement(editingAnn.id, {
+        text: annText,
+        code: annCode,
+        highlight: annHighlight,
+      });
+      showToast('✅ Announcement banner updated!');
     } else {
       addAnnouncement({
-        text: annText.trim(),
-        code: annCode.trim().toUpperCase(),
-        highlight: annHighlight.trim() || 'Exclusive',
+        text: annText,
+        code: annCode,
+        highlight: annHighlight,
         isActive: true,
       });
-      setIsAddAnnouncementOpen(false);
+      showToast('🎉 New Announcement added!');
     }
-    confetti({ particleCount: 30, spread: 50, origin: { y: 0.5 } });
+    setIsAnnModalOpen(false);
   };
 
-  const handleSaveStory = (e: React.FormEvent) => {
-    e.preventDefault();
-    updateBrandStory({
-      title: storyTitle,
-      subtitle: storySubtitle,
-      description: storyDesc,
-      mediaUrl: storyMediaUrl,
-      posterUrl: storyPosterUrl,
-    });
-    confetti({ particleCount: 30, spread: 50, origin: { y: 0.5 } });
-  };
-
-  const activeSlide = heroSlides[selectedPreviewSlide] || heroSlides[0];
+  const SECTIONS_NAV = [
+    { id: 'hero', label: '1. Hero Carousel', count: `${heroSlides.length} Slides` },
+    { id: 'circles', label: '2. 7 Collections Circles', count: `${categoryCircles.length} Circles` },
+    { id: 'bestsellers', label: '3. Best Sellers Section', count: bestsellerSection.isVisible ? 'Visible' : 'Hidden' },
+    { id: 'video', label: '4. Video Shopping Reels', count: `${videoReels.length} Reels` },
+    { id: 'founder', label: '5. Founder’s Story & Column', count: founderData.isVisible !== false ? 'Active' : 'Hidden' },
+    { id: 'spotlight', label: '6. Curated Spotlight Row', count: spotlightSection.selectedCategory },
+    { id: 'choice', label: '7. Shop By Your Choice', count: `${choiceSection.tabs?.length || 0} Tabs` },
+    { id: 'valueprops', label: '8. 4 Value Props & Trust Badges', count: `${valueProps.length} Pillars` },
+    { id: 'announcements', label: '9. Top Bar & Marquee Ticker', count: `${announcements.length} Offers` },
+    { id: 'newsletter', label: '10. VIP Newsletter Banner', count: newsletterData.couponCode },
+  ];
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-150">
+    <div className="space-y-6 animate-in fade-in duration-200">
       
-      {/* Top Media Director Dashboard Banner */}
-      <div className="bg-gradient-to-r from-[#1C1917] via-[#2A1E24] to-[#1C1917] text-[#FAF7F2] p-6 sm:p-8 rounded-3xl border border-[#3E2D38] shadow-lg flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-        <div className="space-y-2">
+      {/* Toast Notification */}
+      {feedbackToast && (
+        <div className="fixed bottom-6 right-6 z-[9999] bg-[#211D1C] text-[#FFD94A] px-5 py-3 rounded-2xl shadow-2xl border border-[#FF2E93] text-xs font-bold flex items-center gap-2 animate-in slide-in-from-bottom-2">
+          <Sparkles className="w-4 h-4 text-[#FF2E93]" />
+          <span>{feedbackToast}</span>
+        </div>
+      )}
+
+      {/* Header Banner */}
+      <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-[#FFF0F5] via-[#FFF9EB] to-[#FFFDF8] border border-[#F3E8E2] shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="px-3 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase bg-[#C5A059] text-stone-950 flex items-center gap-1.5 shadow-xs">
-              <Sparkles className="w-3 h-3" /> Creative & Media Control
+            <span className="px-2.5 py-0.5 rounded-full bg-[#FF2E93] text-white text-[10px] font-extrabold uppercase tracking-widest">
+              Full Storefront CMS
             </span>
-            <span className="text-xs text-stone-400 font-mono">Live Visual Master</span>
+            <span className="flex items-center gap-1 text-[11px] text-emerald-700 font-bold bg-emerald-100/70 px-2.5 py-0.5 rounded-full border border-emerald-300">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              Real-Time Sync Active
+            </span>
           </div>
-          <h2 className="font-serif text-2xl sm:text-3xl font-bold text-white tracking-tight">
-            Storefront Media & Visual Placement Studio
+          <h2 className="font-serif-heading text-2xl sm:text-3xl font-extrabold text-[#211D1C]">
+            Homepage Sections & Visual CMS
           </h2>
-          <p className="text-xs sm:text-sm text-stone-300 max-w-xl">
-            You hold complete directorial control over every hero banner, video reel URL, background visual, announcement offer, and brand editorial shown across the website.
+          <p className="text-xs sm:text-sm text-stone-600 max-w-2xl">
+            Live customize banners, collection circles, headers, video reels, founder notes, spotlight rows, value pillars, and marquee announcements.
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2.5">
-          <button
-            onClick={resetToDefaults}
-            className="px-4 py-2.5 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/20 text-white border border-white/20 transition-all flex items-center gap-1.5"
-          >
-            <RefreshCw className="w-3.5 h-3.5" />
-            Reset Defaults
-          </button>
+        <div className="flex items-center gap-2.5 shrink-0">
           <button
             onClick={() => {
-              setSlideTitle('');
-              setSlideTagline('');
-              setSlideImageUrl('');
-              setSlideVideoUrl('');
-              setIsAddSlideOpen(true);
+              if (window.confirm('Restore all 10 Homepage sections to default curated state?')) {
+                resetToDefaults();
+                showToast('✨ All sections restored to atelier defaults!');
+              }
             }}
-            className="px-4 py-2.5 rounded-xl text-xs font-bold bg-[#881337] hover:bg-[#700f2d] text-white transition-all shadow-md flex items-center gap-1.5"
+            className="px-3.5 py-2 rounded-xl bg-white border border-[#F3E8E2] hover:border-[#FF2E93] text-[#211D1C] font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
           >
-            <Plus className="w-3.5 h-3.5" />
-            New Hero Slide
-          </button>
-          <button
-            onClick={() => {
-              setReelTitle('');
-              setReelTagline('');
-              setReelVideoUrl('');
-              setReelPosterImage('');
-              setIsAddReelOpen(true);
-            }}
-            className="px-4 py-2.5 rounded-xl text-xs font-bold bg-[#C5A059] hover:bg-[#b08c45] text-stone-950 transition-all shadow-md flex items-center gap-1.5"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            New Video Reel
+            <RefreshCw className="w-3.5 h-3.5 text-stone-400" />
+            <span>Reset All Defaults</span>
           </button>
         </div>
       </div>
 
-      {/* Sub Navigation for Media Categories */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-[#EFE7DE] dark:border-[#282127] no-scrollbar">
-        {[
-          { id: 'slots', label: 'Visual Layout Map & Live Simulator', icon: Layers },
-          { id: 'hero', label: `Hero Carousel Slides (${heroSlides.length})`, icon: ImageIcon },
-          { id: 'reels', label: `Shoppable Video Reels (${videoReels.length})`, icon: Video },
-          { id: 'announcements', label: `Announcement Bar Offers (${announcements.length})`, icon: Tag },
-          { id: 'story', label: 'Brand Atelier Story & Video', icon: Film },
-        ].map((sec) => {
-          const Icon = sec.icon;
-          const isActive = activeMediaSection === sec.id;
+      {/* Navigation Tabs for All 10 Sections */}
+      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2 pt-1 border-b border-[#F3E8E2]">
+        {SECTIONS_NAV.map((sec) => {
+          const isSelected = activeTab === sec.id;
           return (
             <button
               key={sec.id}
-              onClick={() => setActiveMediaSection(sec.id as any)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-                isActive
-                  ? 'bg-[#881337] text-white shadow-sm'
-                  : 'bg-white dark:bg-[#181418] text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800 border border-[#EFE7DE] dark:border-[#2D252A]'
+              onClick={() => setActiveTab(sec.id as any)}
+              className={`px-4 py-2.5 rounded-2xl text-xs font-bold whitespace-nowrap transition-all shrink-0 flex items-center gap-2 cursor-pointer ${
+                isSelected
+                  ? 'bg-[#211D1C] text-white shadow-md'
+                  : 'bg-white border border-[#F3E8E2] text-stone-700 hover:border-[#FF2E93] hover:text-[#FF2E93]'
               }`}
             >
-              <Icon className="w-3.5 h-3.5" />
               <span>{sec.label}</span>
+              <span
+                className={`text-[10px] px-2 py-0.5 rounded-full font-mono ${
+                  isSelected ? 'bg-[#FF2E93] text-white' : 'bg-stone-100 text-stone-600'
+                }`}
+              >
+                {sec.count}
+              </span>
             </button>
           );
         })}
       </div>
 
       {/* ============================================================ */}
-      {/* SECTION 1: VISUAL LAYOUT MAP & REAL-TIME VIEWPORT SIMULATOR */}
+      {/* SECTION 1: HERO FULL-BLEED BANNER CAROUSEL */}
       {/* ============================================================ */}
-      {activeMediaSection === 'slots' && (
-        <div className="space-y-8">
-          
-          {/* Viewport Mode Bar */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-[#181418] p-4 rounded-2xl border border-[#EFE7DE] dark:border-[#2C242A] shadow-xs">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-stone-500">
-                Live Storefront Simulator Viewport:
-              </span>
-              <div className="flex items-center p-1 bg-stone-100 dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800">
-                <button
-                  type="button"
-                  onClick={() => setPreviewViewport('desktop')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                    previewViewport === 'desktop'
-                      ? 'bg-white dark:bg-stone-800 text-[#881337] dark:text-[#FB7185] shadow-xs'
-                      : 'text-stone-500 hover:text-stone-900 dark:hover:text-white'
-                  }`}
-                >
-                  <Monitor className="w-3.5 h-3.5" />
-                  <span>Desktop (1280px)</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPreviewViewport('mobile')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                    previewViewport === 'mobile'
-                      ? 'bg-white dark:bg-stone-800 text-[#881337] dark:text-[#FB7185] shadow-xs'
-                      : 'text-stone-500 hover:text-stone-900 dark:hover:text-white'
-                  }`}
-                >
-                  <Smartphone className="w-3.5 h-3.5" />
-                  <span>Mobile (375px)</span>
-                </button>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-stone-500">Previewing Hero Slide:</span>
-              <select
-                value={selectedPreviewSlide}
-                onChange={(e) => setSelectedPreviewSlide(Number(e.target.value))}
-                className="bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-700 text-xs font-bold rounded-xl px-3 py-1.5 text-stone-800 dark:text-stone-200"
-              >
-                {heroSlides.map((s, idx) => (
-                  <option key={s.id} value={idx}>
-                    Slide #{idx + 1}: {s.title}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Interactive Simulated Container */}
-          <div className="flex justify-center p-4 sm:p-8 bg-stone-900/10 dark:bg-black/30 rounded-3xl border border-stone-200 dark:border-stone-800">
-            <div
-              className={`transition-all duration-300 bg-white dark:bg-[#0F0D10] rounded-3xl shadow-2xl overflow-hidden border border-stone-300 dark:border-stone-800 ${
-                previewViewport === 'mobile' ? 'w-[375px] min-h-[640px]' : 'w-full max-w-5xl'
-              }`}
-            >
-              {/* Simulated Top Announcement Bar */}
-              {announcements.length > 0 && announcements[0].isActive && (
-                <div className="bg-[#1C1917] text-[#FAF7F2] text-[10px] py-1.5 px-3 text-center flex items-center justify-center gap-1 border-b border-stone-800">
-                  <Sparkles className="w-2.5 h-2.5 text-[#E5C378]" />
-                  <span>{announcements[0].text}</span>
-                  {announcements[0].code && (
-                    <span className="bg-[#881337] text-white px-1.5 py-0.2 rounded font-mono font-bold">
-                      {announcements[0].code}
-                    </span>
-                  )}
-                </div>
-              )}
-
-              {/* Simulated Hero Section (Full Image Banner) */}
-              {activeSlide && (
-                <div className="relative w-full aspect-[21/9] sm:aspect-[24/9] bg-stone-900 overflow-hidden group flex items-center justify-center">
-                  {activeSlide.customVideoUrl ? (
-                    <video
-                      src={activeSlide.customVideoUrl}
-                      autoPlay
-                      loop
-                      muted
-                      playsInline
-                      className="absolute inset-0 w-full h-full object-cover pointer-events-none"
-                    />
-                  ) : (
-                    <img
-                      src={
-                        activeSlide.customImageUrl ||
-                        'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=1200&q=80'
-                      }
-                      alt={activeSlide.title || 'Slide Banner'}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        (e.currentTarget as HTMLImageElement).src =
-                          'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=1200&q=80';
-                      }}
-                    />
-                  )}
-                </div>
-              )}
-
-              {/* Simulated Video Reels Strip in Miniature */}
-              <div className="p-4 bg-stone-50 dark:bg-[#141014] border-t border-stone-200 dark:border-stone-800 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-serif font-bold text-stone-900 dark:text-white">
-                    Watch Atelier Craft & Reels
-                  </span>
-                  <span className="text-[10px] text-stone-500">{videoReels.length} Active Video Slots</span>
-                </div>
-
-                <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
-                  {videoReels.slice(0, 4).map((reel) => (
-                    <div
-                      key={reel.id}
-                      className="w-24 shrink-0 rounded-xl bg-stone-900 aspect-[9/14] relative overflow-hidden shadow-xs"
-                    >
-                      {reel.videoUrl ? (
-                        <video
-                          src={reel.videoUrl}
-                          muted
-                          loop
-                          playsInline
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <img
-                          src={reel.posterImage}
-                          alt={reel.title}
-                          className="w-full h-full object-cover"
-                        />
-                      )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent p-1.5 flex flex-col justify-end text-[8px] text-white">
-                        <p className="line-clamp-1 font-bold">{reel.title}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Quick Preset Library Bar */}
-          <div className="bg-white dark:bg-[#181418] p-6 rounded-2xl border border-[#EFE7DE] dark:border-[#2C242A] space-y-4">
-            <h4 className="font-serif font-bold text-sm text-stone-900 dark:text-white flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-[#C5A059]" />
-              <span>Directorial Quick Media Presets (1-Click Paste)</span>
-            </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {PRESET_MEDIA.map((preset, idx) => (
-                <div
-                  key={idx}
-                  className="p-3 rounded-xl bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 space-y-2 flex flex-col justify-between"
-                >
-                  <div className="space-y-1">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#881337] dark:text-[#FB7185] bg-rose-50 dark:bg-rose-950/40 px-2 py-0.5 rounded">
-                      {preset.type.toUpperCase()}
-                    </span>
-                    <h5 className="font-bold text-xs text-stone-900 dark:text-white">{preset.title}</h5>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (activeSlide) {
-                        if (preset.type === 'video') {
-                          updateHeroSlide(activeSlide.id, { customVideoUrl: preset.url });
-                        } else {
-                          updateHeroSlide(activeSlide.id, { customImageUrl: preset.url });
-                        }
-                        confetti({ particleCount: 30, spread: 50, origin: { y: 0.6 } });
-                      }
-                    }}
-                    className="w-full py-1.5 rounded-lg text-xs font-semibold bg-[#1C1917] hover:bg-[#881337] text-white transition-colors text-center"
-                  >
-                    Apply to Slide #{selectedPreviewSlide + 1}
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ============================================================ */}
-      {/* SECTION 2: HERO CAROUSEL SLIDES CMS */}
-      {/* ============================================================ */}
-      {activeMediaSection === 'hero' && (
+      {activeTab === 'hero' && (
         <div className="space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-[#181418] p-5 rounded-2xl border border-[#EFE7DE] dark:border-[#2C242A] shadow-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-white border border-[#F3E8E2]">
             <div>
-              <h3 className="font-serif font-bold text-lg text-stone-900 dark:text-white flex items-center gap-2">
-                <ImageIcon className="w-5 h-5 text-[#881337] dark:text-[#FB7185]" />
-                <span>Hero Banner Carousel Slots ({heroSlides.length})</span>
+              <h3 className="font-serif-heading font-bold text-lg text-[#211D1C]">
+                Section 1: Hero Full-Bleed Banner Carousel
               </h3>
               <p className="text-xs text-stone-500">
-                Directly configure desktop/mobile image links, background video MP4s, headlines, and discount codes.
+                100% viewport width edge-to-edge images with zero overlay text.
               </p>
             </div>
             <button
-              onClick={() => {
-                setSlideTitle('');
-                setSlideTagline('');
-                setSlideImageUrl('');
-                setSlideVideoUrl('');
-                setIsAddSlideOpen(true);
-              }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-[#881337] text-white hover:bg-[#700f2d] transition-all shadow-sm"
+              onClick={() => handleOpenSlideModal()}
+              className="px-4 py-2.5 rounded-xl bg-[#FF2E93] hover:bg-[#e02680] text-white font-bold text-xs flex items-center gap-2 shadow-xs cursor-pointer active:scale-95 transition-all"
             >
               <Plus className="w-4 h-4" />
-              Add Hero Slide
+              <span>Add New Hero Slide</span>
             </button>
           </div>
 
@@ -527,71 +543,71 @@ export const MediaStudioCMS: React.FC<MediaStudioCMSProps> = ({ products }) => {
             {heroSlides.map((slide, idx) => (
               <div
                 key={slide.id}
-                className="bg-white dark:bg-[#181418] rounded-2xl border border-[#EFE7DE] dark:border-[#2C242A] p-5 shadow-xs flex flex-col justify-between space-y-4"
+                className="bg-white rounded-3xl border border-[#F3E8E2] overflow-hidden shadow-sm flex flex-col justify-between group hover:shadow-md transition-shadow"
               >
                 <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#881337] dark:text-[#FB7185] bg-[#881337]/10 px-2.5 py-1 rounded-lg">
-                      Slide #{idx + 1} · {slide.eyebrow}
-                    </span>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={slide.isActive}
-                        onChange={(e) => updateHeroSlide(slide.id, { isActive: e.target.checked })}
-                        className="sr-only peer"
+                  <div className="relative aspect-[16/9] bg-stone-900 overflow-hidden flex items-center justify-center">
+                    {slide.customImageUrl ? (
+                      <img
+                        src={slide.customImageUrl}
+                        alt={slide.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
-                      <div className="w-8 h-4 bg-stone-200 peer-focus:outline-none rounded-full peer dark:bg-stone-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-emerald-600" />
-                    </label>
+                    ) : (
+                      <div className="text-stone-400 text-xs font-mono">No Image Attached</div>
+                    )}
+                    <div className="absolute top-3 left-3 bg-black/70 text-white px-2.5 py-1 rounded-full text-[10px] font-bold">
+                      Slide #{idx + 1}
+                    </div>
+                    <div className="absolute top-3 right-3">
+                      <button
+                        onClick={() => updateHeroSlide(slide.id, { isActive: !slide.isActive })}
+                        className={`px-2.5 py-1 rounded-full text-[10px] font-bold transition-colors cursor-pointer ${
+                          slide.isActive !== false
+                            ? 'bg-emerald-500 text-white'
+                            : 'bg-stone-500 text-white'
+                        }`}
+                      >
+                        {slide.isActive !== false ? '🟢 Active' : '⚪ Hidden'}
+                      </button>
+                    </div>
                   </div>
 
-                  <h5 className="font-serif font-bold text-base text-stone-900 dark:text-white line-clamp-1 mb-1">
-                    {slide.title}
-                  </h5>
-                  <p className="text-xs text-stone-500 line-clamp-2 mb-3">
-                    {slide.tagline}
-                  </p>
-
-                  <div className="space-y-1.5 text-[11px] text-stone-600 dark:text-stone-300 p-3 rounded-xl bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800">
-                    <div className="truncate">
-                      Custom Image: <span className="font-mono text-stone-400">{slide.customImageUrl || 'Default 3D Model'}</span>
+                  <div className="p-4 space-y-2">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-bold text-[#211D1C] truncate">{slide.title}</span>
+                      {slide.coupon && (
+                        <span className="font-mono text-[10px] font-bold px-2 py-0.5 rounded bg-[#FFF0F5] text-[#FF2E93]">
+                          {slide.coupon}
+                        </span>
+                      )}
                     </div>
-                    <div className="truncate">
-                      Video MP4: <span className="font-mono text-stone-400">{slide.customVideoUrl || 'None'}</span>
-                    </div>
-                    <div>
-                      Discount Promo: <strong className="font-mono text-[#881337] dark:text-[#FB7185]">{slide.coupon || 'None'}</strong>
-                    </div>
+                    <p className="text-[11px] text-stone-500 line-clamp-1">
+                      Target Route: <strong className="text-[#211D1C]">{slide.ctaCategory || 'products'}</strong>
+                    </p>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between pt-3 border-t border-[#EFE7DE] dark:border-[#282127]">
+                <div className="p-3 bg-[#FFFDF8] border-t border-[#F3E8E2] flex items-center justify-between gap-2">
+                  <button
+                    onClick={() => handleOpenSlideModal(slide)}
+                    className="flex-1 py-1.5 rounded-xl bg-white border border-[#F3E8E2] hover:border-[#FF2E93] text-[#211D1C] text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    <Edit3 className="w-3.5 h-3.5 text-[#FF2E93]" />
+                    <span>Edit Photo & Link</span>
+                  </button>
                   <button
                     onClick={() => {
-                      setEditingSlide(slide);
-                      setSlideTitle(slide.title);
-                      setSlideEyebrow(slide.eyebrow);
-                      setSlideTagline(slide.tagline);
-                      setSlideImageUrl(slide.customImageUrl || '');
-                      setSlideVideoUrl(slide.customVideoUrl || '');
-                      setSlideCoupon(slide.coupon || '');
-                      setSlideCtaText(slide.ctaText || 'Personalize Yours');
-                      setSlideCtaCategory(slide.ctaCategory || 'Personalized Name Jewelry');
+                      if (window.confirm('Delete this hero slide?')) {
+                        deleteHeroSlide(slide.id);
+                        showToast('Slide deleted.');
+                      }
                     }}
-                    className="inline-flex items-center gap-1 text-xs font-semibold text-[#881337] dark:text-[#FB7185] hover:underline"
+                    className="p-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 transition-colors cursor-pointer"
+                    title="Delete Slide"
                   >
-                    <Edit3 className="w-3.5 h-3.5" /> Edit Slide Content
+                    <Trash2 className="w-3.5 h-3.5" />
                   </button>
-
-                  {heroSlides.length > 1 && (
-                    <button
-                      onClick={() => deleteHeroSlide(slide.id)}
-                      className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
-                      title="Delete Slide"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  )}
                 </div>
               </div>
             ))}
@@ -600,110 +616,301 @@ export const MediaStudioCMS: React.FC<MediaStudioCMSProps> = ({ products }) => {
       )}
 
       {/* ============================================================ */}
-      {/* SECTION 3: SHOPPABLE VIDEO REELS CMS */}
+      {/* SECTION 2: 7 COLLECTIONS CIRCLES */}
       {/* ============================================================ */}
-      {activeMediaSection === 'reels' && (
+      {activeTab === 'circles' && (
         <div className="space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-[#181418] p-5 rounded-2xl border border-[#EFE7DE] dark:border-[#2C242A] shadow-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-white border border-[#F3E8E2]">
             <div>
-              <h3 className="font-serif font-bold text-lg text-stone-900 dark:text-white flex items-center gap-2">
-                <Video className="w-5 h-5 text-[#C5A059]" />
-                <span>Interactive Shoppable Video Reels ({videoReels.length})</span>
+              <h3 className="font-serif-heading font-bold text-lg text-[#211D1C]">
+                Section 2: Explore Our 7 Collections Circles
               </h3>
               <p className="text-xs text-stone-500">
-                Manage vertical video links, preview thumbnails, and product checkout links.
+                Manage circular visual categories, photos, subtitles, and destination collection routes.
+              </p>
+            </div>
+            <button
+              onClick={() => handleOpenCircleModal()}
+              className="px-4 py-2.5 rounded-xl bg-[#FF2E93] hover:bg-[#e02680] text-white font-bold text-xs flex items-center gap-2 shadow-xs cursor-pointer active:scale-95 transition-all"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Add Collection Circle</span>
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {categoryCircles.map((col, index) => (
+              <div
+                key={col.id}
+                className="bg-white p-4 rounded-3xl border border-[#F3E8E2] shadow-sm flex flex-col items-center text-center justify-between space-y-3 relative group"
+              >
+                <div className="flex flex-col items-center space-y-2 w-full">
+                  <div className="relative">
+                    <div className="w-20 h-20 rounded-full p-1 border-2 border-[#FF2E93] overflow-hidden shadow-xs">
+                      <img
+                        src={col.image}
+                        alt={col.name}
+                        className="w-full h-full object-cover rounded-full group-hover:scale-105 transition-transform"
+                      />
+                    </div>
+                    <span className="absolute bottom-0 right-0 w-5 h-5 bg-[#FFD94A] rounded-full text-[10px] font-extrabold flex items-center justify-center border border-white">
+                      {index + 1}
+                    </span>
+                  </div>
+
+                  <div>
+                    <h4 className="font-bold text-sm text-[#211D1C]">{col.name}</h4>
+                    <p className="text-[11px] text-stone-500">{col.subtitle}</p>
+                    <span className="inline-block mt-1 bg-[#FFF0F5] text-[#FF2E93] text-[10px] font-bold px-2 py-0.5 rounded-full">
+                      Route: #{col.route}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 w-full pt-2 border-t border-[#F3E8E2]">
+                  <button
+                    onClick={() => handleOpenCircleModal(col)}
+                    className="flex-1 py-1.5 rounded-xl bg-white border border-[#F3E8E2] hover:border-[#FF2E93] text-xs font-bold text-[#211D1C] flex items-center justify-center gap-1 cursor-pointer"
+                  >
+                    <Edit3 className="w-3 h-3 text-[#FF2E93]" />
+                    <span>Edit</span>
+                  </button>
+                  <button
+                    onClick={() => updateCategoryCircle(col.id, { isActive: !col.isActive })}
+                    className={`px-2.5 py-1.5 rounded-xl text-xs font-bold cursor-pointer ${
+                      col.isActive !== false ? 'bg-emerald-100 text-emerald-800' : 'bg-stone-100 text-stone-500'
+                    }`}
+                  >
+                    {col.isActive !== false ? 'Active' : 'Off'}
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (window.confirm('Delete this collection circle?')) {
+                        deleteCategoryCircle(col.id);
+                        showToast('Circle removed.');
+                      }
+                    }}
+                    className="p-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 cursor-pointer"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* SECTION 3: MEET THE BEST SELLERS */}
+      {/* ============================================================ */}
+      {activeTab === 'bestsellers' && (
+        <div className="p-6 rounded-3xl bg-white border border-[#F3E8E2] space-y-6">
+          <div className="flex items-center justify-between pb-4 border-b border-[#F3E8E2]">
+            <div>
+              <h3 className="font-serif-heading font-bold text-lg text-[#211D1C]">
+                Section 3: Meet the Best Sellers Header & Settings
+              </h3>
+              <p className="text-xs text-stone-500">
+                Configure eyebrow tags, title, italic accent word, subtitle, and section visibility.
               </p>
             </div>
             <button
               onClick={() => {
-                setReelTitle('');
-                setReelTagline('');
-                setReelVideoUrl('');
-                setReelPosterImage('');
-                setIsAddReelOpen(true);
+                updateBestsellerSection({ isVisible: !bestsellerSection.isVisible });
+                showToast(bestsellerSection.isVisible ? 'Bestseller section hidden' : 'Bestseller section visible');
               }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-[#C5A059] text-stone-950 hover:bg-[#b08c45] transition-all shadow-sm"
+              className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 cursor-pointer transition-colors ${
+                bestsellerSection.isVisible
+                  ? 'bg-emerald-500 text-white'
+                  : 'bg-stone-200 text-stone-700'
+              }`}
             >
-              <Plus className="w-4 h-4" />
-              Add Video Reel
+              <span>{bestsellerSection.isVisible ? '🟢 Section Visible' : '⚪ Section Hidden'}</span>
             </button>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+            <div className="space-y-1">
+              <label className="font-bold text-[#211D1C]">Eyebrow Tag Badge</label>
+              <input
+                type="text"
+                value={bestsellerSection.eyebrow}
+                onChange={(e) => updateBestsellerSection({ eyebrow: e.target.value })}
+                className="w-full bg-[#FFF9EB] border border-[#F5E6CE] focus:border-[#FF2E93] rounded-xl px-3 py-2 text-[#211D1C] font-semibold outline-none"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="font-bold text-[#211D1C]">Discount Promo Pill</label>
+              <input
+                type="text"
+                value={bestsellerSection.discountText || ''}
+                onChange={(e) => updateBestsellerSection({ discountText: e.target.value })}
+                className="w-full bg-[#FFF9EB] border border-[#F5E6CE] focus:border-[#FF2E93] rounded-xl px-3 py-2 text-[#211D1C] outline-none"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="font-bold text-[#211D1C]">Main Title Prefix</label>
+              <input
+                type="text"
+                value={bestsellerSection.titlePrefix}
+                onChange={(e) => updateBestsellerSection({ titlePrefix: e.target.value })}
+                className="w-full bg-[#FFF9EB] border border-[#F5E6CE] focus:border-[#FF2E93] rounded-xl px-3 py-2 text-[#211D1C] font-semibold outline-none"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="font-bold text-[#211D1C]">Italic Accent Word</label>
+              <input
+                type="text"
+                value={bestsellerSection.titleHighlight}
+                onChange={(e) => updateBestsellerSection({ titleHighlight: e.target.value })}
+                className="w-full bg-[#FFF9EB] border border-[#F5E6CE] focus:border-[#FF2E93] rounded-xl px-3 py-2 text-[#FF2E93] font-serif italic font-bold outline-none"
+              />
+            </div>
+
+            <div className="sm:col-span-2 space-y-1">
+              <label className="font-bold text-[#211D1C]">Subtitle / Tagline Description</label>
+              <textarea
+                rows={2}
+                value={bestsellerSection.subtitle}
+                onChange={(e) => updateBestsellerSection({ subtitle: e.target.value })}
+                className="w-full bg-[#FFF9EB] border border-[#F5E6CE] focus:border-[#FF2E93] rounded-xl px-3 py-2 text-[#211D1C] outline-none"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* SECTION 4: WATCH IT & BUY IT (VIDEO REELS) */}
+      {/* ============================================================ */}
+      {activeTab === 'video' && (
+        <div className="space-y-6">
+          <div className="p-6 rounded-3xl bg-white border border-[#F3E8E2] space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-[#F3E8E2]">
+              <div>
+                <h3 className="font-serif-heading font-bold text-lg text-[#211D1C]">
+                  Section 4: Watch It And Buy It (Video Reels)
+                </h3>
+                <p className="text-xs text-stone-500">
+                  Manage MP4 links, custom unboxing posters, duration, views tag, and 1-click product purchase links.
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => updateVideoSection({ isVisible: !videoSection.isVisible })}
+                  className={`px-3.5 py-2 rounded-xl text-xs font-bold cursor-pointer ${
+                    videoSection.isVisible ? 'bg-emerald-500 text-white' : 'bg-stone-200 text-stone-700'
+                  }`}
+                >
+                  {videoSection.isVisible ? '🟢 Section Visible' : '⚪ Hidden'}
+                </button>
+                <button
+                  onClick={() => handleOpenReelModal()}
+                  className="px-4 py-2 rounded-xl bg-[#FF2E93] hover:bg-[#e02680] text-white font-bold text-xs flex items-center gap-1.5 shadow-xs cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Add New Video Reel</span>
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+              <div className="space-y-1">
+                <label className="font-bold text-[#211D1C]">Eyebrow Badge</label>
+                <input
+                  type="text"
+                  value={videoSection.eyebrow}
+                  onChange={(e) => updateVideoSection({ eyebrow: e.target.value })}
+                  className="w-full bg-[#FFF9EB] border border-[#F5E6CE] rounded-xl px-3 py-2 text-[#211D1C] outline-none"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="font-bold text-[#211D1C]">Title Prefix</label>
+                <input
+                  type="text"
+                  value={videoSection.titlePrefix}
+                  onChange={(e) => updateVideoSection({ titlePrefix: e.target.value })}
+                  className="w-full bg-[#FFF9EB] border border-[#F5E6CE] rounded-xl px-3 py-2 text-[#211D1C] outline-none"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="font-bold text-[#211D1C]">Title Highlight</label>
+                <input
+                  type="text"
+                  value={videoSection.titleHighlight}
+                  onChange={(e) => updateVideoSection({ titleHighlight: e.target.value })}
+                  className="w-full bg-[#FFF9EB] border border-[#F5E6CE] rounded-xl px-3 py-2 text-[#FF2E93] font-serif italic outline-none"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {videoReels.map((reel) => {
-              const linkedProd = products.find((p) => p.id === reel.linkedProductId);
+              const linkedProd = products.find((p) => p.id === reel.linkedProductId) || products[0];
               return (
                 <div
                   key={reel.id}
-                  className="bg-white dark:bg-[#181418] rounded-2xl border border-[#EFE7DE] dark:border-[#2C242A] overflow-hidden shadow-xs flex flex-col justify-between"
+                  className="bg-white rounded-3xl border border-[#F3E8E2] overflow-hidden shadow-sm flex flex-col justify-between group"
                 >
-                  <div className="relative aspect-[9/14] bg-stone-900 overflow-hidden group">
-                    {reel.videoUrl ? (
-                      <video
-                        src={reel.videoUrl}
-                        muted
-                        loop
-                        playsInline
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <img
-                        src={reel.posterImage}
-                        alt={reel.title}
-                        className="w-full h-full object-cover"
-                      />
-                    )}
-
-                    <div className="absolute top-2.5 left-2.5 bg-black/70 px-2 py-0.5 rounded text-[10px] font-bold text-white">
-                      {reel.durationSeconds}s
-                    </div>
-
-                    <div className="absolute top-2.5 right-2.5">
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={reel.isActive}
-                          onChange={(e) => updateVideoReel(reel.id, { isActive: e.target.checked })}
-                          className="sr-only peer"
+                  <div>
+                    <div className="relative aspect-[9/14] bg-stone-900 overflow-hidden flex items-center justify-center">
+                      {reel.posterImage ? (
+                        <img
+                          src={reel.posterImage}
+                          alt={reel.title}
+                          className="w-full h-full object-cover"
                         />
-                        <div className="w-7 h-3.5 bg-stone-700 rounded-full peer peer-checked:bg-emerald-500 after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:after:translate-x-full" />
-                      </label>
+                      ) : (
+                        <div className="text-center p-4 text-white text-xs">
+                          <Play className="w-8 h-8 mx-auto mb-2 text-[#FF2E93]" />
+                          <span>MP4 Video Active</span>
+                        </div>
+                      )}
+                      <div className="absolute top-2 left-2 bg-black/70 text-white px-2 py-0.5 rounded text-[10px] font-bold">
+                        {reel.viewsCount || '48k views'}
+                      </div>
                     </div>
 
-                    <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/90 to-transparent text-white text-xs">
-                      <p className="font-semibold line-clamp-2">{reel.title}</p>
+                    <div className="p-3.5 space-y-1 text-xs">
+                      <h4 className="font-bold text-[#211D1C] line-clamp-1">{reel.title}</h4>
+                      <p className="text-[10px] text-stone-500">
+                        Linked: <strong className="text-[#FF2E93]">{linkedProd?.name || reel.linkedProductId}</strong>
+                      </p>
                     </div>
                   </div>
 
-                  <div className="p-3.5 space-y-2.5">
-                    <div className="text-[11px] text-stone-500 truncate">
-                      Linked: <strong className="text-stone-900 dark:text-white">{linkedProd?.name || 'Custom Keepsake'}</strong>
-                    </div>
-
-                    <div className="flex items-center justify-between pt-2 border-t border-[#EFE7DE] dark:border-[#282127]">
-                      <button
-                        onClick={() => {
-                          setEditingReel(reel);
-                          setReelTitle(reel.title);
-                          setReelTagline(reel.tagline);
-                          setReelVideoUrl(reel.videoUrl);
-                          setReelPosterImage(reel.posterImage);
-                          setReelLinkedProduct(reel.linkedProductId);
-                          setReelDuration(reel.durationSeconds);
-                        }}
-                        className="text-xs font-semibold text-[#881337] dark:text-[#FB7185] hover:underline"
-                      >
-                        Edit Reel
-                      </button>
-
-                      <button
-                        onClick={() => deleteVideoReel(reel.id)}
-                        className="p-1 text-rose-500 hover:text-rose-700"
-                        title="Delete Reel"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
+                  <div className="p-3 bg-[#FFFDF8] border-t border-[#F3E8E2] flex items-center justify-between gap-1.5">
+                    <button
+                      onClick={() => handleOpenReelModal(reel)}
+                      className="flex-1 py-1.5 rounded-xl bg-white border border-[#F3E8E2] hover:border-[#FF2E93] text-xs font-bold text-[#211D1C] flex items-center justify-center gap-1 cursor-pointer"
+                    >
+                      <Edit3 className="w-3 h-3 text-[#FF2E93]" />
+                      <span>Edit Reel</span>
+                    </button>
+                    <button
+                      onClick={() => updateVideoReel(reel.id, { isActive: !reel.isActive })}
+                      className={`px-2 py-1.5 rounded-xl text-[10px] font-bold cursor-pointer ${
+                        reel.isActive ? 'bg-emerald-100 text-emerald-800' : 'bg-stone-100 text-stone-500'
+                      }`}
+                    >
+                      {reel.isActive ? 'Live' : 'Hidden'}
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (window.confirm('Delete this reel?')) {
+                          deleteVideoReel(reel.id);
+                          showToast('Reel deleted.');
+                        }
+                      }}
+                      className="p-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 cursor-pointer"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 </div>
               );
@@ -713,74 +920,483 @@ export const MediaStudioCMS: React.FC<MediaStudioCMSProps> = ({ products }) => {
       )}
 
       {/* ============================================================ */}
-      {/* SECTION 4: ANNOUNCEMENT OFFERS CMS */}
+      {/* SECTION 5: FOUNDER’S STORY & COLUMN */}
       {/* ============================================================ */}
-      {activeMediaSection === 'announcements' && (
-        <div className="space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-[#181418] p-5 rounded-2xl border border-[#EFE7DE] dark:border-[#2C242A] shadow-xs">
+      {activeTab === 'founder' && (
+        <div className="p-6 sm:p-8 rounded-3xl bg-white border border-[#F3E8E2] space-y-6">
+          <div className="flex items-center justify-between pb-4 border-b border-[#F3E8E2]">
             <div>
-              <h3 className="font-serif font-bold text-lg text-stone-900 dark:text-white flex items-center gap-2">
-                <Tag className="w-5 h-5 text-[#881337] dark:text-[#FB7185]" />
-                <span>Global Top Announcement Bar Marquee ({announcements.length})</span>
+              <h3 className="font-serif-heading font-bold text-lg text-[#211D1C]">
+                Section 5: Founder’s Story (Sonu Personal Letter & Column)
               </h3>
               <p className="text-xs text-stone-500">
-                Rotate promo offers, free shipping banners, and one-click discount codes.
+                Change founder name, photo (paste/upload), badges, personal letter, quote, and CTA labels.
               </p>
             </div>
             <button
               onClick={() => {
-                setAnnText('');
-                setAnnCode('');
-                setAnnHighlight('Special');
-                setIsAddAnnouncementOpen(true);
+                updateFounderData({ isVisible: founderData.isVisible === false ? true : false });
+                showToast(founderData.isVisible === false ? 'Founder section enabled' : 'Founder section hidden');
               }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-[#881337] text-white hover:bg-[#700f2d] transition-all shadow-sm"
+              className={`px-4 py-2 rounded-xl text-xs font-bold cursor-pointer ${
+                founderData.isVisible !== false ? 'bg-emerald-500 text-white' : 'bg-stone-200 text-stone-700'
+              }`}
             >
-              <Plus className="w-4 h-4" />
-              Add Announcement
+              {founderData.isVisible !== false ? '🟢 Section Visible' : '⚪ Hidden'}
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {announcements.map((ann, idx) => (
-              <div
-                key={ann.id}
-                className="bg-white dark:bg-[#181418] p-5 rounded-2xl border border-[#EFE7DE] dark:border-[#2C242A] shadow-xs flex items-center justify-between gap-4"
-              >
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Founder Photo */}
+            <div className="space-y-3">
+              <label className="font-bold text-xs text-[#211D1C] block">Founder Portrait Photo</label>
+              <div className="relative aspect-[4/5] rounded-2xl overflow-hidden border-2 border-[#F3E8E2] bg-stone-100 flex items-center justify-center">
+                {founderData.imageUrl ? (
+                  <img
+                    src={founderData.imageUrl}
+                    alt={founderData.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-xs text-stone-400">No Photo</span>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => handlePasteImageFromClipboard((url) => updateFounderData({ imageUrl: url }))}
+                  className="flex-1 py-2 rounded-xl bg-[#FF2E93] hover:bg-[#e02680] text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
+                >
+                  <Clipboard className="w-3.5 h-3.5" />
+                  <span>Paste Photo</span>
+                </button>
+                <label className="px-3 py-2 rounded-xl bg-[#211D1C] hover:bg-black text-white font-bold text-xs flex items-center justify-center gap-1 cursor-pointer shadow-xs">
+                  <ImagePlus className="w-3.5 h-3.5 text-[#FFD94A]" />
+                  <span>Upload</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) {
+                        const reader = new FileReader();
+                        reader.onload = (evt) => {
+                          if (evt.target?.result) {
+                            updateFounderData({ imageUrl: evt.target.result as string });
+                            showToast('Founder portrait updated!');
+                          }
+                        };
+                        reader.readAsDataURL(f);
+                      }
+                    }}
+                  />
+                </label>
+              </div>
+
+              <input
+                type="text"
+                value={founderData.imageUrl}
+                onChange={(e) => updateFounderData({ imageUrl: e.target.value })}
+                placeholder="Or paste image URL directly..."
+                className="w-full bg-[#FFF9EB] border border-[#F5E6CE] rounded-xl px-3 py-2 text-xs text-[#211D1C] outline-none"
+              />
+            </div>
+
+            {/* Profile Fields */}
+            <div className="md:col-span-2 space-y-4 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold uppercase text-[#881337] bg-rose-50 dark:bg-rose-950/40 px-2 py-0.5 rounded">
-                      Offer #{idx + 1}
-                    </span>
-                    {ann.code && (
-                      <span className="font-mono text-xs font-bold bg-stone-900 text-white dark:bg-white dark:text-stone-950 px-2 py-0.5 rounded">
-                        {ann.code}
+                  <label className="font-bold text-[#211D1C]">Founder Name</label>
+                  <input
+                    type="text"
+                    value={founderData.name}
+                    onChange={(e) => updateFounderData({ name: e.target.value })}
+                    className="w-full bg-[#FFF9EB] border border-[#F5E6CE] rounded-xl px-3 py-2 text-[#211D1C] font-bold outline-none"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="font-bold text-[#211D1C]">Role Title</label>
+                  <input
+                    type="text"
+                    value={founderData.role}
+                    onChange={(e) => updateFounderData({ role: e.target.value })}
+                    className="w-full bg-[#FFF9EB] border border-[#F5E6CE] rounded-xl px-3 py-2 text-[#211D1C] outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="font-bold text-[#211D1C]">Milestone Badge 1</label>
+                  <input
+                    type="text"
+                    value={founderData.badge1}
+                    onChange={(e) => updateFounderData({ badge1: e.target.value })}
+                    className="w-full bg-[#FFF9EB] border border-[#F5E6CE] rounded-xl px-3 py-2 text-[#211D1C] outline-none"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="font-bold text-[#211D1C]">Milestone Badge 2</label>
+                  <input
+                    type="text"
+                    value={founderData.badge2}
+                    onChange={(e) => updateFounderData({ badge2: e.target.value })}
+                    className="w-full bg-[#FFF9EB] border border-[#F5E6CE] rounded-xl px-3 py-2 text-[#211D1C] outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="font-bold text-[#211D1C]">Primary CTA Button</label>
+                  <input
+                    type="text"
+                    value={founderData.ctaPrimaryText || ''}
+                    onChange={(e) => updateFounderData({ ctaPrimaryText: e.target.value })}
+                    className="w-full bg-[#FFF9EB] border border-[#F5E6CE] rounded-xl px-3 py-2 text-[#211D1C] outline-none"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="font-bold text-[#211D1C]">Secondary CTA Button</label>
+                  <input
+                    type="text"
+                    value={founderData.ctaSecondaryText || ''}
+                    onChange={(e) => updateFounderData({ ctaSecondaryText: e.target.value })}
+                    className="w-full bg-[#FFF9EB] border border-[#F5E6CE] rounded-xl px-3 py-2 text-[#211D1C] outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-bold text-[#211D1C]">Featured Highlight Quote</label>
+                <input
+                  type="text"
+                  value={founderData.highlightQuote || ''}
+                  onChange={(e) => updateFounderData({ highlightQuote: e.target.value })}
+                  className="w-full bg-[#FFF9EB] border border-[#F5E6CE] rounded-xl px-3 py-2 text-[#211D1C] outline-none"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-bold text-[#211D1C]">Personal Story Letter (Markdown / Paragraphs)</label>
+                <textarea
+                  rows={6}
+                  value={founderData.storyNote}
+                  onChange={(e) => updateFounderData({ storyNote: e.target.value })}
+                  className="w-full bg-[#FFF9EB] border border-[#F5E6CE] rounded-xl px-3 py-2 text-[#211D1C] outline-none leading-relaxed"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* SECTION 6: CURATED COLLECTION SPOTLIGHT ROW */}
+      {/* ============================================================ */}
+      {activeTab === 'spotlight' && (
+        <div className="p-6 sm:p-8 rounded-3xl bg-white border border-[#F3E8E2] space-y-6">
+          <div className="flex items-center justify-between pb-4 border-b border-[#F3E8E2]">
+            <div>
+              <h3 className="font-serif-heading font-bold text-lg text-[#211D1C]">
+                Section 6: Curated Collection Spotlight Row
+              </h3>
+              <p className="text-xs text-stone-500">
+                Choose which collection category to feature on the homepage, along with custom titles and buttons.
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                updateSpotlightSection({ isVisible: !spotlightSection.isVisible });
+                showToast(spotlightSection.isVisible ? 'Spotlight section hidden' : 'Spotlight section visible');
+              }}
+              className={`px-4 py-2 rounded-xl text-xs font-bold cursor-pointer ${
+                spotlightSection.isVisible ? 'bg-emerald-500 text-white' : 'bg-stone-200 text-stone-700'
+              }`}
+            >
+              {spotlightSection.isVisible ? '🟢 Section Visible' : '⚪ Hidden'}
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+            <div className="space-y-1">
+              <label className="font-bold text-[#211D1C]">Featured Catalog Category *</label>
+              <select
+                value={spotlightSection.selectedCategory}
+                onChange={(e) => updateSpotlightSection({ selectedCategory: e.target.value })}
+                className="w-full bg-[#FFF9EB] border border-[#F5E6CE] rounded-xl px-3 py-2 text-[#211D1C] font-bold outline-none"
+              >
+                <optgroup label="🌟 7 Official Store Collections">
+                  {SEVEN_COLLECTIONS.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </optgroup>
+                <optgroup label="Bespoke Specialties">
+                  <option value="Personalized Name Jewelry">Personalized Name Jewelry</option>
+                  <option value="Preserved Eternal Roses & Dome Displays">Preserved Eternal Roses & Dome Displays</option>
+                  <option value="Custom Acrylic Song Plaques & Photo Frames">Custom Acrylic Song Plaques & Photo Frames</option>
+                  <option value="Memory Photo Lamps & Crystal Cubes">Memory Photo Lamps & Crystal Cubes</option>
+                  <option value="Engraved Wooden Gift Boxes & Keepsakes">Engraved Wooden Gift Boxes & Keepsakes</option>
+                  <option value="Romantic Couple Hampers & Scented Candle Sets">Romantic Couple Hampers & Scented Candle Sets</option>
+                </optgroup>
+              </select>
+            </div>
+
+            <div className="space-y-1">
+              <label className="font-bold text-[#211D1C]">Eyebrow Tag</label>
+              <input
+                type="text"
+                value={spotlightSection.eyebrow}
+                onChange={(e) => updateSpotlightSection({ eyebrow: e.target.value })}
+                className="w-full bg-[#FFF9EB] border border-[#F5E6CE] rounded-xl px-3 py-2 text-[#211D1C] outline-none"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="font-bold text-[#211D1C]">Section Title</label>
+              <input
+                type="text"
+                value={spotlightSection.title}
+                onChange={(e) => updateSpotlightSection({ title: e.target.value })}
+                className="w-full bg-[#FFF9EB] border border-[#F5E6CE] rounded-xl px-3 py-2 text-[#211D1C] font-bold outline-none"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="font-bold text-[#211D1C]">View All Button Text</label>
+              <input
+                type="text"
+                value={spotlightSection.viewAllText}
+                onChange={(e) => updateSpotlightSection({ viewAllText: e.target.value })}
+                className="w-full bg-[#FFF9EB] border border-[#F5E6CE] rounded-xl px-3 py-2 text-[#211D1C] outline-none"
+              />
+            </div>
+
+            <div className="sm:col-span-2 space-y-1">
+              <label className="font-bold text-[#211D1C]">Subtitle Description</label>
+              <textarea
+                rows={2}
+                value={spotlightSection.subtitle}
+                onChange={(e) => updateSpotlightSection({ subtitle: e.target.value })}
+                className="w-full bg-[#FFF9EB] border border-[#F5E6CE] rounded-xl px-3 py-2 text-[#211D1C] outline-none"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* SECTION 7: SHOP BY YOUR CHOICE */}
+      {/* ============================================================ */}
+      {activeTab === 'choice' && (
+        <div className="p-6 sm:p-8 rounded-3xl bg-white border border-[#F3E8E2] space-y-6">
+          <div className="flex items-center justify-between pb-4 border-b border-[#F3E8E2]">
+            <div>
+              <h3 className="font-serif-heading font-bold text-lg text-[#211D1C]">
+                Section 7: Shop By Your Choice (Occasion Tabs)
+              </h3>
+              <p className="text-xs text-stone-500">
+                Edit eyebrow, titles, and manage occasion navigation tabs.
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                updateChoiceSection({ isVisible: !choiceSection.isVisible });
+                showToast(choiceSection.isVisible ? 'Choice section hidden' : 'Choice section visible');
+              }}
+              className={`px-4 py-2 rounded-xl text-xs font-bold cursor-pointer ${
+                choiceSection.isVisible ? 'bg-emerald-500 text-white' : 'bg-stone-200 text-stone-700'
+              }`}
+            >
+              {choiceSection.isVisible ? '🟢 Section Visible' : '⚪ Hidden'}
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+            <div className="space-y-1">
+              <label className="font-bold text-[#211D1C]">Eyebrow Tag</label>
+              <input
+                type="text"
+                value={choiceSection.eyebrow}
+                onChange={(e) => updateChoiceSection({ eyebrow: e.target.value })}
+                className="w-full bg-[#FFF9EB] border border-[#F5E6CE] rounded-xl px-3 py-2 text-[#211D1C] outline-none"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="font-bold text-[#211D1C]">Title Prefix</label>
+              <input
+                type="text"
+                value={choiceSection.titlePrefix}
+                onChange={(e) => updateChoiceSection({ titlePrefix: e.target.value })}
+                className="w-full bg-[#FFF9EB] border border-[#F5E6CE] rounded-xl px-3 py-2 text-[#211D1C] outline-none"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="font-bold text-[#211D1C]">Title Highlight</label>
+              <input
+                type="text"
+                value={choiceSection.titleHighlight}
+                onChange={(e) => updateChoiceSection({ titleHighlight: e.target.value })}
+                className="w-full bg-[#FFF9EB] border border-[#F5E6CE] rounded-xl px-3 py-2 text-[#FF2E93] font-serif italic outline-none"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-3 pt-2">
+            <div className="flex items-center justify-between">
+              <h4 className="font-bold text-xs text-[#211D1C]">Occasion Category Tabs</h4>
+              <button
+                type="button"
+                onClick={() => {
+                  addChoiceTab({
+                    label: 'New Occasion Tab',
+                    categoryName: 'Personalized Name Jewelry',
+                    isActive: true,
+                  });
+                  showToast('New occasion tab added.');
+                }}
+                className="px-3 py-1.5 rounded-xl bg-[#211D1C] hover:bg-black text-white text-xs font-bold flex items-center gap-1 shadow-xs cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5 text-[#FFD94A]" />
+                <span>Add Tab</span>
+              </button>
+            </div>
+
+            <div className="space-y-2.5">
+              {choiceSection.tabs?.map((tab, idx) => (
+                <div
+                  key={tab.id}
+                  className="p-3.5 rounded-2xl bg-[#FFF9EB] border border-[#F5E6CE] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs"
+                >
+                  <div className="flex items-center gap-2 flex-1 w-full">
+                    <span className="font-mono font-bold text-stone-400">{idx + 1}.</span>
+                    <input
+                      type="text"
+                      value={tab.label}
+                      onChange={(e) => updateChoiceTab(tab.id, { label: e.target.value })}
+                      placeholder="Tab label"
+                      className="w-full sm:w-1/2 bg-white border border-[#F5E6CE] rounded-xl px-3 py-1.5 font-semibold text-[#211D1C] outline-none"
+                    />
+                    <select
+                      value={tab.categoryName}
+                      onChange={(e) => updateChoiceTab(tab.id, { categoryName: e.target.value })}
+                      className="w-full sm:w-1/2 bg-white border border-[#F5E6CE] rounded-xl px-3 py-1.5 text-[#211D1C] outline-none"
+                    >
+                      {SEVEN_COLLECTIONS.map((c) => (
+                        <option key={c} value={c}>
+                          {c}
+                        </option>
+                      ))}
+                      <option value="Personalized Name Jewelry">Personalized Name Jewelry</option>
+                      <option value="Preserved Eternal Roses & Dome Displays">Preserved Eternal Roses & Dome Displays</option>
+                      <option value="Custom Acrylic Song Plaques & Photo Frames">Custom Acrylic Song Plaques & Photo Frames</option>
+                      <option value="Romantic Couple Hampers & Scented Candle Sets">Romantic Couple Hampers & Scented Candle Sets</option>
+                    </select>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => updateChoiceTab(tab.id, { isActive: !tab.isActive })}
+                      className={`px-2.5 py-1 rounded-xl text-[11px] font-bold cursor-pointer ${
+                        tab.isActive ? 'bg-emerald-100 text-emerald-800' : 'bg-stone-200 text-stone-600'
+                      }`}
+                    >
+                      {tab.isActive ? 'Active' : 'Off'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        deleteChoiceTab(tab.id);
+                        showToast('Tab removed.');
+                      }}
+                      className="p-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 cursor-pointer"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* SECTION 8: 4 VALUE PROPS & TRUST BADGES */}
+      {/* ============================================================ */}
+      {activeTab === 'valueprops' && (
+        <div className="space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-white border border-[#F3E8E2]">
+            <div>
+              <h3 className="font-serif-heading font-bold text-lg text-[#211D1C]">
+                Section 8: 4 Value Props & Trust Badges
+              </h3>
+              <p className="text-xs text-stone-500">
+                Customize 100% Handcrafted, Insured Dispatch, WhatsApp Proof, and Gift Box Included pillars.
+              </p>
+            </div>
+            <button
+              onClick={() => handleOpenPropModal()}
+              className="px-4 py-2.5 rounded-xl bg-[#FF2E93] hover:bg-[#e02680] text-white font-bold text-xs flex items-center gap-2 shadow-xs cursor-pointer active:scale-95 transition-all"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Add Value Pillar</span>
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {valueProps.map((prop) => (
+              <div
+                key={prop.id}
+                className="bg-white p-5 rounded-3xl border border-[#F3E8E2] shadow-sm flex flex-col justify-between space-y-3 group"
+              >
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="w-10 h-10 rounded-xl bg-[#FFF9DE] border border-[#F5E6B8] flex items-center justify-center text-[#FF2E93]">
+                      <Sparkles className="w-5 h-5" />
+                    </div>
+                    {prop.highlightBadge && (
+                      <span className="bg-[#FFF0F5] text-[#FF2E93] text-[10px] font-bold px-2 py-0.5 rounded-full">
+                        {prop.highlightBadge}
                       </span>
                     )}
                   </div>
-                  <p className="text-xs font-semibold text-stone-900 dark:text-white">{ann.text}</p>
+                  <h4 className="font-bold text-sm text-[#211D1C]">{prop.title}</h4>
+                  <p className="text-xs text-stone-600 leading-relaxed">{prop.description}</p>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 pt-2 border-t border-[#F3E8E2]">
+                  <button
+                    onClick={() => handleOpenPropModal(prop)}
+                    className="flex-1 py-1.5 rounded-xl bg-white border border-[#F3E8E2] hover:border-[#FF2E93] text-xs font-bold text-[#211D1C] flex items-center justify-center gap-1 cursor-pointer"
+                  >
+                    <Edit3 className="w-3 h-3 text-[#FF2E93]" />
+                    <span>Edit</span>
+                  </button>
+                  <button
+                    onClick={() => updateValueProp(prop.id, { isActive: !prop.isActive })}
+                    className={`px-2.5 py-1.5 rounded-xl text-xs font-bold cursor-pointer ${
+                      prop.isActive ? 'bg-emerald-100 text-emerald-800' : 'bg-stone-100 text-stone-500'
+                    }`}
+                  >
+                    {prop.isActive ? 'Active' : 'Off'}
+                  </button>
                   <button
                     onClick={() => {
-                      setEditingAnnouncement(ann);
-                      setAnnText(ann.text);
-                      setAnnCode(ann.code);
-                      setAnnHighlight(ann.highlight);
+                      if (window.confirm('Delete this pillar?')) {
+                        deleteValueProp(prop.id);
+                        showToast('Pillar removed.');
+                      }
                     }}
-                    className="p-2 text-stone-600 hover:text-[#881337] transition-colors"
+                    className="p-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 cursor-pointer"
                   >
-                    <Edit3 className="w-4 h-4" />
+                    <Trash2 className="w-3.5 h-3.5" />
                   </button>
-                  {announcements.length > 1 && (
-                    <button
-                      onClick={() => deleteAnnouncement(ann.id)}
-                      className="p-2 text-rose-500 hover:text-rose-700 transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  )}
                 </div>
               </div>
             ))}
@@ -789,271 +1405,327 @@ export const MediaStudioCMS: React.FC<MediaStudioCMSProps> = ({ products }) => {
       )}
 
       {/* ============================================================ */}
-      {/* SECTION 5: BRAND ATELIER STORY & VIDEO */}
+      {/* SECTION 9: TOP ANNOUNCEMENT BAR & MARQUEE TICKER */}
       {/* ============================================================ */}
-      {activeMediaSection === 'story' && (
-        <div className="bg-white dark:bg-[#181418] p-6 sm:p-8 rounded-3xl border border-[#EFE7DE] dark:border-[#2C242A] shadow-xs space-y-6 max-w-3xl">
-          <div>
-            <h3 className="font-serif font-bold text-xl text-stone-900 dark:text-white flex items-center gap-2">
-              <Film className="w-5 h-5 text-[#881337] dark:text-[#FB7185]" />
-              <span>Brand Atelier Story & Craft Media</span>
-            </h3>
-            <p className="text-xs text-stone-500 mt-1">
-              Configure the studio craft narrative and embedded video reel on the storefront.
-            </p>
+      {activeTab === 'announcements' && (
+        <div className="space-y-6">
+          {/* Top Bar Messages */}
+          <div className="p-6 rounded-3xl bg-white border border-[#F3E8E2] space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-[#F3E8E2]">
+              <div>
+                <h3 className="font-serif-heading font-bold text-lg text-[#211D1C]">
+                  Top Announcement Strip Offers
+                </h3>
+                <p className="text-xs text-stone-500">
+                  Rotating messages at the very top of the storefront with 1-click copy coupon codes.
+                </p>
+              </div>
+              <button
+                onClick={() => handleOpenAnnModal()}
+                className="px-4 py-2 rounded-xl bg-[#FF2E93] hover:bg-[#e02680] text-white font-bold text-xs flex items-center gap-1.5 shadow-xs cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Add Offer</span>
+              </button>
+            </div>
+
+            <div className="space-y-2.5">
+              {announcements.map((ann, idx) => (
+                <div
+                  key={ann.id}
+                  className="p-3.5 rounded-2xl bg-[#FFFDF8] border border-[#F3E8E2] flex items-center justify-between gap-3 text-xs"
+                >
+                  <div className="flex items-center gap-2 flex-1">
+                    <span className="font-mono font-bold text-stone-400">#{idx + 1}</span>
+                    <span className="font-bold text-[#211D1C]">{ann.text}</span>
+                    {ann.code && (
+                      <span className="font-mono bg-[#FF2E93] text-white font-bold px-2 py-0.5 rounded text-[10px]">
+                        {ann.code}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      onClick={() => handleOpenAnnModal(ann)}
+                      className="px-2.5 py-1 rounded-xl bg-white border border-[#F3E8E2] text-[#211D1C] font-bold text-xs hover:border-[#FF2E93] cursor-pointer"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => updateAnnouncement(ann.id, { isActive: !ann.isActive })}
+                      className={`px-2.5 py-1 rounded-xl text-xs font-bold cursor-pointer ${
+                        ann.isActive ? 'bg-emerald-100 text-emerald-800' : 'bg-stone-200 text-stone-600'
+                      }`}
+                    >
+                      {ann.isActive ? 'Active' : 'Off'}
+                    </button>
+                    <button
+                      onClick={() => {
+                        deleteAnnouncement(ann.id);
+                        showToast('Offer removed.');
+                      }}
+                      className="p-1 rounded-xl text-rose-600 hover:bg-rose-50 cursor-pointer"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
-          <form onSubmit={handleSaveStory} className="space-y-4">
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-stone-700 dark:text-stone-300 block">
-                Story Eyebrow / Subtitle
-              </label>
-              <input
-                type="text"
-                value={storySubtitle}
-                onChange={(e) => setStorySubtitle(e.target.value)}
-                className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3.5 py-2.5 text-xs text-stone-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#881337]"
-              />
+          {/* Marquee Ticker */}
+          <div className="p-6 rounded-3xl bg-white border border-[#F3E8E2] space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-[#F3E8E2]">
+              <div>
+                <h3 className="font-serif-heading font-bold text-lg text-[#211D1C]">
+                  Marquee Scrolling Ticker Strip
+                </h3>
+                <p className="text-xs text-stone-500">
+                  Yellow animated scrolling strip located above the footer.
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  updateMarqueeData({ isVisible: !marqueeData.isVisible });
+                  showToast(marqueeData.isVisible ? 'Marquee strip hidden' : 'Marquee strip visible');
+                }}
+                className={`px-4 py-2 rounded-xl text-xs font-bold cursor-pointer ${
+                  marqueeData.isVisible ? 'bg-emerald-500 text-white' : 'bg-stone-200 text-stone-700'
+                }`}
+              >
+                {marqueeData.isVisible ? '🟢 Strip Visible' : '⚪ Hidden'}
+              </button>
             </div>
 
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-stone-700 dark:text-stone-300 block">
-                Main Story Headline
-              </label>
-              <input
-                type="text"
-                value={storyTitle}
-                onChange={(e) => setStoryTitle(e.target.value)}
-                className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3.5 py-2.5 text-xs text-stone-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#881337]"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-stone-700 dark:text-stone-300 block">
-                Studio Narrative Description
-              </label>
+            <div className="space-y-2 text-xs">
+              <label className="font-bold text-[#211D1C]">Ticker Messages (One per line)</label>
               <textarea
-                rows={3}
-                value={storyDesc}
-                onChange={(e) => setStoryDesc(e.target.value)}
-                className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3.5 py-2.5 text-xs text-stone-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#881337] resize-none"
+                rows={5}
+                value={marqueeData.messages?.join('\n') || ''}
+                onChange={(e) =>
+                  updateMarqueeData({
+                    messages: e.target.value.split('\n').filter((l) => l.trim().length > 0),
+                  })
+                }
+                className="w-full bg-[#FFF9EB] border border-[#F5E6CE] rounded-xl px-3 py-2 text-[#211D1C] font-mono outline-none"
               />
             </div>
-
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-stone-700 dark:text-stone-300 block">
-                Atelier Craft Video URL (MP4)
-              </label>
-              <input
-                type="url"
-                value={storyMediaUrl}
-                onChange={(e) => setStoryMediaUrl(e.target.value)}
-                className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3.5 py-2.5 text-xs font-mono text-stone-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#881337]"
-              />
-            </div>
-
-            <button
-              type="submit"
-              className="px-6 py-3 rounded-xl font-bold text-xs bg-[#881337] hover:bg-[#700f2d] text-white transition-colors shadow-md"
-            >
-              Save Story Media
-            </button>
-          </form>
+          </div>
         </div>
       )}
 
       {/* ============================================================ */}
-      {/* MODAL: HERO SLIDE FORM */}
+      {/* SECTION 10: VIP NEWSLETTER PRIVILEGE BANNER */}
       {/* ============================================================ */}
-      {(isAddSlideOpen || editingSlide) && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#181418] w-full max-w-xl rounded-3xl border border-[#EFE7DE] dark:border-[#2C242A] shadow-2xl p-6 sm:p-8 space-y-5 animate-in zoom-in-95 duration-150 max-h-[85vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-3 border-b border-[#EFE7DE] dark:border-[#282127]">
-              <div className="flex items-center gap-2 font-serif font-bold text-lg text-stone-900 dark:text-white">
-                <ImageIcon className="w-5 h-5 text-[#881337] dark:text-[#FB7185]" />
-                <span>{editingSlide ? 'Edit Hero Slide Content' : 'Create New Hero Slide'}</span>
-              </div>
+      {activeTab === 'newsletter' && (
+        <div className="p-6 sm:p-8 rounded-3xl bg-white border border-[#F3E8E2] space-y-6">
+          <div className="flex items-center justify-between pb-4 border-b border-[#F3E8E2]">
+            <div>
+              <h3 className="font-serif-heading font-bold text-lg text-[#211D1C]">
+                Section 10: VIP Newsletter Privilege Banner
+              </h3>
+              <p className="text-xs text-stone-500">
+                Configure discount headline, offer badge (e.g. Flat ₹100 Off), promo code, and CTA text.
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                updateNewsletterData({ isVisible: !newsletterData.isVisible });
+                showToast(newsletterData.isVisible ? 'Newsletter banner hidden' : 'Newsletter banner visible');
+              }}
+              className={`px-4 py-2 rounded-xl text-xs font-bold cursor-pointer ${
+                newsletterData.isVisible ? 'bg-emerald-500 text-white' : 'bg-stone-200 text-stone-700'
+              }`}
+            >
+              {newsletterData.isVisible ? '🟢 Section Visible' : '⚪ Hidden'}
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+            <div className="space-y-1">
+              <label className="font-bold text-[#211D1C]">Eyebrow Tag</label>
+              <input
+                type="text"
+                value={newsletterData.eyebrow}
+                onChange={(e) => updateNewsletterData({ eyebrow: e.target.value })}
+                className="w-full bg-[#FFF9EB] border border-[#F5E6CE] rounded-xl px-3 py-2 text-[#211D1C] outline-none"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="font-bold text-[#211D1C]">Discount Offer Badge</label>
+              <input
+                type="text"
+                value={newsletterData.discountBadge}
+                onChange={(e) => updateNewsletterData({ discountBadge: e.target.value })}
+                className="w-full bg-[#FFF9EB] border border-[#F5E6CE] rounded-xl px-3 py-2 text-[#211D1C] font-bold outline-none"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="font-bold text-[#211D1C]">Main Headline Title</label>
+              <input
+                type="text"
+                value={newsletterData.title}
+                onChange={(e) => updateNewsletterData({ title: e.target.value })}
+                className="w-full bg-[#FFF9EB] border border-[#F5E6CE] rounded-xl px-3 py-2 text-[#211D1C] font-bold outline-none"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="font-bold text-[#211D1C]">Promo Coupon Code</label>
+              <input
+                type="text"
+                value={newsletterData.couponCode}
+                onChange={(e) => updateNewsletterData({ couponCode: e.target.value })}
+                className="w-full bg-[#FFF9EB] border border-[#F5E6CE] rounded-xl px-3 py-2 font-mono text-[#FF2E93] font-bold outline-none"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="font-bold text-[#211D1C]">Button CTA Label</label>
+              <input
+                type="text"
+                value={newsletterData.buttonText}
+                onChange={(e) => updateNewsletterData({ buttonText: e.target.value })}
+                className="w-full bg-[#FFF9EB] border border-[#F5E6CE] rounded-xl px-3 py-2 text-[#211D1C] outline-none"
+              />
+            </div>
+
+            <div className="sm:col-span-2 space-y-1">
+              <label className="font-bold text-[#211D1C]">Subtitle Description</label>
+              <textarea
+                rows={2}
+                value={newsletterData.subtitle}
+                onChange={(e) => updateNewsletterData({ subtitle: e.target.value })}
+                className="w-full bg-[#FFF9EB] border border-[#F5E6CE] rounded-xl px-3 py-2 text-[#211D1C] outline-none"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* MODAL: HERO SLIDE EDIT/ADD */}
+      {/* ============================================================ */}
+      {isSlideModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/65 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
+          <div className="bg-[#FFFDF8] w-full max-w-lg rounded-3xl border border-[#F3E8E2] shadow-2xl p-6 space-y-4 animate-in fade-in max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-[#F3E8E2]">
+              <h3 className="font-serif-heading font-bold text-lg text-[#211D1C]">
+                {editingSlide ? 'Edit Hero Banner Slide' : 'Add New Hero Banner Slide'}
+              </h3>
               <button
-                onClick={() => {
-                  setIsAddSlideOpen(false);
-                  setEditingSlide(null);
-                }}
-                className="p-1.5 rounded-full text-stone-400 hover:text-stone-600 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
-                aria-label="Close dialog"
+                onClick={() => setIsSlideModalOpen(false)}
+                className="p-1 text-stone-400 hover:text-stone-700 cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleSaveSlide} className="space-y-4 text-left">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-stone-700 dark:text-stone-300 block">
-                    Eyebrow Tag
-                  </label>
-                  <input
-                    type="text"
-                    value={slideEyebrow}
-                    onChange={(e) => setSlideEyebrow(e.target.value)}
-                    placeholder="e.g. Bespoke Haute Jewelry"
-                    className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 text-xs text-stone-900 dark:text-white"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-stone-700 dark:text-stone-300 block">
-                    Promo Coupon Code
-                  </label>
-                  <input
-                    type="text"
-                    value={slideCoupon}
-                    onChange={(e) => setSlideCoupon(e.target.value.toUpperCase())}
-                    placeholder="e.g. LOVE100"
-                    className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 text-xs font-mono uppercase text-stone-900 dark:text-white"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-stone-700 dark:text-stone-300 block">
-                  Main Headline Title
+            <form onSubmit={handleSaveSlide} className="space-y-4 text-xs">
+              {/* Photo Upload & Paste Box */}
+              <div className="space-y-2 p-3.5 rounded-2xl bg-[#FFF9EB] border border-[#F5E6CE]">
+                <label className="font-bold text-[#211D1C] flex items-center gap-1.5">
+                  <ImageIcon className="w-4 h-4 text-[#FF2E93]" />
+                  <span>Full-Bleed Slide Photo *</span>
                 </label>
-                <input
-                  type="text"
-                  required
-                  value={slideTitle}
-                  onChange={(e) => setSlideTitle(e.target.value)}
-                  placeholder="e.g. 18k Gold Plated Custom Name Necklaces"
-                  className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3.5 py-2.5 text-xs text-stone-900 dark:text-white font-serif font-bold"
-                />
-              </div>
 
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-stone-700 dark:text-stone-300 block">
-                  Tagline Subheading
-                </label>
-                <textarea
-                  rows={2}
-                  value={slideTagline}
-                  onChange={(e) => setSlideTagline(e.target.value)}
-                  placeholder="e.g. Handcrafted luxury handwriting pendants in 18k thick gold vermeil..."
-                  className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3.5 py-2.5 text-xs text-stone-900 dark:text-white resize-none"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-stone-700 dark:text-stone-300 block">
-                  Custom Image File, Paste or URL (Optional)
-                </label>
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                  <input
-                    type="text"
-                    value={slideImageUrl}
-                    onChange={(e) => setSlideImageUrl(e.target.value)}
-                    placeholder="Paste image URL, press Ctrl+V, or use buttons..."
-                    className="flex-1 bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 text-xs font-mono text-stone-900 dark:text-white"
-                  />
+                <div className="flex items-center gap-2">
                   <button
                     type="button"
-                    onClick={async () => {
-                      try {
-                        if (navigator.clipboard && navigator.clipboard.read) {
-                          const items = await navigator.clipboard.read();
-                          for (const item of items) {
-                            const imgType = item.types.find((t) => t.startsWith('image/'));
-                            if (imgType) {
-                              const blob = await item.getType(imgType);
-                              const reader = new FileReader();
-                              reader.onload = (evt) => {
-                                if (evt.target?.result) {
-                                  setSlideImageUrl(evt.target.result as string);
-                                }
-                              };
-                              reader.readAsDataURL(blob);
-                              return;
-                            }
-                          }
-                        }
-                        if (navigator.clipboard && navigator.clipboard.readText) {
-                          const txt = await navigator.clipboard.readText();
-                          if (txt) setSlideImageUrl(txt.trim());
-                        }
-                      } catch (err) {
-                        console.warn('Clipboard read failed', err);
-                      }
-                    }}
-                    className="px-3 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold shrink-0 cursor-pointer text-center flex items-center justify-center gap-1.5 shadow-xs transition-colors"
+                    onClick={() => handlePasteImageFromClipboard(setSlideImageUrl)}
+                    className="flex-1 py-2 rounded-xl bg-[#FF2E93] hover:bg-[#e02680] text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
                   >
-                    <span>📋 Paste Image</span>
+                    <Clipboard className="w-3.5 h-3.5" />
+                    <span>Paste from Clipboard</span>
                   </button>
-                  <label className="px-3 py-2 rounded-xl bg-[#211D1C] hover:bg-black text-white text-xs font-bold shrink-0 cursor-pointer text-center flex items-center justify-center gap-1.5 shadow-xs transition-colors">
-                    <span>📁 Upload Photo</span>
+
+                  <label className="px-3.5 py-2 rounded-xl bg-[#211D1C] hover:bg-black text-white font-bold text-xs flex items-center justify-center gap-1 cursor-pointer shadow-xs">
+                    <ImagePlus className="w-3.5 h-3.5 text-[#FFD94A]" />
+                    <span>Upload</span>
                     <input
                       type="file"
                       accept="image/*"
                       className="hidden"
                       onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
+                        const f = e.target.files?.[0];
+                        if (f) {
                           const reader = new FileReader();
                           reader.onload = (evt) => {
-                            if (evt.target?.result) {
-                              setSlideImageUrl(evt.target.result as string);
-                            }
+                            if (evt.target?.result) setSlideImageUrl(evt.target.result as string);
                           };
-                          reader.readAsDataURL(file);
+                          reader.readAsDataURL(f);
                         }
                       }}
                     />
                   </label>
                 </div>
+
+                <input
+                  type="text"
+                  required
+                  value={slideImageUrl}
+                  onChange={(e) => setSlideImageUrl(e.target.value)}
+                  placeholder="Or enter image URL here..."
+                  className="w-full bg-white border border-[#F5E6CE] rounded-xl px-3 py-2 text-[#211D1C] outline-none"
+                />
+
                 {slideImageUrl && (
-                  <div className="mt-2 flex items-center gap-3">
-                    <div className="w-20 h-20 rounded-xl overflow-hidden border border-[#EFE7DE] bg-stone-100 dark:bg-stone-800 shrink-0 p-1 flex items-center justify-center">
-                      <img src={slideImageUrl} alt="Preview" className="max-h-full max-w-full object-contain rounded-lg" />
-                    </div>
-                    <div className="space-y-1">
-                      <span className="text-[10px] text-emerald-600 font-bold block">✓ Image Loaded Ready to Display (Uncropped)</span>
-                      <button
-                        type="button"
-                        onClick={() => setSlideImageUrl('')}
-                        className="text-[10px] text-rose-500 hover:underline font-semibold"
-                      >
-                        Remove Image
-                      </button>
-                    </div>
+                  <div className="aspect-[21/9] rounded-xl overflow-hidden border border-[#F3E8E2] bg-stone-900 flex items-center justify-center">
+                    <img
+                      src={slideImageUrl}
+                      alt="Preview"
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                 )}
               </div>
 
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-stone-700 dark:text-stone-300 block">
-                  Background Video MP4 URL (Optional)
-                </label>
-                <input
-                  type="text"
-                  value={slideVideoUrl}
-                  onChange={(e) => setSlideVideoUrl(e.target.value)}
-                  placeholder="https://assets.mixkit.co/videos/preview/... or video link"
-                  className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 text-xs font-mono text-stone-900 dark:text-white"
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="font-bold text-[#211D1C]">Target Store Route</label>
+                  <select
+                    value={slideCtaCategory}
+                    onChange={(e) => setSlideCtaCategory(e.target.value)}
+                    className="w-full bg-[#FFF9EB] border border-[#F5E6CE] rounded-xl px-3 py-2 text-[#211D1C] font-semibold outline-none"
+                  >
+                    <option value="products">All Products & Collections</option>
+                    <option value="personalization">Personalization Studio</option>
+                    <option value="creator-club">Creator Club (₹7k/mo)</option>
+                    <option value="collaboration">Collaboration & UGC</option>
+                    <option value="affiliate-marketing">Affiliate Marketing</option>
+                    <option value="podcast">Podcast & Stories</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-bold text-[#211D1C]">Promo Coupon Code</label>
+                  <input
+                    type="text"
+                    value={slideCoupon}
+                    onChange={(e) => setSlideCoupon(e.target.value)}
+                    placeholder="e.g. LOVE100, DS1102"
+                    className="w-full bg-[#FFF9EB] border border-[#F5E6CE] rounded-xl px-3 py-2 font-mono text-[#211D1C] outline-none"
+                  />
+                </div>
               </div>
 
-              <div className="pt-2 flex justify-end gap-2">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#F3E8E2]">
                 <button
                   type="button"
-                  onClick={() => {
-                    setIsAddSlideOpen(false);
-                    setEditingSlide(null);
-                  }}
-                  className="px-4 py-2 rounded-xl text-xs font-semibold bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300"
+                  onClick={() => setIsSlideModalOpen(false)}
+                  className="px-4 py-2 rounded-xl bg-stone-100 text-stone-700 font-bold text-xs"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 rounded-xl text-xs font-bold bg-[#881337] text-white hover:bg-[#700f2d] shadow-sm"
+                  className="px-6 py-2 rounded-xl bg-[#FF2E93] hover:bg-[#e02680] text-white font-bold text-xs shadow-md"
                 >
-                  Save Hero Slide
+                  Save Slide
                 </button>
               </div>
             </form>
@@ -1062,162 +1734,214 @@ export const MediaStudioCMS: React.FC<MediaStudioCMSProps> = ({ products }) => {
       )}
 
       {/* ============================================================ */}
-      {/* MODAL: VIDEO REEL FORM */}
+      {/* MODAL: CIRCLE EDIT/ADD */}
       {/* ============================================================ */}
-      {(isAddReelOpen || editingReel) && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#181418] w-full max-w-xl rounded-3xl border border-[#EFE7DE] dark:border-[#2C242A] shadow-2xl p-6 sm:p-8 space-y-5 animate-in zoom-in-95 duration-150 max-h-[85vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-3 border-b border-[#EFE7DE] dark:border-[#282127]">
-              <div className="flex items-center gap-2 font-serif font-bold text-lg text-stone-900 dark:text-white">
-                <Video className="w-5 h-5 text-[#C5A059]" />
-                <span>{editingReel ? 'Edit Video Reel Slot' : 'Create New Video Reel Slot'}</span>
-              </div>
+      {isCircleModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/65 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
+          <div className="bg-[#FFFDF8] w-full max-w-md rounded-3xl border border-[#F3E8E2] shadow-2xl p-6 space-y-4 animate-in fade-in">
+            <div className="flex items-center justify-between pb-3 border-b border-[#F3E8E2]">
+              <h3 className="font-serif-heading font-bold text-lg text-[#211D1C]">
+                {editingCircle ? 'Edit Collection Circle' : 'Add Collection Circle'}
+              </h3>
               <button
-                onClick={() => {
-                  setIsAddReelOpen(false);
-                  setEditingReel(null);
-                }}
-                className="p-1.5 rounded-full text-stone-400 hover:text-stone-600 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
-                aria-label="Close dialog"
+                onClick={() => setIsCircleModalOpen(false)}
+                className="p-1 text-stone-400 hover:text-stone-700 cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleSaveReel} className="space-y-4 text-left">
+            <form onSubmit={handleSaveCircle} className="space-y-4 text-xs">
               <div className="space-y-1">
-                <label className="text-xs font-bold text-stone-700 dark:text-stone-300 block">
-                  Reel Title
-                </label>
+                <label className="font-bold text-[#211D1C]">Collection Title *</label>
+                <input
+                  type="text"
+                  required
+                  value={circleName}
+                  onChange={(e) => setCircleName(e.target.value)}
+                  placeholder="e.g. Personalization"
+                  className="w-full bg-[#FFF9EB] border border-[#F5E6CE] rounded-xl px-3 py-2 text-[#211D1C] font-bold outline-none"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-bold text-[#211D1C]">Subtitle Tagline</label>
+                <input
+                  type="text"
+                  value={circleSubtitle}
+                  onChange={(e) => setCircleSubtitle(e.target.value)}
+                  placeholder="e.g. WhatsApp Confirmed"
+                  className="w-full bg-[#FFF9EB] border border-[#F5E6CE] rounded-xl px-3 py-2 text-[#211D1C] outline-none"
+                />
+              </div>
+
+              <div className="space-y-2 p-3 rounded-2xl bg-[#FFF9EB] border border-[#F5E6CE]">
+                <label className="font-bold text-[#211D1C]">Circle Photo *</label>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handlePasteImageFromClipboard(setCircleImage)}
+                    className="flex-1 py-1.5 rounded-xl bg-[#FF2E93] text-white font-bold text-xs"
+                  >
+                    Paste Photo
+                  </button>
+                </div>
+                <input
+                  type="text"
+                  required
+                  value={circleImage}
+                  onChange={(e) => setCircleImage(e.target.value)}
+                  placeholder="Image URL..."
+                  className="w-full bg-white border border-[#F5E6CE] rounded-xl px-3 py-1.5 text-[#211D1C] outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="font-bold text-[#211D1C]">Badge Tag</label>
+                  <input
+                    type="text"
+                    value={circleBadge}
+                    onChange={(e) => setCircleBadge(e.target.value)}
+                    placeholder="e.g. Verified"
+                    className="w-full bg-[#FFF9EB] border border-[#F5E6CE] rounded-xl px-3 py-2 text-[#211D1C] outline-none"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="font-bold text-[#211D1C]">Target Route</label>
+                  <input
+                    type="text"
+                    value={circleRoute}
+                    onChange={(e) => setCircleRoute(e.target.value)}
+                    placeholder="e.g. personalization"
+                    className="w-full bg-[#FFF9EB] border border-[#F5E6CE] rounded-xl px-3 py-2 font-mono text-[#211D1C] outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#F3E8E2]">
+                <button
+                  type="button"
+                  onClick={() => setIsCircleModalOpen(false)}
+                  className="px-4 py-2 rounded-xl bg-stone-100 text-stone-700 font-bold text-xs"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-6 py-2 rounded-xl bg-[#FF2E93] hover:bg-[#e02680] text-white font-bold text-xs shadow-md"
+                >
+                  Save Circle
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* MODAL: VIDEO REEL EDIT/ADD */}
+      {/* ============================================================ */}
+      {isReelModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/65 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
+          <div className="bg-[#FFFDF8] w-full max-w-md rounded-3xl border border-[#F3E8E2] shadow-2xl p-6 space-y-4 animate-in fade-in">
+            <div className="flex items-center justify-between pb-3 border-b border-[#F3E8E2]">
+              <h3 className="font-serif-heading font-bold text-lg text-[#211D1C]">
+                {editingReel ? 'Edit Video Reel' : 'Add New Video Reel'}
+              </h3>
+              <button
+                onClick={() => setIsReelModalOpen(false)}
+                className="p-1 text-stone-400 hover:text-stone-700 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveReel} className="space-y-4 text-xs">
+              <div className="space-y-1">
+                <label className="font-bold text-[#211D1C]">Reel Title *</label>
                 <input
                   type="text"
                   required
                   value={reelTitle}
                   onChange={(e) => setReelTitle(e.target.value)}
                   placeholder="e.g. Watch Unboxing: 18k Gold Cursive Name Pendant"
-                  className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3.5 py-2.5 text-xs text-stone-900 dark:text-white"
+                  className="w-full bg-[#FFF9EB] border border-[#F5E6CE] rounded-xl px-3 py-2 text-[#211D1C] font-semibold outline-none"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-bold text-stone-700 dark:text-stone-300 block">
-                  Short Tagline
-                </label>
+                <label className="font-bold text-[#211D1C]">MP4 Video Link</label>
                 <input
                   type="text"
-                  value={reelTagline}
-                  onChange={(e) => setReelTagline(e.target.value)}
-                  placeholder="e.g. See the micro-engraving shine under studio lights"
-                  className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3.5 py-2.5 text-xs text-stone-900 dark:text-white"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-stone-700 dark:text-stone-300 block">
-                  Video MP4 Link
-                </label>
-                <input
-                  type="text"
-                  required
                   value={reelVideoUrl}
                   onChange={(e) => setReelVideoUrl(e.target.value)}
-                  placeholder="https://assets.mixkit.co/videos/preview/..."
-                  className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3.5 py-2.5 text-xs font-mono text-stone-900 dark:text-white"
+                  placeholder="https://...mp4"
+                  className="w-full bg-[#FFF9EB] border border-[#F5E6CE] rounded-xl px-3 py-2 font-mono text-[#211D1C] outline-none"
                 />
               </div>
 
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-stone-700 dark:text-stone-300 block">
-                  Video Poster Image Thumbnail File or URL
-                </label>
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                  <input
-                    type="text"
-                    value={reelPosterImage}
-                    onChange={(e) => setReelPosterImage(e.target.value)}
-                    placeholder="https://images.unsplash.com/... or upload photo"
-                    className="flex-1 bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3.5 py-2.5 text-xs font-mono text-stone-900 dark:text-white"
-                  />
-                  <label className="px-3 py-2 rounded-xl bg-[#211D1C] hover:bg-black text-white text-xs font-bold shrink-0 cursor-pointer text-center flex items-center justify-center gap-1.5 shadow-xs transition-colors">
-                    <span>📁 Upload Poster</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          const reader = new FileReader();
-                          reader.onload = (evt) => {
-                            if (evt.target?.result) {
-                              setReelPosterImage(evt.target.result as string);
-                            }
-                          };
-                          reader.readAsDataURL(file);
-                        }
-                      }}
-                    />
-                  </label>
+              <div className="space-y-2 p-3 rounded-2xl bg-[#FFF9EB] border border-[#F5E6CE]">
+                <label className="font-bold text-[#211D1C]">Poster Thumbnail Image</label>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handlePasteImageFromClipboard(setReelPosterImage)}
+                    className="flex-1 py-1.5 rounded-xl bg-[#FF2E93] text-white font-bold text-xs"
+                  >
+                    Paste Thumbnail
+                  </button>
                 </div>
-                {reelPosterImage && (
-                  <div className="mt-2 flex items-center gap-2">
-                    <div className="w-12 h-16 rounded-xl overflow-hidden border border-[#EFE7DE] bg-stone-100 shrink-0">
-                      <img src={reelPosterImage} alt="Preview" className="w-full h-full object-cover" />
-                    </div>
-                    <span className="text-[10px] text-emerald-600 font-bold">✓ Poster Thumbnail Loaded</span>
-                  </div>
-                )}
+                <input
+                  type="text"
+                  value={reelPosterImage}
+                  onChange={(e) => setReelPosterImage(e.target.value)}
+                  placeholder="Poster image link..."
+                  className="w-full bg-white border border-[#F5E6CE] rounded-xl px-3 py-1.5 text-[#211D1C] outline-none"
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-stone-700 dark:text-stone-300 block">
-                    Linked Product Link
-                  </label>
+                  <label className="font-bold text-[#211D1C]">Link Catalog Product</label>
                   <select
                     value={reelLinkedProduct}
                     onChange={(e) => setReelLinkedProduct(e.target.value)}
-                    className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 text-xs text-stone-900 dark:text-white"
+                    className="w-full bg-[#FFF9EB] border border-[#F5E6CE] rounded-xl px-3 py-2 text-[#211D1C] outline-none"
                   >
-                    {products.map((p) => (
+                    {products.slice(0, 30).map((p) => (
                       <option key={p.id} value={p.id}>
-                        {p.name} (₹{p.price})
+                        {p.name.slice(0, 25)}... (₹{p.price})
                       </option>
                     ))}
                   </select>
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-stone-700 dark:text-stone-300 block">
-                    Duration (Seconds)
-                  </label>
+                  <label className="font-bold text-[#211D1C]">Views Count Tag</label>
                   <input
-                    type="number"
-                    value={reelDuration}
-                    onChange={(e) => setReelDuration(Number(e.target.value))}
-                    min={5}
-                    max={60}
-                    className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 text-xs text-stone-900 dark:text-white"
+                    type="text"
+                    value={reelViewsCount}
+                    onChange={(e) => setReelViewsCount(e.target.value)}
+                    placeholder="e.g. 94.2k"
+                    className="w-full bg-[#FFF9EB] border border-[#F5E6CE] rounded-xl px-3 py-2 text-[#211D1C] outline-none"
                   />
                 </div>
               </div>
 
-              <div className="pt-2 flex justify-end gap-2">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#F3E8E2]">
                 <button
                   type="button"
-                  onClick={() => {
-                    setIsAddReelOpen(false);
-                    setEditingReel(null);
-                  }}
-                  className="px-4 py-2 rounded-xl text-xs font-semibold bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300"
+                  onClick={() => setIsReelModalOpen(false)}
+                  className="px-4 py-2 rounded-xl bg-stone-100 text-stone-700 font-bold text-xs"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 rounded-xl text-xs font-bold bg-[#C5A059] text-stone-950 hover:bg-[#b08c45] shadow-sm"
+                  className="px-6 py-2 rounded-xl bg-[#FF2E93] hover:bg-[#e02680] text-white font-bold text-xs shadow-md"
                 >
-                  Save Video Reel
+                  Save Reel
                 </button>
               </div>
             </form>
@@ -1226,87 +1950,166 @@ export const MediaStudioCMS: React.FC<MediaStudioCMSProps> = ({ products }) => {
       )}
 
       {/* ============================================================ */}
-      {/* MODAL: ANNOUNCEMENT FORM */}
+      {/* MODAL: VALUE PROP EDIT/ADD */}
       {/* ============================================================ */}
-      {(isAddAnnouncementOpen || editingAnnouncement) && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#181418] w-full max-w-lg rounded-3xl border border-[#EFE7DE] dark:border-[#2C242A] shadow-2xl p-6 sm:p-8 space-y-5 animate-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between pb-3 border-b border-[#EFE7DE] dark:border-[#282127]">
-              <div className="flex items-center gap-2 font-serif font-bold text-lg text-stone-900 dark:text-white">
-                <Tag className="w-5 h-5 text-[#881337] dark:text-[#FB7185]" />
-                <span>{editingAnnouncement ? 'Edit Announcement' : 'New Announcement Offer'}</span>
-              </div>
+      {isValuePropModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/65 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
+          <div className="bg-[#FFFDF8] w-full max-w-md rounded-3xl border border-[#F3E8E2] shadow-2xl p-6 space-y-4 animate-in fade-in">
+            <div className="flex items-center justify-between pb-3 border-b border-[#F3E8E2]">
+              <h3 className="font-serif-heading font-bold text-lg text-[#211D1C]">
+                {editingProp ? 'Edit Value Pillar' : 'Add Value Pillar'}
+              </h3>
               <button
-                onClick={() => {
-                  setIsAddAnnouncementOpen(false);
-                  setEditingAnnouncement(null);
-                }}
-                className="p-1.5 rounded-full text-stone-400 hover:text-stone-600 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
-                aria-label="Close dialog"
+                onClick={() => setIsValuePropModalOpen(false)}
+                className="p-1 text-stone-400 hover:text-stone-700 cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleSaveAnnouncement} className="space-y-4 text-left">
+            <form onSubmit={handleSaveProp} className="space-y-4 text-xs">
               <div className="space-y-1">
-                <label className="text-xs font-bold text-stone-700 dark:text-stone-300 block">
-                  Announcement Text
-                </label>
+                <label className="font-bold text-[#211D1C]">Pillar Title *</label>
                 <input
                   type="text"
                   required
-                  value={annText}
-                  onChange={(e) => setAnnText(e.target.value)}
-                  placeholder="e.g. SPECIAL PAIRING: ANY 2 CASES FOR ₹849 – CODE: "
-                  className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3.5 py-2.5 text-xs text-stone-900 dark:text-white"
+                  value={propTitle}
+                  onChange={(e) => setPropTitle(e.target.value)}
+                  placeholder="e.g. 100% Handcrafted Luxury"
+                  className="w-full bg-[#FFF9EB] border border-[#F5E6CE] rounded-xl px-3 py-2 text-[#211D1C] font-bold outline-none"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-stone-700 dark:text-stone-300 block">
-                    Promo Code (Optional)
-                  </label>
-                  <input
-                    type="text"
-                    value={annCode}
-                    onChange={(e) => setAnnCode(e.target.value.toUpperCase())}
-                    placeholder="e.g. FLAT849"
-                    className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 text-xs font-mono uppercase text-stone-900 dark:text-white"
-                  />
+                  <label className="font-bold text-[#211D1C]">Icon Style</label>
+                  <select
+                    value={propIcon}
+                    onChange={(e) => setPropIcon(e.target.value as any)}
+                    className="w-full bg-[#FFF9EB] border border-[#F5E6CE] rounded-xl px-3 py-2 text-[#211D1C] outline-none"
+                  >
+                    <option value="Sparkles">✨ Sparkles</option>
+                    <option value="Truck">🚚 Express Truck</option>
+                    <option value="MessageSquare">💬 WhatsApp Chat</option>
+                    <option value="Gift">🎁 Luxury Gift Box</option>
+                    <option value="ShieldCheck">🛡️ Shield Guarantee</option>
+                    <option value="Heart">💖 Heart</option>
+                    <option value="Award">🏆 Award</option>
+                  </select>
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-stone-700 dark:text-stone-300 block">
-                    Highlight Pill Text
-                  </label>
+                  <label className="font-bold text-[#211D1C]">Highlight Badge</label>
                   <input
                     type="text"
-                    value={annHighlight}
-                    onChange={(e) => setAnnHighlight(e.target.value)}
-                    placeholder="e.g. Pan-India"
-                    className="w-full bg-[#FAF7F2] dark:bg-stone-900 border border-[#EFE7DE] dark:border-stone-800 rounded-xl px-3 py-2 text-xs text-stone-900 dark:text-white"
+                    value={propBadge}
+                    onChange={(e) => setPropBadge(e.target.value)}
+                    placeholder="e.g. Artisan Crafted"
+                    className="w-full bg-[#FFF9EB] border border-[#F5E6CE] rounded-xl px-3 py-2 text-[#211D1C] outline-none"
                   />
                 </div>
               </div>
 
-              <div className="pt-2 flex justify-end gap-2">
+              <div className="space-y-1">
+                <label className="font-bold text-[#211D1C]">Description Note</label>
+                <textarea
+                  rows={3}
+                  required
+                  value={propDesc}
+                  onChange={(e) => setPropDesc(e.target.value)}
+                  placeholder="Details regarding crafting, guarantee, or packaging..."
+                  className="w-full bg-[#FFF9EB] border border-[#F5E6CE] rounded-xl px-3 py-2 text-[#211D1C] outline-none"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#F3E8E2]">
                 <button
                   type="button"
-                  onClick={() => {
-                    setIsAddAnnouncementOpen(false);
-                    setEditingAnnouncement(null);
-                  }}
-                  className="px-4 py-2 rounded-xl text-xs font-semibold bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300"
+                  onClick={() => setIsValuePropModalOpen(false)}
+                  className="px-4 py-2 rounded-xl bg-stone-100 text-stone-700 font-bold text-xs"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 rounded-xl text-xs font-bold bg-[#881337] text-white hover:bg-[#700f2d] shadow-sm"
+                  className="px-6 py-2 rounded-xl bg-[#FF2E93] hover:bg-[#e02680] text-white font-bold text-xs shadow-md"
                 >
-                  Save Announcement
+                  Save Pillar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* MODAL: ANNOUNCEMENT EDIT/ADD */}
+      {/* ============================================================ */}
+      {isAnnModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/65 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
+          <div className="bg-[#FFFDF8] w-full max-w-md rounded-3xl border border-[#F3E8E2] shadow-2xl p-6 space-y-4 animate-in fade-in">
+            <div className="flex items-center justify-between pb-3 border-b border-[#F3E8E2]">
+              <h3 className="font-serif-heading font-bold text-lg text-[#211D1C]">
+                {editingAnn ? 'Edit Offer Banner' : 'Add Offer Banner'}
+              </h3>
+              <button
+                onClick={() => setIsAnnModalOpen(false)}
+                className="p-1 text-stone-400 hover:text-stone-700 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveAnn} className="space-y-4 text-xs">
+              <div className="space-y-1">
+                <label className="font-bold text-[#211D1C]">Banner Text *</label>
+                <input
+                  type="text"
+                  required
+                  value={annText}
+                  onChange={(e) => setAnnText(e.target.value)}
+                  placeholder="e.g. SPECIAL PAIRING: ANY 2 GIFTS FOR ₹849 – CODE: "
+                  className="w-full bg-[#FFF9EB] border border-[#F5E6CE] rounded-xl px-3 py-2 text-[#211D1C] font-semibold outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="font-bold text-[#211D1C]">Promo Code</label>
+                  <input
+                    type="text"
+                    value={annCode}
+                    onChange={(e) => setAnnCode(e.target.value.toUpperCase())}
+                    placeholder="e.g. FLAT849"
+                    className="w-full bg-[#FFF9EB] border border-[#F5E6CE] rounded-xl px-3 py-2 font-mono text-[#FF2E93] font-bold outline-none"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-bold text-[#211D1C]">Highlight Text (if no code)</label>
+                  <input
+                    type="text"
+                    value={annHighlight}
+                    onChange={(e) => setAnnHighlight(e.target.value)}
+                    placeholder="e.g. Auto-Applied"
+                    className="w-full bg-[#FFF9EB] border border-[#F5E6CE] rounded-xl px-3 py-2 text-[#211D1C] outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#F3E8E2]">
+                <button
+                  type="button"
+                  onClick={() => setIsAnnModalOpen(false)}
+                  className="px-4 py-2 rounded-xl bg-stone-100 text-stone-700 font-bold text-xs"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-6 py-2 rounded-xl bg-[#FF2E93] hover:bg-[#e02680] text-white font-bold text-xs shadow-md"
+                >
+                  Save Offer
                 </button>
               </div>
             </form>

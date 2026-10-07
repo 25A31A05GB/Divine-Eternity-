@@ -310,6 +310,84 @@ export interface BrandStoryCMS {
   posterUrl: string;
 }
 
+export interface CategoryCircleCMS {
+  id: string;
+  name: string;
+  subtitle: string;
+  image: string;
+  badge: string;
+  route: string;
+  isActive: boolean;
+}
+
+export interface BestsellerSectionCMS {
+  eyebrow: string;
+  titlePrefix: string;
+  titleHighlight: string;
+  subtitle: string;
+  isVisible: boolean;
+  discountText: string;
+}
+
+export interface VideoSectionCMS {
+  eyebrow: string;
+  titlePrefix: string;
+  titleHighlight: string;
+  subtitle: string;
+  isVisible: boolean;
+}
+
+export interface SpotlightSectionCMS {
+  selectedCategory: string;
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  viewAllText: string;
+  isVisible: boolean;
+}
+
+export interface ChoiceTabCMS {
+  id: string;
+  label: string;
+  categoryName: string;
+  icon?: string;
+  isActive: boolean;
+}
+
+export interface ChoiceSectionCMS {
+  eyebrow: string;
+  titlePrefix: string;
+  titleHighlight: string;
+  subtitle: string;
+  tabs: ChoiceTabCMS[];
+  isVisible: boolean;
+}
+
+export interface ValuePropCMS {
+  id: string;
+  title: string;
+  description: string;
+  icon: 'Sparkles' | 'Truck' | 'MessageSquare' | 'Gift' | 'ShieldCheck' | 'Heart' | 'Award';
+  highlightBadge: string;
+  isActive: boolean;
+}
+
+export interface MarqueeCMS {
+  messages: string[];
+  speedSeconds: number;
+  isVisible: boolean;
+}
+
+export interface NewsletterCMS {
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  discountBadge: string;
+  couponCode: string;
+  buttonText: string;
+  isVisible: boolean;
+}
+
 export interface FounderCMS {
   name: string;
   role: string;
@@ -321,6 +399,11 @@ export interface FounderCMS {
   launchDate: string;
   introText: string;
   storyNote: string;
+  highlightQuote?: string;
+  signatureText?: string;
+  ctaPrimaryText?: string;
+  ctaSecondaryText?: string;
+  isVisible?: boolean;
 }
 
 export type AdminRole = 'director' | 'superadmin' | 'orders' | 'catalog';
