@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
 import { z } from 'zod';
-import { supabaseAdmin, verifyUserToken, isSupabaseAdminConfigured } from './_lib/supabaseAdmin';
+import { supabaseAdmin, verifyUserToken, isSupabaseAdminConfigured } from '../lib/supabaseAdmin';
 
 const updateStatusSchema = z.object({
   orderId: z.string().min(1, 'Order ID is required'),
