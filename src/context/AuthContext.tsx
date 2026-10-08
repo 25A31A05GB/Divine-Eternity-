@@ -25,25 +25,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<UserProfile | null>(() => {
     try {
       const saved = localStorage.getItem(AUTH_STORAGE_KEY);
-      const parsed = saved ? JSON.parse(saved) : null;
-      const isLocalAdmin = typeof window !== 'undefined' && (
-        localStorage.getItem('de_admin_authenticated') === 'true' ||
-        sessionStorage.getItem('de_admin_authenticated') === 'true'
-      );
-      if (isLocalAdmin) {
-        return parsed
-          ? { ...parsed, isAdmin: true }
-          : {
-              id: 'admin-master',
-              name: 'Store Administrator',
-              email: 'admin@divineseternity.com',
-              phone: '',
-              isAdmin: true,
-              addresses: [],
-              wishlistProductIds: [],
-            };
-      }
-      return parsed;
+      return saved ? JSON.parse(saved) : null;
     } catch {
       return null;
     }
@@ -114,11 +96,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       }
 
-      const isLocalAdmin = typeof window !== 'undefined' && (
-        localStorage.getItem('de_admin_authenticated') === 'true' ||
-        sessionStorage.getItem('de_admin_authenticated') === 'true'
-      );
-      const isAdmin = role === 'admin' || role === 'staff' || isLocalAdmin || Boolean(authUser.email?.toLowerCase().includes('admin@divineseternity.com'));
+      const isAdmin = role === 'admin' || role === 'staff';
 
       const userProfile: UserProfile = {
         id: authUser.id,

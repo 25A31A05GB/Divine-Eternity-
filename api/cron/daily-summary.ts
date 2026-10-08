@@ -3,9 +3,13 @@ import { supabaseAdmin } from '../_lib/supabaseAdmin';
 import { BUSINESS_CONFIG } from '../../src/config/business';
 
 export default async function handler(req: Request, res: Response) {
-  const authHeader = req.headers.authorization;
   const cronSecret = process.env.CRON_SECRET;
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+  if (!cronSecret) {
+    return res.status(500).json({ success: false, error: 'CRON_SECRET is not set on the server.' });
+  }
+
+  const authHeader = req.headers.authorization;
+  if (authHeader !== `Bearer ${cronSecret}`) {
     return res.status(401).json({ success: false, error: 'Unauthorized cron request' });
   }
 

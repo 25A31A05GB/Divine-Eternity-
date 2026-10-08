@@ -37,5 +37,25 @@ export default async function handler(req: Request, res: Response) {
     return res.json({ success: true, coupon: data });
   }
 
+  if (req.method === 'DELETE') {
+    const authHeader = req.headers.authorization;
+    const { role } = await verifyUserToken(authHeader);
+
+    if (role !== 'admin' && role !== 'staff') {
+      return res.status(403).json({ success: false, error: 'Unauthorized. Admin access required.' });
+    }
+
+    const code = (req.query.code || req.body?.code || (req as any).params?.code || '').toString().trim().toUpperCase();
+    if (!code) {
+      return res.status(400).json({ success: false, error: 'Coupon code is required.' });
+    }
+
+    const { error } = await supabaseAdmin.from('coupons').delete().eq('code', code);
+    if (error) {
+      return res.status(500).json({ success: false, error: error.message });
+    }
+    return res.json({ success: true, message: `Coupon ${code} deleted.` });
+  }
+
   return res.status(405).json({ error: 'Method not allowed' });
 }

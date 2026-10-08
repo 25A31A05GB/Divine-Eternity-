@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { supabase } from '../../lib/supabase';
 import {
   RotateCcw,
   CheckCircle2,
@@ -39,8 +40,12 @@ export const AdminReturnsTab: React.FC = () => {
   const fetchReturnRequests = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/return-request', { method: 'GET' });
-      // In case GET endpoint isn't defined, query Supabase directly or handle empty
+      const session = supabase ? (await supabase.auth.getSession()).data.session : null;
+      const headers: Record<string, string> = {};
+      if (session?.access_token) {
+        headers['Authorization'] = `Bearer ${session.access_token}`;
+      }
+      const res = await fetch('/api/return-request', { method: 'GET', headers });
       const data = await res.json();
       if (data.requests) setRequests(data.requests);
     } catch {
@@ -56,6 +61,26 @@ export const AdminReturnsTab: React.FC = () => {
 
   const handleUpdateStatus = async (reqRecord: ReturnRequestRecord, newStatus: string) => {
     try {
+      const session = supabase ? (await supabase.auth.getSession()).data.session : null;
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      if (session?.access_token) {
+        headers['Authorization'] = `Bearer ${session.access_token}`;
+      }
+      const res = await fetch('/api/return-request', {
+        method: 'PATCH',
+        headers,
+        body: JSON.stringify({
+          id: reqRecord.id,
+          status: newStatus,
+          admin_note: adminNote || undefined,
+          refund_amount: refundAmount || undefined,
+          refund_reference: refundRef || undefined,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to update request');
       setMessage(`Updated request #${reqRecord.id.slice(-6)} to "${newStatus}"`);
       setActiveModal(null);
       fetchReturnRequests();

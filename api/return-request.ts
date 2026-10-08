@@ -16,6 +16,57 @@ const returnRequestSchema = z.object({
 });
 
 export default async function handler(req: Request, res: Response) {
+  if (req.method === 'GET') {
+    const authHeader = req.headers.authorization;
+    const { role } = await verifyUserToken(authHeader);
+    if (role !== 'admin' && role !== 'staff') {
+      return res.status(403).json({ success: false, error: 'Unauthorized. Admin access required.' });
+    }
+    if (!supabaseAdmin) {
+      return res.status(500).json({ success: false, error: 'Database connection unconfigured' });
+    }
+    const { data: requests, error } = await supabaseAdmin
+      .from('return_requests')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (error) {
+      return res.status(500).json({ success: false, error: error.message });
+    }
+    return res.json({ success: true, requests });
+  }
+
+  if (req.method === 'PATCH') {
+    const authHeader = req.headers.authorization;
+    const { role } = await verifyUserToken(authHeader);
+    if (role !== 'admin' && role !== 'staff') {
+      return res.status(403).json({ success: false, error: 'Unauthorized. Admin access required.' });
+    }
+    if (!supabaseAdmin) {
+      return res.status(500).json({ success: false, error: 'Database connection unconfigured' });
+    }
+    const { id, status, admin_note, refund_amount, refund_reference } = req.body;
+    if (!id) {
+      return res.status(400).json({ success: false, error: 'Request ID is required' });
+    }
+    const updates: Record<string, any> = {};
+    if (status !== undefined) updates.status = status;
+    if (admin_note !== undefined) updates.admin_note = admin_note;
+    if (refund_amount !== undefined) updates.refund_amount = refund_amount;
+    if (refund_reference !== undefined) updates.refund_reference = refund_reference;
+
+    const { data, error } = await supabaseAdmin
+      .from('return_requests')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .maybeSingle();
+
+    if (error) {
+      return res.status(500).json({ success: false, error: error.message });
+    }
+    return res.json({ success: true, request: data });
+  }
+
   if (req.method !== 'POST') {
     return res.status(405).json({ success: false, error: 'Method not allowed' });
   }
