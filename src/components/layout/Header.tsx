@@ -276,6 +276,25 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, ope
             </button>
 
             <button
+              onClick={() => navigateTo('gift-finder')}
+              className={`transition-colors hover:text-[#FF2E93] cursor-pointer flex items-center gap-1 ${
+                currentView === 'gift-finder' ? 'text-[#FF2E93] font-bold' : 'text-[#211D1C]'
+              }`}
+            >
+              <span>Gift Finder</span>
+              <span className="text-[9px] px-1 py-0.2 rounded-full bg-[#FFF0F5] text-[#FF2E93]">Quiz</span>
+            </button>
+
+            <button
+              onClick={() => navigateTo('faq')}
+              className={`transition-colors hover:text-[#FF2E93] cursor-pointer ${
+                currentView === 'faq' ? 'text-[#FF2E93] font-bold' : 'text-[#211D1C]'
+              }`}
+            >
+              FAQ
+            </button>
+
+            <button
               onClick={() => navigateTo('track-order')}
               className={`transition-colors hover:text-[#FF2E93] cursor-pointer ${
                 currentView === 'track-order' ? 'text-[#FF2E93]' : 'text-[#211D1C]'
@@ -324,7 +343,7 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, ope
           <button
             onClick={() => {
               if (user) {
-                setIsAccountModalOpen(true);
+                navigateTo('account');
               } else {
                 openAuthModal('login');
               }

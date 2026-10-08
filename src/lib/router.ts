@@ -41,6 +41,12 @@ export function formatPath(view: string, params?: Record<string, string>): strin
   }
   if (view === 'contact') return '/contact';
   if (view === 'creator-club') return '/creator-club';
+  if (view === 'gift-finder') return '/gift-finder';
+  if (view === 'faq') return '/faq';
+  if (view === 'gifts' || view === 'occasion') {
+    const occ = params?.occasion || 'rakhi';
+    return `/gifts/${encodeURIComponent(occ)}`;
+  }
 
   if (view === 'policy') {
     const tab = params?.tab;
@@ -205,6 +211,28 @@ export function parseCurrentLocation(productsList: Product[]): RouteMatch {
 
   if (pathname === '/creator-club') {
     return { view: 'creator-club', params, product: null, canonicalPath: '/creator-club' };
+  }
+
+  if (pathname === '/account' || pathname === '/my-account') {
+    return { view: 'account', params, product: null, canonicalPath: '/account' };
+  }
+
+  if (pathname === '/gift-finder') {
+    return { view: 'gift-finder', params, product: null, canonicalPath: '/gift-finder' };
+  }
+
+  if (pathname === '/faq') {
+    return { view: 'faq', params, product: null, canonicalPath: '/faq' };
+  }
+
+  if (pathname.startsWith('/gifts/')) {
+    const occasion = decodeURIComponent(pathname.replace('/gifts/', '')).trim();
+    return { view: 'gifts', params: { ...params, occasion }, product: null, canonicalPath: `/gifts/${occasion}` };
+  }
+
+  if (pathname.startsWith('/proof/')) {
+    const token = decodeURIComponent(pathname.replace('/proof/', '')).trim();
+    return { view: 'proof-approval', params: { ...params, token }, product: null, canonicalPath: `/proof/${token}` };
   }
 
   // Legal Policy Routes

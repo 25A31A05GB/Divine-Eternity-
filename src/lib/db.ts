@@ -74,6 +74,8 @@ export const toRow = (product: Product) => ({
   secondary_color: product.secondaryColor || '#D4AF37',
   design_pattern: product.designPattern || 'jewelry_necklace',
   allows_personalization: product.allowsPersonalization ?? true,
+  hsn_code: product.hsnCode || '7117',
+  gst_rate: product.gstRate ?? 18,
   updated_at: new Date().toISOString(),
 });
 
@@ -177,6 +179,8 @@ export const db = {
             themeColor: d.theme_color || '#FEF9EF',
             secondaryColor: d.secondary_color || '#D4AF37',
             allowsPersonalization: d.allows_personalization ?? true,
+            hsnCode: d.hsn_code || '7117',
+            gstRate: Number(d.gst_rate) || 18,
           }));
           setStoredProducts(mapped);
           return { data: mapped, error: null };

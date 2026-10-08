@@ -115,6 +115,10 @@ export interface Product {
   tagline?: string;
   customizable?: boolean;
   themeColors?: string[];
+  hsnCode?: string;
+  gstRate?: number;
+  occasions?: string[];
+  product_occasions?: string[];
 }
 
 export interface CartItem {

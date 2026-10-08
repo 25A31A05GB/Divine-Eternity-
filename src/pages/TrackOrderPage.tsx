@@ -254,6 +254,21 @@ export const TrackOrderPage: React.FC<TrackOrderPageProps> = ({ initialOrderId =
                 )}
               </div>
             </div>
+
+            {/* Need Help WhatsApp Callout */}
+            <div className="pt-4 border-t border-stone-100 flex items-center justify-between gap-3">
+              <span className="text-xs text-stone-600 font-medium">Need immediate assistance with your order?</span>
+              <a
+                href={`https://wa.me/${BRAND_CONFIG.whatsappNumber}?text=${encodeURIComponent(
+                  `Hi Divine’s Eternity! I need help with my Order Reference #${searchedOrder.id}`
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-full inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+              >
+                <span>Need help? WhatsApp Us</span>
+              </a>
+            </div>
           </div>
         )}
 

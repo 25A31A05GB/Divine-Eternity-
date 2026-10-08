@@ -10,6 +10,7 @@ import { db } from '../lib/db';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { SEO } from '../components/common/SEO';
 import { MediaStudioCMS } from '../components/admin/MediaStudioCMS';
+import { ProductionQueue } from '../components/admin/ProductionQueue';
 import {
   TrendingUp,
   Package,
@@ -149,7 +150,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [currentRole, setCurrentRole] = useState<AdminRole>(initialRole);
   const [isAdminMobileMenuOpen, setIsAdminMobileMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<
-    'overview' | 'orders' | 'products' | 'media-cms' | 'coupons' | 'reviews' | 'customers' | 'affiliates' | 'personalization'
+    'overview' | 'orders' | 'products' | 'media-cms' | 'coupons' | 'reviews' | 'customers' | 'affiliates' | 'personalization' | 'production'
   >(() => (initialRole === 'director' ? 'media-cms' : 'overview'));
   const [dbActionError, setDbActionError] = useState<string | null>(null);
   const [personalizationRequests, setPersonalizationRequests] = useState<any[]>([]);
@@ -1612,6 +1613,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   { id: 'customers', label: 'Client Directory', icon: Users, count: customersList.length },
                   { id: 'affiliates', label: 'Creator Ambassadors', icon: Video, count: creatorApplications.length },
                   { id: 'personalization', label: 'Bespoke Requests', icon: Sparkles, count: personalizationRequests.length },
+                  { id: 'production', label: 'Production Queue', icon: Clock, count: null },
                 ].map((tab) => {
                   const Icon = tab.icon;
                   const isActive = activeTab === tab.id;
@@ -1700,6 +1702,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             { id: 'customers', label: 'Client Directory', icon: Users, count: customersList.length },
             { id: 'affiliates', label: 'Creator Ambassadors', icon: Video, count: creatorApplications.length },
             { id: 'personalization', label: 'Bespoke Requests', icon: Sparkles, count: personalizationRequests.length },
+            { id: 'production', label: 'Production Queue', icon: Clock, count: null },
           ].map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -3967,6 +3970,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </div>
         </div>
       )}
+
+        {/* ============================================================ */}
+        {/* TAB: PRODUCTION KANBAN QUEUE */}
+        {/* ============================================================ */}
+        {activeTab === 'production' && (
+          <div className="animate-in fade-in duration-150">
+            <ProductionQueue />
+          </div>
+        )}
 
       {/* ============================================================ */}
       {/* MODAL: BULK EDITING SUITE (PRICE, CATEGORY, STOCK) */}

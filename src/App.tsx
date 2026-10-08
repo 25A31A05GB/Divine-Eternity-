@@ -31,6 +31,11 @@ const PersonalizationPage = React.lazy(() => import('./pages/PersonalizationPage
 const ContactPage = React.lazy(() => import('./pages/ContactPage').then((m) => ({ default: m.ContactPage })));
 const CreatorCollabPage = React.lazy(() => import('./pages/CreatorCollabPage').then((m) => ({ default: m.CreatorCollabPage })));
 const PolicyPage = React.lazy(() => import('./pages/PolicyPage').then((m) => ({ default: m.PolicyPage })));
+const AccountPage = React.lazy(() => import('./pages/AccountPage').then((m) => ({ default: m.AccountPage })));
+const ProofApprovalPage = React.lazy(() => import('./pages/ProofApprovalPage').then((m) => ({ default: m.ProofApprovalPage })));
+const OccasionLandingPage = React.lazy(() => import('./pages/OccasionLandingPage').then((m) => ({ default: m.OccasionLandingPage })));
+const GiftFinderPage = React.lazy(() => import('./pages/GiftFinderPage').then((m) => ({ default: m.GiftFinderPage })));
+const FAQPage = React.lazy(() => import('./pages/FAQPage').then((m) => ({ default: m.FAQPage })));
 const SecretAdminPortal = React.lazy(() => import('./pages/SecretAdminPortal').then((m) => ({ default: m.SecretAdminPortal })));
 const NotFoundPage = React.lazy(() => import('./pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage })));
 const FloatingWhatsApp = React.lazy(() => import('./components/common/FloatingWhatsApp').then((m) => ({ default: m.FloatingWhatsApp })));
@@ -49,6 +54,11 @@ const VALID_VIEWS = new Set([
   'contact',
   'creator-club',
   'policy',
+  'account',
+  'proof-approval',
+  'gifts',
+  'gift-finder',
+  'faq',
   'admin',
   'secret-admin-portal',
 ]);
@@ -367,6 +377,40 @@ export function AppContent() {
           {currentView === 'policy' && (
             <PolicyPage initialTab={(viewParams.tab as any) || 'refund'} />
           )}
+
+          {currentView === 'account' && (
+            <AccountPage
+              products={products}
+              onQuickView={handleOpenQuickView}
+              onOpenDetail={handleOpenDetail}
+              onNavigateToCollection={(cat) => handleNavigate('collections', { category: cat || 'all' })}
+            />
+          )}
+
+          {currentView === 'proof-approval' && (
+            <ProofApprovalPage token={viewParams.token || ''} />
+          )}
+
+          {currentView === 'gifts' && (
+            <OccasionLandingPage
+              occasionSlug={viewParams.occasion || 'rakhi'}
+              products={products}
+              onProductClick={handleOpenDetail}
+              onQuickView={handleOpenQuickView}
+              onNavigate={handleNavigate}
+            />
+          )}
+
+          {currentView === 'gift-finder' && (
+            <GiftFinderPage
+              products={products}
+              onProductClick={handleOpenDetail}
+              onQuickView={handleOpenQuickView}
+              onNavigate={handleNavigate}
+            />
+          )}
+
+          {currentView === 'faq' && <FAQPage />}
 
           {/* Protected Admin Route with Supabase Auth & RLS Guard */}
           {isSecretAdminView && (

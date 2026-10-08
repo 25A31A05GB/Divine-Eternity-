@@ -33,5 +33,15 @@
       "source": "/(.*)",
       "destination": "/index.html"
     }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/abandoned-carts",
+      "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/cron/daily-summary",
+      "schedule": "0 21 * * *"
+    }
   ]
 }

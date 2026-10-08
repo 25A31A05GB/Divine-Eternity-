@@ -577,6 +577,20 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onBackToCart, onOrde
               </p>
               <p>Handcrafted in Mumbai Atelier · Verified GST Invoice</p>
             </div>
+
+            {/* Need Help WhatsApp Callout */}
+            <div className="pt-3 border-t border-stone-100 text-center">
+              <a
+                href={`https://wa.me/${BRAND_CONFIG.whatsappNumber}?text=${encodeURIComponent(
+                  'Hi Divine’s Eternity! I need help completing my checkout.'
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs font-bold text-emerald-700 hover:text-emerald-800 bg-emerald-50 border border-emerald-200 px-4 py-2 rounded-xl inline-flex items-center gap-1.5 transition-colors"
+              >
+                <span>Need help with checkout? Chat on WhatsApp</span>
+              </a>
+            </div>
           </div>
         </div>
       </div>
