@@ -45,7 +45,7 @@ export async function sendOrderConfirmationEmail(payload: OrderNotificationPaylo
               <p><strong>Items:</strong> ${payload.itemsSummary}</p>
               ${payload.trackingNumber ? `<p><strong>Courier Tracking:</strong> ${payload.trackingNumber}</p>` : ''}
             </div>
-            <p>You can track the live crafting and dispatch milestone of your keepsake here: <a href="https://divineseternity.com/#track-order?orderId=${payload.orderId}">Track Order</a></p>
+            <p>You can track the live crafting and dispatch milestone of your keepsake here: <a href="https://divineseternity.com/track-order?orderId=${payload.orderId}">Track Order</a></p>
             <p style="color: #888; font-size: 12px; margin-top: 24px;">Warmly,<br/>Sonu & The Divine's Eternity Studio Team</p>
           </div>
         `,

@@ -25,26 +25,18 @@ export const AdminRouteGuard: React.FC<AdminRouteGuardProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
+    try {
+      localStorage.removeItem('de_admin_authenticated');
+      localStorage.removeItem('de_admin_user_role');
+    } catch {
+      // ignore
+    }
     checkAdminSession();
   }, []);
 
   const checkAdminSession = async () => {
     setLoading(true);
 
-    // 1. Check local master admin session
-    try {
-      const localAdminSession = localStorage.getItem('de_admin_authenticated');
-      if (localAdminSession === 'true') {
-        setIsAdmin(true);
-        setIsForbidden(false);
-        setLoading(false);
-        return;
-      }
-    } catch {
-      // ignore
-    }
-
-    // 2. Check Supabase session if configured
     if (isSupabaseConfigured() && supabase) {
       try {
         const { data: { session } } = await supabase.auth.getSession();
@@ -81,61 +73,54 @@ export const AdminRouteGuard: React.FC<AdminRouteGuardProps> = ({
     setLoginError('');
     setIsSubmitting(true);
 
-    const cleanEmail = (email || 'admin@divineseternity.com').trim().toLowerCase();
-    const cleanPass = (password || 'admin123').trim();
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPass = password.trim();
 
-    // 1. If Supabase is configured and reachable, attempt Supabase Auth
-    if (isSupabaseConfigured() && supabase) {
-      try {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: cleanEmail,
-          password: cleanPass,
-        });
+    if (!cleanEmail || !cleanPass) {
+      setLoginError('Invalid email or password.');
+      setIsSubmitting(false);
+      return;
+    }
 
-        if (!error && data?.user) {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', data.user.id)
-            .maybeSingle();
+    if (!isSupabaseConfigured() || !supabase) {
+      setLoginError('Authentication service is not configured.');
+      setIsSubmitting(false);
+      return;
+    }
 
-          if (profile?.role === 'admin' || profile?.role === 'staff') {
-            setIsAdmin(true);
-            setIsForbidden(false);
-            localStorage.setItem('de_admin_authenticated', 'true');
-            setIsSubmitting(false);
-            return;
-          }
-        }
-      } catch (err: any) {
-        console.warn('Supabase auth attempt:', err);
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: cleanEmail,
+        password: cleanPass,
+      });
+
+      if (error || !data?.user) {
+        setLoginError('Invalid email or password.');
+        setIsSubmitting(false);
+        return;
       }
-    }
 
-    // 2. Local Master Administrator Authentication (Instant fallback)
-    try {
-      localStorage.setItem('de_admin_authenticated', 'true');
-      localStorage.setItem('de_admin_user_role', 'director');
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', data.user.id)
+        .maybeSingle();
+
+      if (profile?.role === 'admin' || profile?.role === 'staff') {
+        setIsAdmin(true);
+        setIsForbidden(false);
+        setIsSubmitting(false);
+        return;
+      } else {
+        await supabase.auth.signOut();
+        setLoginError('This account does not have admin access.');
+        setIsSubmitting(false);
+        return;
+      }
     } catch {
-      // ignore
+      setLoginError('Invalid email or password.');
+      setIsSubmitting(false);
     }
-
-    setIsAdmin(true);
-    setIsForbidden(false);
-    setIsSubmitting(false);
-  };
-
-  const handleQuickDemoLogin = () => {
-    setEmail('admin@divineseternity.com');
-    setPassword('admin123');
-    try {
-      localStorage.setItem('de_admin_authenticated', 'true');
-      localStorage.setItem('de_admin_user_role', 'director');
-    } catch {
-      // ignore
-    }
-    setIsAdmin(true);
-    setIsForbidden(false);
   };
 
   const handleLogout = async () => {
@@ -227,7 +212,7 @@ export const AdminRouteGuard: React.FC<AdminRouteGuardProps> = ({
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@divineseternity.com"
+                placeholder="admin@example.com"
                 className="w-full bg-[#181514] border border-[#3A3331] focus:border-[#FF2E93] rounded-xl px-4 py-3 text-xs text-white placeholder-stone-600 outline-none"
               />
             </div>
@@ -261,15 +246,6 @@ export const AdminRouteGuard: React.FC<AdminRouteGuardProps> = ({
               className="w-full py-3.5 rounded-xl bg-[#FF2E93] hover:bg-[#e02680] text-white font-bold text-xs uppercase tracking-wider transition-all shadow-lg active:scale-98 cursor-pointer disabled:opacity-50"
             >
               {isSubmitting ? 'Authenticating...' : 'Sign In to Management'}
-            </button>
-
-            <button
-              type="button"
-              onClick={handleQuickDemoLogin}
-              className="w-full py-2.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 font-medium text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              <span>1-Click Master Access (Director Mode)</span>
             </button>
           </form>
 

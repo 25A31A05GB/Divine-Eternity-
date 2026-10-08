@@ -8,6 +8,8 @@ export const ContactPage: React.FC = () => {
   const [phone, setPhone] = useState('');
   const [subject, setSubject] = useState('Order Enquiry');
   const [message, setMessage] = useState('');
+  const [hasAgreedConsent, setHasAgreedConsent] = useState(false);
+  const [consentError, setConsentError] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
@@ -34,15 +36,39 @@ export const ContactPage: React.FC = () => {
     },
   ];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setConsentError('');
     if (!name || !phone || !message) return;
+
+    if (!hasAgreedConsent) {
+      setConsentError('Please check the consent box to send your inquiry.');
+      return;
+    }
+
+    try {
+      await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: name.trim(),
+          phone: phone.trim(),
+          email: email.trim() || undefined,
+          subject,
+          message: message.trim(),
+        }),
+      });
+    } catch {
+      // ignore
+    }
+
     setSubmitted(true);
     setTimeout(() => {
       setName('');
       setEmail('');
       setPhone('');
       setMessage('');
+      setHasAgreedConsent(false);
     }, 1500);
   };
 
@@ -59,7 +85,7 @@ export const ContactPage: React.FC = () => {
     })),
   };
 
-  const contactUrl = typeof window !== 'undefined' ? window.location.href : 'https://divineseternity.com/#contact';
+  const contactUrl = typeof window !== 'undefined' ? `${window.location.origin}/contact` : 'https://divineseternity.com/contact';
 
   return (
     <div className="py-10 sm:py-16 bg-[#FFFDF8] min-h-screen">
@@ -264,6 +290,28 @@ export const ContactPage: React.FC = () => {
                     className="w-full px-3.5 py-2.5 rounded-xl border border-[#E7E2DA] text-xs sm:text-sm bg-[#FFFDF8]"
                   />
                 </div>
+
+                {consentError && (
+                  <div className="text-xs text-rose-600 font-medium">
+                    {consentError}
+                  </div>
+                )}
+
+                <label className="flex items-start gap-2 text-[11px] text-stone-600 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={hasAgreedConsent}
+                    onChange={(e) => setHasAgreedConsent(e.target.checked)}
+                    className="mt-0.5 rounded border-stone-300 text-[#FF2E93] focus:ring-[#FF2E93]"
+                  />
+                  <span>
+                    I consent to Divine’s Eternity contacting me via WhatsApp/Email in accordance with the{' '}
+                    <a href="/privacy-policy" target="_blank" className="text-[#FF2E93] font-bold hover:underline">
+                      Privacy Policy
+                    </a>{' '}
+                    [REVIEW WITH LAWYER].
+                  </span>
+                </label>
 
                 <button
                   type="submit"

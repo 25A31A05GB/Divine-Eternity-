@@ -29,26 +29,56 @@ export default async function handler(req: Request, res: Response) {
       const authHeader = req.headers.authorization;
       const { user } = await verifyUserToken(authHeader);
 
-      // Fetch official products from DB to prevent price tampering
+      // Fetch official products from DB to prevent client price tampering
       let catalogProducts: any[] = [];
-      try {
-        const { data } = await supabaseAdmin.from('products').select('*');
-        if (data) catalogProducts = data;
-      } catch (e) {
-        console.warn('DB catalog fetch fallback', e);
+      if (supabaseAdmin) {
+        try {
+          const { data } = await supabaseAdmin.from('products').select('*');
+          if (data) catalogProducts = data;
+        } catch (e) {
+          console.warn('DB catalog fetch fallback', e);
+        }
       }
 
-      // Authoritative pricing calculation
+      // Fetch coupon directly from Supabase coupons table (server-side validation)
+      let dbCoupon = null;
+      if (couponCode && couponCode.trim() && supabaseAdmin) {
+        try {
+          const { data } = await supabaseAdmin
+            .from('coupons')
+            .select('*')
+            .ilike('code', couponCode.trim())
+            .maybeSingle();
+          if (data && data.is_active !== false) {
+            dbCoupon = {
+              code: data.code,
+              description: data.description,
+              type: data.type,
+              value: Number(data.value),
+              minOrderValue: Number(data.min_order_value || 0),
+              minItems: Number(data.min_items || 1),
+              isActive: data.is_active,
+              expiresAt: data.expires_at,
+            };
+          }
+        } catch (e) {
+          console.warn('DB coupon fetch error', e);
+        }
+      }
+
+      // Authoritative pricing calculation on the server
       const pricing = computeAuthoritativePricing({
         items: items as any,
         couponCode,
         isGiftWrapped,
         state: customer.state,
         catalogProducts,
+        dbCoupon,
       });
 
       const orderId = `DE-${Math.floor(100000 + Math.random() * 900000)}`;
-      const trackingNumber = `DELHIVERY-${Math.floor(10000000 + Math.random() * 90000000)}`;
+      // Set trackingNumber to null and status 'Placed'. Admin enters the real AWB later.
+      const trackingNumber: string | null = null;
       const isCOD = paymentMethod === 'COD';
 
       let razorpayOrderId: string | undefined;
@@ -108,16 +138,17 @@ export default async function handler(req: Request, res: Response) {
             status: 'Placed',
             timestamp: new Date().toISOString().replace('T', ' ').slice(0, 16),
             location: 'Divine Atelier',
-            description: isCOD ? 'COD Order placed' : 'Order placed, awaiting payment confirmation',
+            description: isCOD ? 'Order placed' : 'Order placed, awaiting payment confirmation',
           },
         ],
       };
 
-      // Insert to Supabase DB if accessible
-      try {
-        await supabaseAdmin.from('orders').insert(orderRow);
-      } catch (err) {
-        console.warn('DB order insert fallback', err);
+      if (supabaseAdmin) {
+        try {
+          await supabaseAdmin.from('orders').insert(orderRow);
+        } catch (err) {
+          console.warn('DB order insert fallback', err);
+        }
       }
 
       if (isCOD) {
@@ -129,7 +160,7 @@ export default async function handler(req: Request, res: Response) {
           customerPhone: customer.phone,
           totalAmount: pricing.totalAmount,
           paymentMethod: 'Cash on Delivery',
-          trackingNumber,
+          trackingNumber: trackingNumber || undefined,
           itemsSummary,
         });
         sendOrderConfirmationWhatsApp({
@@ -139,22 +170,26 @@ export default async function handler(req: Request, res: Response) {
           customerPhone: customer.phone,
           totalAmount: pricing.totalAmount,
           paymentMethod: 'Cash on Delivery',
-          trackingNumber,
+          trackingNumber: trackingNumber || undefined,
           itemsSummary,
         });
       }
 
       return res.status(201).json({
         success: true,
-        order: orderRow,
+        orderId,
         razorpayOrderId,
-        razorpayKeyId: process.env.VITE_RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID || '',
         amount: Math.round(pricing.totalAmount * 100),
         currency: 'INR',
+        pricing,
+        order: {
+          ...orderRow,
+          items,
+        },
       });
-    } catch (e: any) {
-      console.error('Order creation error', e);
-      return res.status(500).json({ error: e.message || 'Internal server error' });
+    } catch (err: any) {
+      console.error('Order creation error', err);
+      return res.status(500).json({ error: err.message || 'Internal server error' });
     }
   });
 }

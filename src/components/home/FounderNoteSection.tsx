@@ -21,7 +21,11 @@ export const FounderNoteSection: React.FC<FounderNoteSectionProps> = ({
   const role = founderData?.role || 'Founder — Divine’s Eternity';
   const badge1 = founderData?.badge1 || '20-Year-Old Founder';
   const badge2 = founderData?.badge2 || 'Educator & Creator';
-  const imageUrl = founderData?.imageUrl || '/src/assets/images/founder_sonu_real_1791375717528.jpg';
+  const rawImageUrl = founderData?.imageUrl;
+  const defaultFounderImage = '/images/founder/founder_sonu_real_1791375717528.jpg';
+  const imageUrl = (rawImageUrl && !rawImageUrl.startsWith('/src/assets'))
+    ? rawImageUrl
+    : defaultFounderImage;
   const establishedDate = founderData?.establishedDate || 'EST. AUG 31';
   const dreamAge = founderData?.dreamAge || 'Dreamed at Age 16';
   const launchDate = founderData?.launchDate || 'August 31st';
@@ -69,11 +73,12 @@ export const FounderNoteSection: React.FC<FounderNoteSectionProps> = ({
                   <img
                     src={imageUrl}
                     alt={`${name} — ${role}`}
+                    loading="lazy"
+                    decoding="async"
                     referrerPolicy="no-referrer"
                     className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700"
                     onError={(e) => {
-                      (e.currentTarget as HTMLImageElement).src =
-                        '/images/founder/founder_sonu_real_1791317591344.jpg';
+                      (e.currentTarget as HTMLImageElement).src = defaultFounderImage;
                     }}
                   />
 

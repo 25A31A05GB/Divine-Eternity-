@@ -1,17 +1,28 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || '';
-const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY || '';
+const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
+const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
 
-export const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false,
-  },
-});
+export const isSupabaseAdminConfigured = (): boolean => {
+  return Boolean(
+    supabaseUrl &&
+    serviceRoleKey &&
+    supabaseUrl.startsWith('https://') &&
+    serviceRoleKey.length > 20
+  );
+};
+
+export const supabaseAdmin = isSupabaseAdminConfigured()
+  ? createClient(supabaseUrl as string, serviceRoleKey as string, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    })
+  : (null as any);
 
 export async function verifyUserToken(authHeader: string | undefined) {
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  if (!authHeader || !authHeader.startsWith('Bearer ') || !supabaseAdmin) {
     return { user: null, role: 'anonymous' };
   }
   const token = authHeader.replace('Bearer ', '').trim();

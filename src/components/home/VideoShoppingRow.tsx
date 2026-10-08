@@ -74,12 +74,16 @@ export const VideoShoppingRow: React.FC<VideoShoppingRowProps> = ({
                     <img
                       src={reel.posterImage}
                       alt={reel.title}
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                   ) : (
                     <img
                       src={linkedProduct.images[0]}
                       alt={linkedProduct.name}
+                      loading="lazy"
+                      decoding="async"
                       referrerPolicy="no-referrer"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />

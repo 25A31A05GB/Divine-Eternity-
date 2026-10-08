@@ -1,31 +1,28 @@
-/**
- * Divine's Eternity - Brand and Business Configuration
- * Authoritative single source of truth for branding, contact, GST, and legal information.
- */
+import { BUSINESS_CONFIG } from './business';
 
+/**
+ * Backward compatibility alias for BRAND_CONFIG.
+ * Prefer importing BUSINESS_CONFIG directly.
+ */
 export const BRAND_CONFIG = {
-  name: "Divine's Eternity",
-  tagline: "Gifts That Stay In Hearts",
-  subTagline: "Handcrafted Luxury Jewellery & Bespoke Keepsakes",
-  legalEntityName: "Divine's Eternity Retail Ventures LLP",
-  domain: "https://divineseternity.com",
-  supportEmail: "support@divineseternity.com",
+  name: BUSINESS_CONFIG.brandName,
+  tagline: BUSINESS_CONFIG.tagline,
+  subTagline: BUSINESS_CONFIG.subTagline,
+  legalEntityName: BUSINESS_CONFIG.legalName,
+  domain: BUSINESS_CONFIG.domain,
+  supportEmail: BUSINESS_CONFIG.supportEmail,
   adminEmail: "admin@divineseternity.com",
-  phone: "+91 91520 84729",
-  whatsappNumber: "+919152084729",
-  whatsappDisplay: "+91 91520 84729",
-  registeredAddress: "402, Signature Luxury Atelier, Bandra West, Mumbai, Maharashtra 400050, India",
-  gstin: "27AAACD8921K1Z4",
-  currency: "INR",
-  currencySymbol: "₹",
-  freeShippingThreshold: 499,
-  giftWrappingFee: 99,
+  phone: BUSINESS_CONFIG.supportPhone,
+  whatsappNumber: BUSINESS_CONFIG.whatsappNumber,
+  whatsappDisplay: BUSINESS_CONFIG.whatsappDisplay,
+  registeredAddress: BUSINESS_CONFIG.address,
+  gstin: BUSINESS_CONFIG.gstin,
+  currency: BUSINESS_CONFIG.currency,
+  currencySymbol: BUSINESS_CONFIG.currencySymbol,
+  freeShippingThreshold: BUSINESS_CONFIG.freeShippingThreshold,
+  giftWrappingFee: BUSINESS_CONFIG.giftWrappingFee,
   codFee: 0,
-  returnWindowDays: 7,
-  socialLinks: {
-    instagram: "https://instagram.com/divineseternity",
-    whatsapp: "https://wa.me/919152084729",
-    facebook: "https://facebook.com/divineseternity",
-    youtube: "https://youtube.com/@divineseternity",
-  },
+  returnWindowDays: BUSINESS_CONFIG.returnWindowDays,
+  socialLinks: BUSINESS_CONFIG.socialLinks,
+  grievanceOfficer: BUSINESS_CONFIG.grievanceOfficer,
 };

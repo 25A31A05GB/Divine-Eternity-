@@ -49,6 +49,49 @@ const setStoredOrders = (orders: Order[]) => {
   }
 };
 
+// Exported helper to convert Product to Supabase row format
+export const toRow = (product: Product) => ({
+  id: product.id,
+  slug: product.slug,
+  name: product.name,
+  tagline: product.tagline || '',
+  description: product.description || '',
+  price: product.price,
+  mrp: product.mrp,
+  category: product.category,
+  badge: product.badge || null,
+  images: Array.isArray(product.images) ? product.images : [product.images],
+  is_active: product.inStock !== false,
+  in_stock: product.inStock ?? true,
+  stock_quantity: product.stockQuantity ?? 50,
+  rating: product.rating ?? 4.9,
+  review_count: product.reviewCount ?? 0,
+  features: product.features || [],
+  customizable: product.customizable ?? true,
+  theme_colors: product.themeColors || ['#FEF9EF', '#FF2E93', '#211D1C'],
+  is_bestseller: product.isBestSeller ?? false,
+  theme_color: product.themeColor || '#FEF9EF',
+  secondary_color: product.secondaryColor || '#D4AF37',
+  design_pattern: product.designPattern || 'jewelry_necklace',
+  allows_personalization: product.allowsPersonalization ?? true,
+  updated_at: new Date().toISOString(),
+});
+
+export const seedCatalogIfEmpty = async (): Promise<void> => {
+  if (!isSupabaseConfigured() || !supabase) return;
+  try {
+    const { count, error } = await supabase
+      .from('products')
+      .select('*', { count: 'exact', head: true });
+    if (!error && (count === 0 || count === null)) {
+      const rows = INITIAL_PRODUCTS.map(toRow);
+      await supabase.from('products').upsert(rows);
+    }
+  } catch (err) {
+    console.warn('seedCatalogIfEmpty error:', err);
+  }
+};
+
 /**
  * Data Access Layer for Divine's Eternity
  * Connects directly to Supabase PostgreSQL when credentials exist,
@@ -105,7 +148,12 @@ export const db = {
           .eq('is_active', true)
           .order('created_at', { ascending: false });
 
-        if (!error && data && data.length > 0) {
+        if (error) {
+          console.warn('Supabase products fetch failed:', error.message);
+          return { data: getStoredProducts(), error: error.message };
+        }
+
+        if (data && data.length > 0) {
           const mapped: Product[] = data.map((d: any) => ({
             id: d.id,
             slug: d.slug,
@@ -118,23 +166,27 @@ export const db = {
             badge: d.badge || undefined,
             images: Array.isArray(d.images) ? d.images : [d.images],
             rating: Number(d.rating) || 4.9,
-            reviewCount: Number(d.review_count) || 42,
+            reviewCount: Number(d.review_count) || 0,
             features: d.features || [],
             customizable: d.customizable ?? true,
             themeColors: d.theme_colors || ['#FEF9EF', '#FF2E93', '#211D1C'],
-            designPattern: 'jewelry_necklace',
+            designPattern: d.design_pattern || 'jewelry_necklace',
             inStock: d.in_stock ?? true,
             stockQuantity: d.stock_quantity ?? 50,
-            isBestSeller: d.is_bestseller ?? true,
+            isBestSeller: d.is_bestseller ?? false,
             themeColor: d.theme_color || '#FEF9EF',
             secondaryColor: d.secondary_color || '#D4AF37',
             allowsPersonalization: d.allows_personalization ?? true,
           }));
           setStoredProducts(mapped);
           return { data: mapped, error: null };
+        } else {
+          // If 0 rows in Supabase products table, seed initial catalog
+          await seedCatalogIfEmpty();
+          return { data: INITIAL_PRODUCTS, error: null };
         }
       } catch (err: any) {
-        console.warn('Supabase products fetch failed, using local fallback:', err.message);
+        return { data: getStoredProducts(), error: err.message };
       }
     }
 
@@ -154,34 +206,20 @@ export const db = {
     }
     setStoredProducts(updated);
 
-    // 2. Sync to Supabase if configured
+    // 2. Sync to Supabase
     if (isSupabaseConfigured() && supabase) {
       try {
-        const { error } = await supabase.from('products').upsert({
-          id: product.id,
-          slug: product.slug,
-          name: product.name,
-          tagline: product.tagline || '',
-          description: product.description,
-          price: product.price,
-          mrp: product.mrp,
-          category: product.category,
-          badge: product.badge,
-          images: product.images,
-          is_active: true,
-          in_stock: product.inStock ?? true,
-          stock_quantity: product.stockQuantity ?? 50,
-          rating: product.rating,
-          review_count: product.reviewCount,
-          features: product.features,
-          customizable: product.customizable,
-          theme_colors: product.themeColors,
-          updated_at: new Date().toISOString(),
-        });
-        if (error) return { success: false, error: error.message };
+        await seedCatalogIfEmpty();
+        const row = toRow(product);
+        const { error } = await supabase.from('products').upsert(row);
+        if (error) {
+          return { success: false, error: error.message };
+        }
       } catch (err: any) {
         return { success: false, error: err.message };
       }
+    } else {
+      return { success: false, error: 'Database service is not configured.' };
     }
 
     return { success: true, error: null };
@@ -196,32 +234,17 @@ export const db = {
 
     if (isSupabaseConfigured() && supabase) {
       try {
-        const rows = productsToSave.map((product) => ({
-          id: product.id,
-          slug: product.slug,
-          name: product.name,
-          tagline: product.tagline || '',
-          description: product.description,
-          price: product.price,
-          mrp: product.mrp,
-          category: product.category,
-          badge: product.badge,
-          images: product.images,
-          is_active: true,
-          in_stock: product.inStock ?? true,
-          stock_quantity: product.stockQuantity ?? 50,
-          rating: product.rating,
-          review_count: product.reviewCount,
-          features: product.features,
-          customizable: product.customizable,
-          theme_colors: product.themeColors,
-          updated_at: new Date().toISOString(),
-        }));
+        await seedCatalogIfEmpty();
+        const rows = productsToSave.map(toRow);
         const { error } = await supabase.from('products').upsert(rows);
-        if (error) return { success: false, error: error.message };
+        if (error) {
+          return { success: false, error: error.message };
+        }
       } catch (err: any) {
         return { success: false, error: err.message };
       }
+    } else {
+      return { success: false, error: 'Database service is not configured.' };
     }
 
     return { success: true, error: null };
@@ -234,10 +257,14 @@ export const db = {
     if (isSupabaseConfigured() && supabase) {
       try {
         const { error } = await supabase.from('products').delete().eq('id', id);
-        if (error) return { success: false, error: error.message };
+        if (error) {
+          return { success: false, error: error.message };
+        }
       } catch (err: any) {
         return { success: false, error: err.message };
       }
+    } else {
+      return { success: false, error: 'Database service is not configured.' };
     }
 
     return { success: true, error: null };
@@ -285,69 +312,32 @@ export const db = {
     return { data: localOrders, error: null };
   },
 
-  async getOrderById(orderId: string): Promise<{ data: Order | null; error: string | null }> {
+  async getOrderById(orderId: string, phone?: string): Promise<{ data: any | null; error: string | null }> {
     const cleanId = orderId.trim().toUpperCase();
+    const cleanPhone = (phone || '').replace(/\D/g, '').slice(-10);
 
-    // 1. Try server endpoint first (which applies rate limiting and checks server DB)
+    if (!cleanPhone || cleanPhone.length < 10) {
+      return { data: null, error: 'Registered 10-digit mobile phone number is required.' };
+    }
+
     try {
-      const res = await fetch(`/api/orders/${encodeURIComponent(cleanId)}`);
-      if (res.ok) {
-        const json = await res.json();
-        if (json.order) {
-          return { data: json.order, error: null };
-        }
+      const res = await fetch('/api/track-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId: cleanId, phone: cleanPhone }),
+      });
+      const json = await res.json();
+      if (res.ok && json.success && json.order) {
+        return { data: json.order, error: null };
       }
-    } catch {
-      // Continue to Supabase / local
+      return { data: null, error: json.error || 'Order not found or verification failed.' };
+    } catch (err: any) {
+      return { data: null, error: err.message || 'Unable to connect to order tracking service' };
     }
-
-    // 2. Try Supabase
-    if (isSupabaseConfigured() && supabase) {
-      try {
-        const { data, error } = await supabase
-          .from('orders')
-          .select('*, order_items(*)')
-          .eq('id', cleanId)
-          .maybeSingle();
-
-        if (!error && data) {
-          const mapped: Order = {
-            id: data.id,
-            createdAt: data.created_at,
-            customer: data.customer,
-            items: data.order_items || [],
-            subtotal: Number(data.subtotal),
-            discountTotal: Number(data.discount_total || 0),
-            isGiftWrapped: data.is_gift_wrapped,
-            giftWrappingFee: Number(data.gift_wrapping_fee || 0),
-            giftNote: data.gift_note,
-            shippingFee: Number(data.shipping_fee || 0),
-            totalAmount: Number(data.total_amount),
-            paymentMethod: data.payment_method,
-            paymentStatus: data.payment_status,
-            paymentId: data.payment_id,
-            status: data.status,
-            trackingNumber: data.tracking_number,
-            timeline: data.timeline || [],
-          };
-          return { data: mapped, error: null };
-        }
-      } catch (err: any) {
-        console.warn('Supabase order lookup error:', err.message);
-      }
-    }
-
-    // 3. Try Local storage
-    const local = getStoredOrders().find((o) => o.id.toUpperCase() === cleanId);
-    return { data: local || null, error: local ? null : 'Order not found' };
   },
 
   async createOrder(order: Order, userId?: string): Promise<{ data: Order; error: string | null }> {
-    // 1. Cache locally
-    const current = getStoredOrders();
-    setStoredOrders([order, ...current]);
-
-    // 2. Save to Supabase if available
+    // Save to Supabase if available
     if (isSupabaseConfigured() && supabase) {
       try {
         const { error: orderError } = await supabase.from('orders').insert({
@@ -366,7 +356,7 @@ export const db = {
           payment_status: order.paymentStatus,
           payment_id: order.paymentId || null,
           status: order.status,
-          tracking_number: order.trackingNumber,
+          tracking_number: order.trackingNumber || null,
           timeline: order.timeline,
         });
 
@@ -398,54 +388,38 @@ export const db = {
     status: OrderStatus,
     trackingNumber?: string
   ): Promise<{ success: boolean; error: string | null }> {
-    // 1. Update locally
-    const current = getStoredOrders();
-    const updated = current.map((ord) => {
-      if (ord.id.toUpperCase() !== orderId.toUpperCase()) return ord;
-      const newTimeline = [
-        ...ord.timeline,
-        {
-          status,
-          timestamp: new Date().toISOString().replace('T', ' ').slice(0, 16),
-          location: 'Divine Fulfillment Hub',
-          description: `Order milestone updated to ${status}.`,
-        },
-      ];
-      return {
-        ...ord,
-        status,
-        trackingNumber: trackingNumber || ord.trackingNumber,
-        timeline: newTimeline,
-      };
-    });
-    setStoredOrders(updated);
-
-    // 2. Update via server API if possible
-    try {
-      await fetch(`/api/orders/${encodeURIComponent(orderId)}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status, trackingNumber }),
-      });
-    } catch {
-      // Continue
-    }
-
-    // 3. Update in Supabase
+    let authToken = '';
     if (isSupabaseConfigured() && supabase) {
       try {
-        const payload: any = {
-          status,
-          updated_at: new Date().toISOString(),
-        };
-        if (trackingNumber) payload.tracking_number = trackingNumber;
-
-        await supabase.from('orders').update(payload).eq('id', orderId);
-      } catch (err: any) {
-        console.warn('Supabase status update error:', err.message);
+        const { data: sessionData } = await supabase.auth.getSession();
+        authToken = sessionData?.session?.access_token || '';
+      } catch {
+        // ignore
       }
     }
 
-    return { success: true, error: null };
+    try {
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      if (authToken) {
+        headers['Authorization'] = `Bearer ${authToken}`;
+      }
+
+      const res = await fetch('/api/admin-order-status', {
+        method: 'PATCH',
+        headers,
+        body: JSON.stringify({ orderId, status, trackingNumber }),
+      });
+
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        return { success: false, error: json.error || `Failed to update status to ${status}` };
+      }
+
+      return { success: true, error: null };
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Network error updating order status' };
+    }
   },
 };

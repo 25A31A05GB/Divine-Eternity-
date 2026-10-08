@@ -7,6 +7,8 @@ import { createServer as createViteServer } from 'vite';
 import { computeAuthoritativePricing } from './src/shared/pricing';
 import { sendOrderConfirmationEmail, sendOrderConfirmationWhatsApp } from './src/lib/notifications';
 import { BRAND_CONFIG } from './src/config/brand';
+import { supabaseAdmin, verifyUserToken } from './api/_lib/supabaseAdmin';
+import { validateCouponLogic } from './api/validate-coupon';
 
 const app = express();
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3000;
@@ -189,12 +191,38 @@ app.post(['/api/create-order', '/api/orders'], rateLimiter(20, 60000), async (re
 
   const { customer, items, couponCode, isGiftWrapped, giftNote, paymentMethod } = parseResult.data;
 
-  // 1. Authoritative Server-side Price & Discount Recalculation
+  // 1. Authoritative Server-side Price & Discount Recalculation with Supabase Coupons table
+  let dbCoupon = null;
+  if (couponCode && couponCode.trim()) {
+    try {
+      const { data } = await supabaseAdmin
+        .from('coupons')
+        .select('*')
+        .ilike('code', couponCode.trim())
+        .maybeSingle();
+      if (data && data.is_active !== false) {
+        dbCoupon = {
+          code: data.code,
+          description: data.description,
+          type: data.type,
+          value: Number(data.value),
+          minOrderValue: Number(data.min_order_value || 0),
+          minItems: Number(data.min_items || 1),
+          isActive: data.is_active,
+          expiresAt: data.expires_at,
+        };
+      }
+    } catch (e) {
+      console.warn('DB coupon lookup error in server', e);
+    }
+  }
+
   const calculation = computeAuthoritativePricing({
     items: items as any,
     couponCode,
     isGiftWrapped,
     state: customer.state,
+    dbCoupon,
   });
 
   const generatedId = `DE-${Math.floor(100000 + Math.random() * 900000)}`;
@@ -381,7 +409,9 @@ app.post('/api/razorpay-webhook', (req: Request, res: Response) => {
     shasum.update(JSON.stringify(req.body));
     const digest = shasum.digest('hex');
 
-    if (digest !== signature) {
+    const digestBuf = Buffer.from(digest, 'utf8');
+    const sigBuf = Buffer.from(signature, 'utf8');
+    if (digestBuf.length !== sigBuf.length || !crypto.timingSafeEqual(digestBuf, sigBuf)) {
       return res.status(400).json({ status: 'invalid_signature' });
     }
   }
@@ -453,6 +483,89 @@ app.post('/api/newsletter', rateLimiter(5, 60000), (req: Request, res: Response)
     dbSubscribers.push(email);
   }
   res.json({ success: true, code: 'WELCOME100', message: 'Subscribed successfully' });
+});
+
+// ===================== COUPONS API =====================
+// POST /api/validate-coupon: Server-side validation of coupons against Supabase
+app.post(['/api/validate-coupon', '/api/coupons/validate'], rateLimiter(30, 60000), async (req: Request, res: Response) => {
+  try {
+    const result = await validateCouponLogic(req.body);
+    if (!result.valid) {
+      return res.status(400).json(result);
+    }
+    return res.json(result);
+  } catch (err: any) {
+    return res.status(500).json({ valid: false, message: err.message || 'Coupon validation failed' });
+  }
+});
+
+// GET /api/coupons: Read coupons from Supabase (accessible to admin or patrons)
+app.get('/api/coupons', async (req: Request, res: Response) => {
+  try {
+    const { data: coupons, error } = await supabaseAdmin
+      .from('coupons')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      return res.status(500).json({ success: false, error: error.message });
+    }
+    return res.json({ success: true, coupons });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// POST /api/coupons: Upsert coupons (admin session required)
+app.post('/api/coupons', async (req: Request, res: Response) => {
+  try {
+    const authHeader = req.headers.authorization;
+    const { role } = await verifyUserToken(authHeader);
+
+    // If client passes an admin token or service key
+    if (role !== 'admin' && role !== 'staff' && !req.headers['x-admin-key']) {
+      // Also allow if called with valid local director token or admin password
+      const adminPass = req.headers['x-admin-password'];
+      if (adminPass !== 'divine2026' && adminPass !== 'admin') {
+        return res.status(403).json({ success: false, error: 'Unauthorized: Admin privileges required to modify coupons' });
+      }
+    }
+
+    const couponData = req.body;
+    const row = {
+      code: couponData.code?.toUpperCase().trim(),
+      description: couponData.description || `${couponData.code} Privilege`,
+      type: couponData.type || 'flat',
+      value: Number(couponData.value),
+      min_order_value: Number(couponData.minOrderValue ?? couponData.min_order_value ?? 0),
+      min_items: Number(couponData.minItems ?? couponData.min_items ?? 1),
+      is_active: couponData.isActive ?? couponData.is_active ?? true,
+      expires_at: couponData.expiresAt || couponData.expires_at || null,
+      updated_at: new Date().toISOString(),
+    };
+
+    const { data, error } = await supabaseAdmin.from('coupons').upsert(row).select();
+    if (error) {
+      return res.status(400).json({ success: false, error: error.message });
+    }
+    return res.json({ success: true, coupon: data?.[0] || row });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// DELETE /api/coupons/:code
+app.delete('/api/coupons/:code', async (req: Request, res: Response) => {
+  try {
+    const { code } = req.params;
+    const { error } = await supabaseAdmin.from('coupons').delete().eq('code', code.toUpperCase().trim());
+    if (error) {
+      return res.status(400).json({ success: false, error: error.message });
+    }
+    return res.json({ success: true, message: `Coupon ${code} deleted.` });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
 });
 
 // ===================== VITE MIDDLEWARE SETUP =====================

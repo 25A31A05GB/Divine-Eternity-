@@ -7,6 +7,7 @@ import { Product, Order, Coupon, OrderStatus, PhoneBrand, CreatorApplication, Ca
 import { AVAILABLE_COUPONS } from '../context/CartContext';
 import { INITIAL_CREATOR_APPLICATIONS, INITIAL_CAMPAIGNS } from '../data/campaigns';
 import { db } from '../lib/db';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { SEO } from '../components/common/SEO';
 import { MediaStudioCMS } from '../components/admin/MediaStudioCMS';
 import {
@@ -113,7 +114,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   }, []);
 
   const updateOrderStatus = async (orderId: string, status: OrderStatus, trackingNumber?: string) => {
-    await db.updateOrderStatus(orderId, status, trackingNumber);
+    const res = await db.updateOrderStatus(orderId, status, trackingNumber);
+    if (!res.success) {
+      setDbActionError(res.error || 'Failed to update order status');
+      return;
+    }
     setOrders((prev) =>
       prev.map((o) =>
         o.id === orderId
@@ -127,7 +132,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     );
   };
 
-  const { reviews, toggleVerifiedBadge, deleteReview } = useReviews();
+  const { reviews, toggleVerifiedBadge, deleteReview, approveReview, refreshReviews } = useReviews();
   const {
     heroSlides,
     videoReels,
@@ -144,8 +149,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [currentRole, setCurrentRole] = useState<AdminRole>(initialRole);
   const [isAdminMobileMenuOpen, setIsAdminMobileMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<
-    'overview' | 'orders' | 'products' | 'media-cms' | 'coupons' | 'reviews' | 'customers' | 'affiliates'
+    'overview' | 'orders' | 'products' | 'media-cms' | 'coupons' | 'reviews' | 'customers' | 'affiliates' | 'personalization'
   >(() => (initialRole === 'director' ? 'media-cms' : 'overview'));
+  const [dbActionError, setDbActionError] = useState<string | null>(null);
+  const [personalizationRequests, setPersonalizationRequests] = useState<any[]>([]);
+  const [allReviewsFromDb, setAllReviewsFromDb] = useState<any[]>([]);
   const [orderFilter, setOrderFilter] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [productViewMode, setProductViewMode] = useState<'table' | 'grid'>('table');
@@ -175,47 +183,198 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [reelLinkedProduct, setReelLinkedProduct] = useState(products[0]?.id || 'gift-1');
   const [reelDuration, setReelDuration] = useState(15);
 
-  // Creator & Affiliate applications state
-  const [creatorApplications, setCreatorApplications] = useState<CreatorApplication[]>(() => {
+  // Creator & Affiliate applications state (loaded from Supabase creator_applications)
+  const [creatorApplications, setCreatorApplications] = useState<CreatorApplication[]>(INITIAL_CREATOR_APPLICATIONS);
+
+  // Load creator applications from Supabase
+  const loadCreatorApplications = async () => {
+    if (!isSupabaseConfigured() || !supabase) return;
     try {
-      const stored = localStorage.getItem('de_creator_applications');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        return [...parsed, ...INITIAL_CREATOR_APPLICATIONS.filter((a) => !parsed.some((p: any) => p.id === a.id))];
+      const { data, error } = await supabase
+        .from('creator_applications')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (error) {
+        console.error('Error fetching creator applications', error);
+        return;
       }
-    } catch (e) {
-      console.error(e);
+      if (data && data.length > 0) {
+        const mapped = data.map((d: any) => ({
+          ...d.data,
+          id: d.id,
+          status: d.status || d.data?.status || 'Pending',
+          createdAt: d.created_at ? new Date(d.created_at).toISOString().split('T')[0] : d.data?.createdAt,
+        }));
+        setCreatorApplications([
+          ...mapped,
+          ...INITIAL_CREATOR_APPLICATIONS.filter((a) => !mapped.some((m: any) => m.id === a.id)),
+        ]);
+      }
+    } catch (e: any) {
+      console.warn(e);
     }
-    return INITIAL_CREATOR_APPLICATIONS;
-  });
+  };
+
+  // Load personalization requests from Supabase
+  const loadPersonalizationRequests = async () => {
+    if (!isSupabaseConfigured() || !supabase) return;
+    try {
+      const { data, error } = await supabase
+        .from('personalization_requests')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (error) {
+        console.error('Error fetching personalization requests', error);
+        return;
+      }
+      if (data) {
+        setPersonalizationRequests(data);
+      }
+    } catch (e: any) {
+      console.warn(e);
+    }
+  };
+
+  // Load all reviews for moderation from Supabase
+  const loadAllReviews = async () => {
+    if (!isSupabaseConfigured() || !supabase) return;
+    try {
+      const { data, error } = await supabase
+        .from('reviews')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (error) {
+        console.error('Error loading reviews from Supabase', error);
+        return;
+      }
+      if (data) {
+        setAllReviewsFromDb(data);
+      }
+    } catch (e: any) {
+      console.warn(e);
+    }
+  };
+
+  useEffect(() => {
+    loadCreatorApplications();
+    loadPersonalizationRequests();
+    loadAllReviews();
+  }, []);
 
   const [campaigns, setCampaigns] = useState<Campaign[]>(INITIAL_CAMPAIGNS);
 
-  const handleApproveApplication = (appId: string) => {
+  const handleApproveApplication = async (appId: string) => {
+    const app = creatorApplications.find((a) => a.id === appId);
+    if (!app) return;
+
+    if (isSupabaseConfigured() && supabase) {
+      const { error } = await supabase
+        .from('creator_applications')
+        .update({ status: 'Approved' })
+        .eq('id', appId);
+
+      if (error) {
+        setDbActionError(`Failed to update application status in Supabase: ${error.message}`);
+        return; // Never silently fall back on database failure!
+      }
+
+      // Upsert affiliate coupon into Supabase coupons table
+      const newAffiliateCoupon: Coupon = {
+        code: app.proposedCode,
+        type: 'percentage',
+        value: 15,
+        minOrderValue: 499,
+        description: `Exclusive 15% Creator Discount (${app.fullName})`,
+        isActive: true,
+      };
+
+      const { error: couponErr } = await supabase.from('coupons').upsert({
+        code: app.proposedCode,
+        type: 'percentage',
+        value: 15,
+        min_order_value: 499,
+        description: `Exclusive 15% Creator Discount (${app.fullName})`,
+        is_active: true,
+      });
+
+      if (couponErr) {
+        setDbActionError(`Creator approved, but failed to save coupon to Supabase: ${couponErr.message}`);
+      }
+
+      setCoupons((cPrev) => [newAffiliateCoupon, ...cPrev.filter((c) => c.code !== app.proposedCode)]);
+    }
+
     setCreatorApplications((prev) =>
-      prev.map((app) => {
-        if (app.id === appId) {
-          const newAffiliateCoupon: Coupon = {
-            code: app.proposedCode,
-            type: 'percentage',
-            value: 15,
-            minOrderValue: 499,
-            description: `Exclusive 15% Creator Discount (${app.fullName})`,
-            isActive: true,
-          };
-          setCoupons((cPrev) => [newAffiliateCoupon, ...cPrev.filter((c) => c.code !== app.proposedCode)]);
-          confetti({ particleCount: 60, spread: 60, origin: { y: 0.6 } });
-          return { ...app, status: 'Approved' };
-        }
-        return app;
-      })
+      prev.map((a) => (a.id === appId ? { ...a, status: 'Approved' } : a))
     );
+    confetti({ particleCount: 60, spread: 60, origin: { y: 0.6 } });
   };
 
-  const handleDeclineApplication = (appId: string) => {
+  const handleDeclineApplication = async (appId: string) => {
+    if (isSupabaseConfigured() && supabase) {
+      const { error } = await supabase
+        .from('creator_applications')
+        .update({ status: 'Declined' })
+        .eq('id', appId);
+
+      if (error) {
+        setDbActionError(`Failed to decline creator in Supabase: ${error.message}`);
+        return;
+      }
+    }
+
     setCreatorApplications((prev) =>
       prev.map((app) => (app.id === appId ? { ...app, status: 'Declined' } : app))
     );
+  };
+
+  const handleUpdatePersonalizationStatus = async (id: string, newStatus: string) => {
+    if (isSupabaseConfigured() && supabase) {
+      const { error } = await supabase
+        .from('personalization_requests')
+        .update({ status: newStatus })
+        .eq('id', id);
+      if (error) {
+        setDbActionError(`Failed to update personalization request in Supabase: ${error.message}`);
+        return;
+      }
+    }
+    setPersonalizationRequests((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, status: newStatus } : r))
+    );
+  };
+
+  const handleApproveReview = async (reviewId: string) => {
+    if (isSupabaseConfigured() && supabase) {
+      const { error } = await supabase
+        .from('reviews')
+        .update({ status: 'approved' })
+        .eq('id', reviewId);
+      if (error) {
+        setDbActionError(`Failed to approve review in Supabase: ${error.message}`);
+        return;
+      }
+    }
+    await loadAllReviews();
+    await refreshReviews();
+  };
+
+  const handleDeleteReviewRow = async (reviewId: string, productId?: string) => {
+    if (isSupabaseConfigured() && supabase) {
+      const { error } = await supabase
+        .from('reviews')
+        .delete()
+        .eq('id', reviewId);
+      if (error) {
+        setDbActionError(`Failed to delete review in Supabase: ${error.message}`);
+        return;
+      }
+    }
+    if (productId) {
+      await deleteReview(productId, reviewId);
+    }
+    await loadAllReviews();
+    await refreshReviews();
   };
 
   // Product modal state
@@ -689,27 +848,52 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   const [bulkStockAction, setBulkStockAction] = useState<'keep' | 'in_stock' | 'out_of_stock' | 'low_stock'>('keep');
 
-  // Coupon state with persistent store synchronization
-  const [coupons, setCoupons] = useState<Coupon[]>(() => {
+  // Coupon state with Supabase coupons table synchronization
+  const [coupons, setCoupons] = useState<Coupon[]>(AVAILABLE_COUPONS);
+
+  // Load coupons from Supabase
+  const loadCoupons = async () => {
+    if (!isSupabaseConfigured() || !supabase) return;
     try {
-      const saved = localStorage.getItem('de_coupons_v1');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      const { data, error } = await supabase
+        .from('coupons')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (!error && data && data.length > 0) {
+        setCoupons(data.map((c: any) => ({
+          code: c.code,
+          description: c.description || `${c.code} Privilege`,
+          type: c.type || 'flat',
+          value: Number(c.value) || 0,
+          minOrderValue: Number(c.min_order_value || 0),
+          minItems: Number(c.min_items || 1),
+          isActive: c.is_active ?? true,
+        })));
+      } else {
+        // Fallback check server api
+        const res = await fetch('/api/coupons');
+        const json = await res.json();
+        if (json.coupons && json.coupons.length > 0) {
+          setCoupons(json.coupons.map((c: any) => ({
+            code: c.code,
+            description: c.description || `${c.code} Privilege`,
+            type: c.type || 'flat',
+            value: Number(c.value) || 0,
+            minOrderValue: Number(c.min_order_value || 0),
+            minItems: Number(c.min_items || 1),
+            isActive: c.is_active ?? true,
+          })));
+        }
       }
-    } catch {
-      // ignore
+    } catch (e: any) {
+      console.warn('Coupon load error:', e);
     }
-    return AVAILABLE_COUPONS;
-  });
+  };
 
   useEffect(() => {
-    try {
-      localStorage.setItem('de_coupons_v1', JSON.stringify(coupons));
-    } catch (e) {
-      console.error('Failed to save coupons', e);
-    }
-  }, [coupons]);
+    loadCoupons();
+  }, []);
   const [isAddCouponOpen, setIsAddCouponOpen] = useState(false);
   const [newCouponCode, setNewCouponCode] = useState('');
   const [newCouponVal, setNewCouponVal] = useState(150);
@@ -1029,7 +1213,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setIsBulkEditModalOpen(false);
   };
 
-  const handleCreateCoupon = (e: React.FormEvent) => {
+  const handleCreateCoupon = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newCouponCode.trim()) return;
 
@@ -1042,12 +1226,61 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       isActive: true,
     };
 
-    setCoupons((prev) => [newC, ...prev]);
+    const row = {
+      code: newC.code,
+      description: newC.description,
+      type: newC.type,
+      value: newC.value,
+      min_order_value: newC.minOrderValue,
+      min_items: 1,
+      is_active: true,
+      updated_at: new Date().toISOString(),
+    };
+
+    if (isSupabaseConfigured() && supabase) {
+      const { error: dbErr } = await supabase.from('coupons').upsert(row);
+      if (dbErr) {
+        // Fallback to server API
+        try {
+          const res = await fetch('/api/coupons', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-admin-password': 'admin' },
+            body: JSON.stringify(row),
+          });
+          const j = await res.json();
+          if (!j.success) {
+            setDbActionError(`Failed to save coupon to Supabase: ${dbErr.message}`);
+            return; // Never silently fall back on database failure!
+          }
+        } catch {
+          setDbActionError(`Failed to save coupon to Supabase: ${dbErr.message}`);
+          return;
+        }
+      }
+    }
+
+    setCoupons((prev) => [newC, ...prev.filter((c) => c.code !== newC.code)]);
     setIsAddCouponOpen(false);
     setNewCouponCode('');
   };
 
-  const handleDeleteCoupon = (code: string) => {
+  const handleDeleteCoupon = async (code: string) => {
+    if (isSupabaseConfigured() && supabase) {
+      const { error: dbErr } = await supabase.from('coupons').delete().eq('code', code.toUpperCase().trim());
+      if (dbErr) {
+        try {
+          const res = await fetch(`/api/coupons/${code}`, { method: 'DELETE' });
+          const j = await res.json();
+          if (!j.success) {
+            setDbActionError(`Failed to delete coupon from Supabase: ${dbErr.message}`);
+            return;
+          }
+        } catch {
+          setDbActionError(`Failed to delete coupon from Supabase: ${dbErr.message}`);
+          return;
+        }
+      }
+    }
     setCoupons((prev) => prev.filter((c) => c.code !== code));
   };
 
@@ -1378,6 +1611,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   { id: 'reviews', label: 'Reviews & Proof', icon: Star, count: allReviewsList.length },
                   { id: 'customers', label: 'Client Directory', icon: Users, count: customersList.length },
                   { id: 'affiliates', label: 'Creator Ambassadors', icon: Video, count: creatorApplications.length },
+                  { id: 'personalization', label: 'Bespoke Requests', icon: Sparkles, count: personalizationRequests.length },
                 ].map((tab) => {
                   const Icon = tab.icon;
                   const isActive = activeTab === tab.id;
@@ -1434,6 +1668,26 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       {/* Main Container */}
       <div className="max-w-7xl mx-auto px-4 lg:px-8 py-6 sm:py-8 pb-28 lg:pb-12">
         
+        {/* Visible Supabase Action Error Notification */}
+        {dbActionError && (
+          <div className="mb-6 p-4 rounded-2xl bg-rose-900/95 text-white border border-rose-500/50 flex items-start justify-between gap-3 shadow-xl backdrop-blur-md animate-in slide-in-from-top-2">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-rose-300 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-bold text-xs text-rose-100">Supabase Operation Error</p>
+                <p className="text-xs text-rose-200 mt-0.5 leading-relaxed">{dbActionError}</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setDbActionError(null)}
+              className="text-rose-300 hover:text-white p-1 rounded transition-colors cursor-pointer"
+              aria-label="Dismiss error"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+
         {/* Navigation Tabs */}
         <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-8 border-b border-[#F3E8E2] no-scrollbar">
           {[
@@ -1445,6 +1699,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             { id: 'reviews', label: 'Reviews & Proof', icon: Star, count: allReviewsList.length },
             { id: 'customers', label: 'Client Directory', icon: Users, count: customersList.length },
             { id: 'affiliates', label: 'Creator Ambassadors', icon: Video, count: creatorApplications.length },
+            { id: 'personalization', label: 'Bespoke Requests', icon: Sparkles, count: personalizationRequests.length },
           ].map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -2019,9 +2274,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                     <img
                                       src={p.images[0]}
                                       alt={p.name}
+                                      loading="lazy"
+                                      decoding="async"
                                       className="w-full h-full object-cover"
                                       onError={(e) => {
-                                        (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=300&q=80';
+                                        (e.currentTarget as HTMLImageElement).src = '/images/founder/founder_sonu_real_1791375717528.jpg';
                                       }}
                                     />
                                   ) : (
@@ -2280,87 +2537,191 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         {/* ============================================================ */}
         {/* TAB 6: REVIEWS & SOCIAL PROOF */}
         {/* ============================================================ */}
-        {activeTab === 'reviews' && (
-          <div className="space-y-6 animate-in fade-in duration-150">
-            <div className="bg-white dark:bg-[#181418] p-5 rounded-2xl border border-[#EFE7DE] dark:border-[#2C242A] shadow-xs flex items-center justify-between">
-              <div>
-                <h3 className="font-serif font-bold text-lg text-stone-900 dark:text-white flex items-center gap-2">
-                  <Star className="w-5 h-5 text-[#C5A059]" /> Client Reviews & Verified Buyer Badges
-                </h3>
-                <p className="text-xs text-stone-500">
-                  Moderate customer feedback, award Verified Buyer badges, or delete spam
-                </p>
-              </div>
-              <div className="text-right">
-                <span className="font-serif text-2xl font-bold text-stone-900 dark:text-white tabular-nums">
-                  {allReviewsList.length}
-                </span>
-                <p className="text-xs text-stone-500">Total Reviews</p>
-              </div>
-            </div>
+        {activeTab === 'reviews' && (() => {
+          const pendingReviews = allReviewsFromDb.filter((r) => r.status === 'pending');
+          const approvedDbReviews = allReviewsFromDb.filter((r) => r.status === 'approved');
 
-            <div className="space-y-4">
-              {allReviewsList.map((rev) => (
-                <div
-                  key={rev.id}
-                  className="bg-white dark:bg-[#181418] rounded-2xl border border-[#EFE7DE] dark:border-[#2C242A] p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xs"
-                >
-                  <div className="space-y-1.5 flex-1">
-                    <div className="flex items-center gap-2">
-                      <div className="flex items-center text-[#C5A059]">
-                        {Array.from({ length: 5 }).map((_, i) => (
-                          <Star
-                            key={i}
-                            className={`w-3.5 h-3.5 ${
-                              i < rev.rating ? 'fill-[#C5A059]' : 'text-stone-300'
-                            }`}
-                          />
-                        ))}
-                      </div>
-                      <span className="font-bold text-xs text-stone-900 dark:text-white">
-                        {rev.title}
+          return (
+            <div className="space-y-6 animate-in fade-in duration-150">
+              <div className="bg-white dark:bg-[#181418] p-5 rounded-2xl border border-[#EFE7DE] dark:border-[#2C242A] shadow-xs flex items-center justify-between">
+                <div>
+                  <h3 className="font-serif font-bold text-lg text-stone-900 dark:text-white flex items-center gap-2">
+                    <Star className="w-5 h-5 text-[#C5A059]" /> Client Reviews Moderation & Social Proof
+                  </h3>
+                  <p className="text-xs text-stone-500">
+                    Moderate incoming patron testimonials from Supabase, approve to publish, or reject spam
+                  </p>
+                </div>
+                <div className="flex items-center gap-4 text-right">
+                  {pendingReviews.length > 0 && (
+                    <div className="px-3 py-1 bg-amber-100 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-800 rounded-xl">
+                      <span className="font-serif text-lg font-bold text-amber-900 dark:text-amber-200 tabular-nums">
+                        {pendingReviews.length}
                       </span>
+                      <p className="text-[10px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">Awaiting Approval</p>
                     </div>
+                  )}
+                  <div>
+                    <span className="font-serif text-2xl font-bold text-stone-900 dark:text-white tabular-nums">
+                      {allReviewsList.length + approvedDbReviews.length}
+                    </span>
+                    <p className="text-xs text-stone-500">Live Approved</p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      loadAllReviews();
+                      refreshReviews();
+                    }}
+                    className="p-2 border border-stone-200 dark:border-stone-800 rounded-xl hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors"
+                    title="Refresh Reviews"
+                  >
+                    <RefreshCw className="w-4 h-4 text-stone-600 dark:text-stone-300" />
+                  </button>
+                </div>
+              </div>
 
-                    <p className="text-xs text-stone-600 dark:text-stone-300 italic">
-                      "{rev.comment}"
-                    </p>
-
-                    <div className="flex items-center gap-3 text-[11px] text-stone-500">
-                      <span className="font-bold text-stone-900 dark:text-white">{rev.author}</span>
-                      <span>·</span>
-                      <span>Item: <strong className="text-[#881337] dark:text-[#FB7185]">{rev.productName}</strong></span>
-                      <span>·</span>
-                      <span>{rev.date}</span>
+              {/* PENDING REVIEWS QUEUE */}
+              {pendingReviews.length > 0 && (
+                <div className="bg-amber-50/60 dark:bg-amber-950/20 border-2 border-amber-300 dark:border-amber-800/60 rounded-3xl p-5 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-amber-900 dark:text-amber-300">
+                      <Clock className="w-5 h-5 text-amber-600" />
+                      <h4 className="font-serif font-bold text-base">Reviews Awaiting Atelier Moderation ({pendingReviews.length})</h4>
                     </div>
+                    <span className="text-xs text-amber-700 dark:text-amber-400">
+                      Submitted by logged-in users; requires admin approval before public display
+                    </span>
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => toggleVerifiedBadge(rev.productId, rev.id)}
-                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                        rev.verified
-                          ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
-                          : 'bg-stone-100 text-stone-700 dark:bg-stone-800 dark:text-stone-300'
-                      }`}
-                    >
-                      <ShieldCheck className="w-3.5 h-3.5" />
-                      {rev.verified ? 'Verified Buyer' : 'Mark Verified'}
-                    </button>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {pendingReviews.map((rev) => {
+                      const prod = products.find((p) => p.id === rev.product_id);
+                      return (
+                        <div
+                          key={rev.id}
+                          className="bg-white dark:bg-[#181418] rounded-2xl border border-amber-200 dark:border-amber-900 p-4 shadow-sm flex flex-col justify-between gap-3"
+                        >
+                          <div className="space-y-1.5">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center text-[#C5A059]">
+                                {Array.from({ length: 5 }).map((_, i) => (
+                                  <Star
+                                    key={i}
+                                    className={`w-3.5 h-3.5 ${
+                                      i < (Number(rev.rating) || 5) ? 'fill-[#C5A059]' : 'text-stone-300'
+                                    }`}
+                                  />
+                                ))}
+                              </div>
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200">
+                                Pending
+                              </span>
+                            </div>
 
-                    <button
-                      onClick={() => deleteReview(rev.productId, rev.id)}
-                      className="p-2 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
-                      title="Delete Review"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                            {rev.title && (
+                              <h5 className="font-bold text-xs text-stone-900 dark:text-white">
+                                {rev.title}
+                              </h5>
+                            )}
+
+                            <p className="text-xs text-stone-600 dark:text-stone-300 italic">
+                              "{rev.comment}"
+                            </p>
+
+                            <div className="text-[11px] text-stone-500 pt-1">
+                              <strong>{rev.author || 'Patron'}</strong> · Item: <span className="text-[#881337] dark:text-[#FB7185] font-semibold">{prod?.name || rev.product_id}</span>
+                              {rev.created_at && <span className="text-[10px] text-stone-400 block mt-0.5">{new Date(rev.created_at).toLocaleString()}</span>}
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2 pt-2 border-t border-stone-100 dark:border-stone-800">
+                            <button
+                              onClick={() => handleApproveReview(rev.id)}
+                              className="flex-1 py-1.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                            >
+                              <CheckCircle2 className="w-3.5 h-3.5" /> Approve & Publish
+                            </button>
+                            <button
+                              onClick={() => handleDeleteReviewRow(rev.id, rev.product_id)}
+                              className="py-1.5 px-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 font-bold text-xs transition-colors cursor-pointer"
+                            >
+                              Reject
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
-              ))}
+              )}
+
+              {/* LIVE APPROVED REVIEWS */}
+              <div className="space-y-4">
+                <h4 className="font-serif font-bold text-sm text-stone-700 dark:text-stone-300">
+                  Published & Live Testimonials
+                </h4>
+                {allReviewsList.map((rev) => (
+                  <div
+                    key={rev.id}
+                    className="bg-white dark:bg-[#181418] rounded-2xl border border-[#EFE7DE] dark:border-[#2C242A] p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xs"
+                  >
+                    <div className="space-y-1.5 flex-1">
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center text-[#C5A059]">
+                          {Array.from({ length: 5 }).map((_, i) => (
+                            <Star
+                              key={i}
+                              className={`w-3.5 h-3.5 ${
+                                i < rev.rating ? 'fill-[#C5A059]' : 'text-stone-300'
+                              }`}
+                            />
+                          ))}
+                        </div>
+                        <span className="font-bold text-xs text-stone-900 dark:text-white">
+                          {rev.title}
+                        </span>
+                      </div>
+
+                      <p className="text-xs text-stone-600 dark:text-stone-300 italic">
+                        "{rev.comment}"
+                      </p>
+
+                      <div className="flex items-center gap-3 text-[11px] text-stone-500">
+                        <span className="font-bold text-stone-900 dark:text-white">{rev.author}</span>
+                        <span>·</span>
+                        <span>Item: <strong className="text-[#881337] dark:text-[#FB7185]">{rev.productName}</strong></span>
+                        <span>·</span>
+                        <span>{rev.date}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => toggleVerifiedBadge(rev.productId, rev.id)}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                          rev.verified
+                            ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                            : 'bg-stone-100 text-stone-700 dark:bg-stone-800 dark:text-stone-300'
+                        }`}
+                      >
+                        <ShieldCheck className="w-3.5 h-3.5" />
+                        {rev.verified ? 'Verified Buyer' : 'Mark Verified'}
+                      </button>
+
+                      <button
+                        onClick={() => handleDeleteReviewRow(rev.id, rev.productId)}
+                        className="p-2 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
+                        title="Delete Review"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* ============================================================ */}
         {/* TAB 7: CLIENT DIRECTORY */}
@@ -2531,6 +2892,143 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         </td>
                       </tr>
                     ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ============================================================ */}
+        {/* TAB 9: BESPOKE PERSONALIZATION REQUESTS */}
+        {/* ============================================================ */}
+        {activeTab === 'personalization' && (
+          <div className="space-y-6 animate-in fade-in duration-150">
+            <div className="bg-white dark:bg-[#181418] p-5 rounded-2xl border border-[#EFE7DE] dark:border-[#2C242A] shadow-xs flex items-center justify-between">
+              <div>
+                <h3 className="font-serif font-bold text-lg text-stone-900 dark:text-white flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-[#881337] dark:text-[#FB7185]" /> Bespoke Personalization Pipeline
+                </h3>
+                <p className="text-xs text-stone-500">
+                  Custom name engravings, anniversary dates, and bespoke jewelry inquiries stored in Supabase
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="px-3 py-1 bg-stone-100 dark:bg-stone-800 rounded-full text-xs font-bold text-stone-700 dark:text-stone-300">
+                  {personalizationRequests.length} Custom Orders
+                </span>
+                <button
+                  onClick={loadPersonalizationRequests}
+                  className="px-3 py-1.5 rounded-xl border border-stone-200 dark:border-stone-700 text-xs font-semibold hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors flex items-center gap-1.5"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" /> Refresh
+                </button>
+              </div>
+            </div>
+
+            <div className="bg-white dark:bg-[#181418] rounded-2xl border border-[#EFE7DE] dark:border-[#2C242A] shadow-xs overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-[#FAF7F2] dark:bg-[#201A20] text-stone-500 border-b border-[#EFE7DE] dark:border-[#2C242A]">
+                    <tr>
+                      <th className="py-3 px-4 font-bold">Request ID & Date</th>
+                      <th className="py-3 px-4 font-bold">Patron / Contact</th>
+                      <th className="py-3 px-4 font-bold">Category & Style</th>
+                      <th className="py-3 px-4 font-bold">Engraving / Custom Text</th>
+                      <th className="py-3 px-4 font-bold">Special Notes</th>
+                      <th className="py-3 px-4 font-bold">Status</th>
+                      <th className="py-3 px-4 font-bold text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#EFE7DE] dark:divide-[#2C242A]">
+                    {personalizationRequests.length === 0 ? (
+                      <tr>
+                        <td colSpan={7} className="py-12 text-center text-stone-400">
+                          <Sparkles className="w-8 h-8 mx-auto mb-2 text-stone-300 stroke-1" />
+                          No bespoke personalization requests logged yet.
+                        </td>
+                      </tr>
+                    ) : (
+                      personalizationRequests.map((req: any) => {
+                        const data = req.data || {};
+                        const dateStr = req.created_at ? new Date(req.created_at).toLocaleDateString() : 'Recent';
+                        const customer = data.customerName || data.name || 'Valued Patron';
+                        const phone = data.customerPhone || data.phone || '';
+                        const category = data.category || data.preferredCategory || 'Bespoke Jewelry';
+                        const theme = data.theme || data.preferredTheme || '';
+                        const text = data.customText || data.customNames || 'No text specified';
+                        const notes = data.customRequirements || data.specialRequirements || 'Standard crafting';
+
+                        return (
+                          <tr key={req.id} className="hover:bg-[#FAF7F2]/60 dark:hover:bg-[#201A20]/60 transition-colors">
+                            <td className="py-3 px-4">
+                              <span className="font-mono text-[11px] font-bold text-stone-900 dark:text-stone-200 block">
+                                #{String(req.id).slice(0, 8)}
+                              </span>
+                              <span className="text-[10px] text-stone-400">{dateStr}</span>
+                            </td>
+                            <td className="py-3 px-4">
+                              <span className="font-bold text-stone-900 dark:text-stone-200 block">{customer}</span>
+                              {phone && (
+                                <a
+                                  href={`https://wa.me/${phone.replace(/[^0-9]/g, '')}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-[11px] text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1"
+                                >
+                                  <span>📞 {phone}</span>
+                                </a>
+                              )}
+                            </td>
+                            <td className="py-3 px-4">
+                              <span className="font-medium text-stone-800 dark:text-stone-200 block">{category}</span>
+                              {theme && <span className="text-[10px] text-stone-400">Style: {theme}</span>}
+                            </td>
+                            <td className="py-3 px-4">
+                              <span className="px-2.5 py-1 bg-[#FFF9EB] dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 rounded-lg font-mono text-[11px] font-bold border border-amber-200 dark:border-amber-900 inline-block">
+                                "{text}"
+                              </span>
+                            </td>
+                            <td className="py-3 px-4 max-w-xs truncate text-stone-600 dark:text-stone-400">
+                              {notes}
+                            </td>
+                            <td className="py-3 px-4">
+                              <span
+                                className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                                  req.status === 'Completed'
+                                    ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                                    : req.status === 'Reviewing' || req.status === 'Crafting'
+                                    ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
+                                    : 'bg-stone-100 text-stone-700 dark:bg-stone-800 dark:text-stone-300'
+                                }`}
+                              >
+                                {req.status || 'Pending'}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4 text-right">
+                              <div className="flex items-center justify-end gap-1.5">
+                                {req.status !== 'Completed' && (
+                                  <button
+                                    onClick={() => handleUpdatePersonalizationStatus(req.id, 'Completed')}
+                                    className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition-colors cursor-pointer"
+                                  >
+                                    Mark Done
+                                  </button>
+                                )}
+                                {req.status === 'Pending' && (
+                                  <button
+                                    onClick={() => handleUpdatePersonalizationStatus(req.id, 'Crafting')}
+                                    className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-amber-500 hover:bg-amber-600 text-white transition-colors cursor-pointer"
+                                  >
+                                    In Crafting
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -3012,9 +3510,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       <img
                         src={newProductCustomImage}
                         alt="Product Preview"
+                        loading="lazy"
+                        decoding="async"
                         className="max-h-full max-w-full object-contain rounded-lg"
                         onError={(e) => {
-                          (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=300&q=80';
+                          (e.currentTarget as HTMLImageElement).src = '/images/founder/founder_sonu_real_1791375717528.jpg';
                         }}
                       />
                     </div>
@@ -3249,9 +3749,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       <img
                         src={editProductImage}
                         alt="Preview"
+                        loading="lazy"
+                        decoding="async"
                         className="max-h-full max-w-full object-contain rounded-lg"
                         onError={(e) => {
-                          (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=300&q=80';
+                          (e.currentTarget as HTMLImageElement).src = '/images/founder/founder_sonu_real_1791375717528.jpg';
                         }}
                       />
                     </div>
@@ -4065,9 +4567,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                             <img
                               src={item.imageUrl}
                               alt={item.name}
+                              loading="lazy"
+                              decoding="async"
                               className="w-full h-full object-cover"
                               onError={(e) => {
-                                (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=300&q=80';
+                                (e.currentTarget as HTMLImageElement).src = '/images/founder/founder_sonu_real_1791375717528.jpg';
                               }}
                             />
                           </div>

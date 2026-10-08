@@ -39,10 +39,10 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onProceedToCheckout, onE
 
   if (!isCartOpen) return null;
 
-  const handleApplyCoupon = (codeToApply?: string) => {
+  const handleApplyCoupon = async (codeToApply?: string) => {
     const code = codeToApply || inputCoupon;
     if (!code) return;
-    const res = applyCoupon(code);
+    const res = await applyCoupon(code);
     setCouponMessage({ text: res.message, isError: !res.success });
     if (res.success) {
       setInputCoupon('');
@@ -142,6 +142,8 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onProceedToCheckout, onE
                       <img
                         src={item.customPhoto}
                         alt={item.name}
+                        loading="lazy"
+                        decoding="async"
                         className="w-full h-full object-contain rounded-lg"
                       />
                     ) : (

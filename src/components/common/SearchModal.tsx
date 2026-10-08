@@ -9,6 +9,7 @@ interface SearchModalProps {
   onClose: () => void;
   onSelectProduct: (product: Product) => void;
   onSelectCategory: (category: string) => void;
+  products?: Product[];
 }
 
 export const SearchModal: React.FC<SearchModalProps> = ({
@@ -16,19 +17,20 @@ export const SearchModal: React.FC<SearchModalProps> = ({
   onClose,
   onSelectProduct,
   onSelectCategory,
+  products = INITIAL_PRODUCTS,
 }) => {
   const [query, setQuery] = useState('');
 
   const filteredProducts = useMemo(() => {
     if (!query.trim()) return [];
     const q = query.toLowerCase();
-    return INITIAL_PRODUCTS.filter(
+    return products.filter(
       (p) =>
         p.name.toLowerCase().includes(q) ||
         p.category.toLowerCase().includes(q) ||
         p.description.toLowerCase().includes(q)
     );
-  }, [query]);
+  }, [query, products]);
 
   if (!isOpen) return null;
 

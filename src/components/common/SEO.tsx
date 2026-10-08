@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { BUSINESS_CONFIG } from '../../config/business';
 
 export interface SEOProps {
   title?: string;
@@ -9,14 +10,24 @@ export interface SEOProps {
   type?: 'website' | 'article' | 'product';
   noindex?: boolean;
   structuredData?: Record<string, unknown> | Array<Record<string, unknown>>;
+  productData?: {
+    name: string;
+    description?: string;
+    image?: string;
+    price: number;
+    inStock?: boolean;
+    rating?: number;
+    reviewCount?: number;
+    slug?: string;
+  };
 }
 
-const DEFAULT_TITLE = "Divine’s Eternity - Luxury Gifts & Personalized Keepsakes";
+const DEFAULT_TITLE = `${BUSINESS_CONFIG.brandName} — ${BUSINESS_CONFIG.subTagline}`;
 const DEFAULT_DESCRIPTION =
-  'Discover the world of Divine’s Eternity, where every gift is created to make your special moments more memorable.';
+  `Discover the world of ${BUSINESS_CONFIG.brandName}, where every gift is created to make your special moments more memorable. Personalized jewellery, hampers, bouquets, and bespoke creations.`;
 const DEFAULT_IMAGE =
-  'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&w=1200&q=80';
-const SITE_NAME = "Divine’s Eternity";
+  '/images/founder/founder_sonu_real_1791375717528.jpg';
+const SITE_NAME = BUSINESS_CONFIG.brandName;
 
 export const SEO: React.FC<SEOProps> = ({
   title,
@@ -27,9 +38,10 @@ export const SEO: React.FC<SEOProps> = ({
   type = 'website',
   noindex = false,
   structuredData,
+  productData,
 }) => {
   const fullTitle = title
-    ? `${title} | Divine’s Eternity`
+    ? (title.includes(BUSINESS_CONFIG.brandName) ? title : `${title} | ${BUSINESS_CONFIG.brandName}`)
     : DEFAULT_TITLE;
 
   useEffect(() => {
@@ -53,7 +65,7 @@ export const SEO: React.FC<SEOProps> = ({
     setMetaTag('name', 'robots', noindex ? 'noindex, nofollow' : 'index, follow');
 
     // 3. Canonical Link
-    const currentUrl = url || (typeof window !== 'undefined' ? window.location.href : '');
+    const currentUrl = url || (typeof window !== 'undefined' ? `${window.location.origin}${window.location.pathname}` : '');
     let canonicalLink = document.querySelector('link[rel="canonical"]');
     if (!canonicalLink) {
       canonicalLink = document.createElement('link');
@@ -68,7 +80,7 @@ export const SEO: React.FC<SEOProps> = ({
     setMetaTag('property', 'og:site_name', SITE_NAME);
     setMetaTag('property', 'og:title', fullTitle);
     setMetaTag('property', 'og:description', description);
-    setMetaTag('property', 'og:type', type);
+    setMetaTag('property', 'og:type', productData ? 'product' : type);
     if (image) setMetaTag('property', 'og:image', image);
     if (currentUrl) setMetaTag('property', 'og:url', currentUrl);
 
@@ -82,23 +94,61 @@ export const SEO: React.FC<SEOProps> = ({
     const scriptId = 'page-schema-jsonld';
     let scriptTag = document.getElementById(scriptId) as HTMLScriptElement | null;
 
-    if (structuredData) {
+    let finalSchema: any = structuredData;
+
+    // Build Product Schema if productData is provided
+    if (productData) {
+      const productSchema: Record<string, any> = {
+        '@context': 'https://schema.org',
+        '@type': 'Product',
+        name: productData.name,
+        description: productData.description || description,
+        image: productData.image || image,
+        offers: {
+          '@type': 'Offer',
+          priceCurrency: 'INR',
+          price: productData.price,
+          availability: productData.inStock !== false
+            ? 'https://schema.org/InStock'
+            : 'https://schema.org/OutOfStock',
+          url: currentUrl,
+          seller: {
+            '@type': 'Organization',
+            name: BUSINESS_CONFIG.brandName,
+          },
+        },
+      };
+
+      // aggregateRating ONLY if real reviews exist
+      if (productData.rating && productData.reviewCount && productData.reviewCount > 0) {
+        productSchema.aggregateRating = {
+          '@type': 'AggregateRating',
+          ratingValue: Number(productData.rating.toFixed(1)),
+          reviewCount: productData.reviewCount,
+          bestRating: 5,
+          worstRating: 1,
+        };
+      }
+
+      finalSchema = productSchema;
+    }
+
+    if (finalSchema) {
       if (!scriptTag) {
         scriptTag = document.createElement('script');
         scriptTag.id = scriptId;
         scriptTag.type = 'application/ld+json';
         document.head.appendChild(scriptTag);
       }
-      scriptTag.text = JSON.stringify(structuredData);
+      scriptTag.text = JSON.stringify(finalSchema);
     } else if (scriptTag) {
-      // Remove specific page schema if none provided for this page
       scriptTag.remove();
     }
 
     return () => {
-      // Cleanup dynamically injected schema on unmount if needed
+      // Keep head tidy
     };
-  }, [fullTitle, description, keywords, image, url, type, noindex, structuredData]);
+  }, [fullTitle, description, keywords, image, url, type, noindex, structuredData, productData]);
 
   return null;
 };

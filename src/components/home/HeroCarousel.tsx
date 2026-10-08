@@ -128,6 +128,8 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
               src={slideImageUrl}
               alt=""
               aria-hidden="true"
+              loading="lazy"
+              decoding="async"
               className="absolute inset-0 w-full h-full object-cover blur-3xl opacity-30 scale-110 pointer-events-none"
             />
             
@@ -135,6 +137,9 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
             <img
               src={slideImageUrl}
               alt="Hero Banner Slide"
+              fetchPriority={currentSlide === 0 ? 'high' : undefined}
+              loading={currentSlide === 0 ? undefined : 'lazy'}
+              decoding="async"
               className="relative z-10 w-full h-full object-cover group-hover:scale-[1.015] transition-transform duration-700 ease-out"
               onError={(e) => {
                 (e.currentTarget as HTMLImageElement).src =

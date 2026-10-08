@@ -53,10 +53,12 @@ export const PhoneCaseMockup: React.FC<PhoneCaseMockupProps> = ({
           <img
             src={prodImage}
             alt={name || 'Product Image'}
+            loading="lazy"
+            decoding="async"
             className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
             onError={(e) => {
               (e.currentTarget as HTMLImageElement).src =
-                'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=600&q=80';
+                '/images/founder/founder_sonu_real_1791375717528.jpg';
             }}
           />
         </div>
@@ -156,6 +158,8 @@ export const PhoneCaseMockup: React.FC<PhoneCaseMockupProps> = ({
                 <img
                   src={customPhoto}
                   alt="Custom Couple Portrait"
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-cover"
                 />
               ) : (
@@ -338,7 +342,7 @@ export const PhoneCaseMockup: React.FC<PhoneCaseMockupProps> = ({
               <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-rose-300 via-amber-200 to-pink-300 p-1 shadow-md">
                 <div className="w-full h-full rounded-full overflow-hidden bg-white flex items-center justify-center">
                   {customPhoto ? (
-                    <img src={customPhoto} alt="Caricature Avatar" className="w-full h-full object-cover" />
+                    <img src={customPhoto} alt="Caricature Avatar" loading="lazy" decoding="async" className="w-full h-full object-cover" />
                   ) : (
                     <div className="flex flex-col items-center justify-center text-center p-1">
                       <span className="text-2xl">👩‍❤️‍👨</span>

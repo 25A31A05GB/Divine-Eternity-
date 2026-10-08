@@ -15,6 +15,7 @@ import {
   Award,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { BUSINESS_CONFIG } from '../../config/business';
 
 const COLLAB_TYPES = [
   {
@@ -79,7 +80,8 @@ Platform: ${platform} (${followerCount})
 Pitch: ${pitch || 'Looking forward to collaborating!'}
 Portfolio: ${portfolioUrl || 'N/A'}`;
 
-    window.open(`https://wa.me/919876543210?text=${encodeURIComponent(text)}`, '_blank');
+    const cleanNumber = BUSINESS_CONFIG.whatsappNumber.replace(/[^0-9]/g, '');
+    window.open(`https://wa.me/${cleanNumber}?text=${encodeURIComponent(text)}`, '_blank');
   };
 
   return (

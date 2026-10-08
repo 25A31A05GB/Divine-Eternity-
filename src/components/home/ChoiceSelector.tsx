@@ -57,6 +57,8 @@ export const ChoiceSelector: React.FC<ChoiceSelectorProps> = ({
                 <img
                   src={matchingProduct.images[0]}
                   alt={matchingProduct.name}
+                  loading="lazy"
+                  decoding="async"
                   referrerPolicy="no-referrer"
                   className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-700"
                 />

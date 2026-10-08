@@ -84,6 +84,8 @@ export const PodcastSection: React.FC = () => {
             <img
               src={currentEpisode.coverImage}
               alt={currentEpisode.title}
+              loading="lazy"
+              decoding="async"
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-black/40 flex items-center justify-center">

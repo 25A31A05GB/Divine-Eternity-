@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Product } from '../../types';
+import { supabase, isSupabaseConfigured } from '../../lib/supabase';
+import { BUSINESS_CONFIG } from '../../config/business';
 import {
   Sparkles,
   MessageCircle,
@@ -13,6 +15,7 @@ import {
   Gem,
   Smile,
   Package,
+  AlertCircle,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -74,6 +77,8 @@ export const PersonalizationSection: React.FC<PersonalizationSectionProps> = ({
   const [customerPhone, setCustomerPhone] = useState('');
   const [uploadedPhoto, setUploadedPhoto] = useState<string | null>(null);
   const [isConfirmed, setIsConfirmed] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // WhatsApp pre-filled link builder
   const buildWhatsAppMessage = () => {
@@ -90,11 +95,47 @@ Phone: ${customerPhone || 'Not provided'}
 ---------------------------
 Hello team Divine’s Eternity! I would like to check availability and confirm this personalization request with you.`;
 
-    return `https://wa.me/919876543210?text=${encodeURIComponent(text)}`;
+    const cleanNumber = BUSINESS_CONFIG.whatsappNumber.replace(/[^0-9]/g, '');
+    return `https://wa.me/${cleanNumber}?text=${encodeURIComponent(text)}`;
   };
 
-  const handleConfirmWhatsApp = (e: React.FormEvent) => {
+  const handleConfirmWhatsApp = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitError(null);
+    setIsSubmitting(true);
+
+    const requestData = {
+      category: selectedCategory,
+      preferredColor: selectedColor,
+      preferredDesign: selectedDesign,
+      preferredTheme: selectedTheme,
+      customNames: customNames || 'None specified',
+      specialRequirements: specialRequirements || 'Please check availability',
+      customerName: customerName || 'Valued Guest',
+      customerPhone: customerPhone || 'WhatsApp Lead',
+      submittedAt: new Date().toISOString(),
+    };
+
+    if (isSupabaseConfigured() && supabase) {
+      try {
+        const { error: dbErr } = await supabase.from('personalization_requests').insert({
+          status: 'Pending',
+          data: requestData,
+        });
+
+        if (dbErr) {
+          setSubmitError(`Database failed to record personalization request: ${dbErr.message}`);
+          setIsSubmitting(false);
+          return; // Never silently fall back on database failure!
+        }
+      } catch (err: any) {
+        setSubmitError(`Database communication error: ${err.message}`);
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
+    setIsSubmitting(false);
     confetti({
       particleCount: 80,
       spread: 70,
@@ -307,7 +348,7 @@ Hello team Divine’s Eternity! I would like to check availability and confirm t
                   {uploadedPhoto && (
                     <div className="flex items-center gap-2">
                       <div className="w-12 h-12 rounded-xl overflow-hidden border border-[#E7E2DA] bg-stone-100 shrink-0">
-                        <img src={uploadedPhoto} alt="Uploaded reference" className="w-full h-full object-cover" />
+                        <img src={uploadedPhoto} alt="Uploaded reference" loading="lazy" decoding="async" className="w-full h-full object-cover" />
                       </div>
                       <span className="text-[11px] text-emerald-600 font-bold">✓ Photo Attached</span>
                     </div>
@@ -358,13 +399,21 @@ Hello team Divine’s Eternity! I would like to check availability and confirm t
               </div>
             </div>
 
+            {submitError && (
+              <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-300 text-rose-800 text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                <span>{submitError}</span>
+              </div>
+            )}
+
             {/* Submit Action */}
             <button
               type="submit"
-              className="w-full py-3.5 px-6 rounded-full bg-[#25D366] hover:bg-[#20BA5A] text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+              disabled={isSubmitting}
+              className="w-full py-3.5 px-6 rounded-full bg-[#25D366] hover:bg-[#20BA5A] text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
             >
               <MessageCircle className="w-5 h-5" />
-              <span>Check Availability & Confirm on WhatsApp</span>
+              <span>{isSubmitting ? 'Submitting to Database...' : 'Check Availability & Confirm on WhatsApp'}</span>
             </button>
           </form>
         </div>
@@ -497,6 +546,8 @@ Hello team Divine’s Eternity! I would like to check availability and confirm t
                   <img
                     src={p.images[0]}
                     alt={p.name}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                   <span className="absolute top-2 left-2 bg-[#FF2E93] text-white text-[9px] font-extrabold px-2 py-0.5 rounded-full">

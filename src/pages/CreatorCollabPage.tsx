@@ -31,6 +31,7 @@ import {
 } from 'lucide-react';
 import { CreatorPortal } from '../components/creator/CreatorPortal';
 import { SEO } from '../components/common/SEO';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import confetti from 'canvas-confetti';
 
 interface CreatorCollabPageProps {
@@ -61,6 +62,8 @@ export const CreatorCollabPage: React.FC<CreatorCollabPageProps> = ({
   const [portfolioUrl, setPortfolioUrl] = useState('');
   const [message, setMessage] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Calculator State
   const [monthlyReferrals, setMonthlyReferrals] = useState(40);
@@ -79,9 +82,11 @@ export const CreatorCollabPage: React.FC<CreatorCollabPageProps> = ({
     window.scrollTo({ top: 400, behavior: 'smooth' });
   };
 
-  const handleSubmitApplication = (e: React.FormEvent) => {
+  const handleSubmitApplication = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!fullName || !email || !phone || !proposedCode) return;
+    setSubmitError(null);
+    setIsSubmitting(true);
 
     const newApp: CreatorApplication = {
       id: `app-${Date.now()}`,
@@ -105,17 +110,33 @@ export const CreatorCollabPage: React.FC<CreatorCollabPageProps> = ({
       commissionRatePct: 15,
     };
 
-    if (onRegisterSubmit) {
-      onRegisterSubmit(newApp);
+    // Shared business data write directly to Supabase creator_applications (data jsonb)
+    if (!isSupabaseConfigured() || !supabase) {
+      setSubmitError('Database service is not configured. Unable to submit application.');
+      setIsSubmitting(false);
+      return;
     }
 
-    // Save to localStorage for demo persistence
     try {
-      const stored = localStorage.getItem('de_creator_applications');
-      const currentList: CreatorApplication[] = stored ? JSON.parse(stored) : [];
-      localStorage.setItem('de_creator_applications', JSON.stringify([newApp, ...currentList]));
-    } catch (err) {
-      console.error(err);
+      const { error: dbErr } = await supabase.from('creator_applications').insert({
+        status: 'Pending',
+        data: newApp,
+      });
+
+      if (dbErr) {
+        setSubmitError(`Failed to save application to Supabase: ${dbErr.message}`);
+        setIsSubmitting(false);
+        return; // Never silently fall back on database error!
+      }
+    } catch (err: any) {
+      setSubmitError(`Database connection error: ${err.message}`);
+      setIsSubmitting(false);
+      return;
+    }
+
+    setIsSubmitting(false);
+    if (onRegisterSubmit) {
+      onRegisterSubmit(newApp);
     }
 
     setIsSubmitted(true);
@@ -133,21 +154,23 @@ export const CreatorCollabPage: React.FC<CreatorCollabPageProps> = ({
     }
   };
 
-  const creatorUrl = typeof window !== 'undefined' ? window.location.href : 'https://gadgetsdestiny.com/#creator-club';
+  const creatorUrl = typeof window !== 'undefined'
+    ? `${window.location.origin}/creator-club`
+    : 'https://divineseternity.com/creator-club';
 
   return (
     <div className="min-h-screen bg-[#FFFDF8] text-[#211D1C] py-8 lg:py-12 transition-colors">
       <SEO
-        title="Creator Club & Influencer Affiliate Collective — Gadgets Destiny"
-        description="Join the Gadgets Destiny Creator Club. Earn 15% lifetime commissions, receive cute PR phone case packages, and collaborate on viral TikTok & Instagram drops."
-        keywords="creator club, affiliate marketing, influencer collaboration, PR packages, brand ambassador, gadgets destiny affiliate"
+        title="Creator Club & Ambassador Collective — Divine’s Eternity"
+        description="Join the Divine’s Eternity Creator Club. Earn commissions, receive gifted luxury jewellery & keepsake PR hampers, and collaborate on aesthetic storytelling."
+        keywords="creator club, affiliate marketing, influencer collaboration, PR hampers, brand ambassador, divines eternity affiliate"
         url={creatorUrl}
         structuredData={{
           '@context': 'https://schema.org',
           '@type': 'WebPage',
-          name: "Creator Club & Influencer Affiliate Hub | Gadgets Destiny",
+          name: "Creator Club & Influencer Affiliate Hub | Divine’s Eternity",
           description:
-            'Join our exclusive affiliate marketing and content creator program. Earn 15% recurring commissions and receive curated PR gift boxes.',
+            'Join our exclusive affiliate marketing and content creator program. Earn recurring commissions and receive curated PR gift boxes.',
           url: creatorUrl,
         }}
       />
@@ -573,6 +596,13 @@ export const CreatorCollabPage: React.FC<CreatorCollabPageProps> = ({
                       />
                     </div>
 
+                    {submitError && (
+                      <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-xs flex items-center gap-3">
+                        <span className="font-bold">Error:</span>
+                        <span>{submitError}</span>
+                      </div>
+                    )}
+
                     <div className="pt-4 border-t border-[#EDE2DB] dark:border-[#2A2328] flex items-center justify-between">
                       <div className="text-xs text-[#7A7276] flex items-center gap-1.5">
                         <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
@@ -580,9 +610,10 @@ export const CreatorCollabPage: React.FC<CreatorCollabPageProps> = ({
                       </div>
                       <button
                         type="submit"
-                        className="inline-flex items-center gap-2 px-8 py-3 rounded-full text-xs sm:text-sm font-bold bg-[#F0508C] text-white hover:bg-[#D93D78] shadow-lg shadow-[#F0508C]/25 transition-all transform active:scale-95"
+                        disabled={isSubmitting}
+                        className="inline-flex items-center gap-2 px-8 py-3 rounded-full text-xs sm:text-sm font-bold bg-[#F0508C] text-white hover:bg-[#D93D78] shadow-lg shadow-[#F0508C]/25 transition-all transform active:scale-95 disabled:opacity-50"
                       >
-                        Submit Application <Send className="w-4 h-4" />
+                        {isSubmitting ? 'Saving to Database...' : 'Submit Application'} <Send className="w-4 h-4" />
                       </button>
                     </div>
                   </form>

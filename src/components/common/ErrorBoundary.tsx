@@ -1,5 +1,6 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { AlertCircle, RefreshCw, Home } from 'lucide-react';
+import { reportErrorToSentry } from '../../lib/monitoring';
 
 interface Props {
   children: ReactNode;
@@ -23,13 +24,13 @@ export class ErrorBoundary extends Component<Props, State> {
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('Uncaught error caught by ErrorBoundary:', error, errorInfo);
+    reportErrorToSentry(error, { componentStack: errorInfo.componentStack });
   }
 
   private handleReset = () => {
     this.setState({ hasError: false, error: null });
     if (typeof window !== 'undefined') {
-      window.location.hash = '#home';
-      window.location.reload();
+      window.location.href = '/';
     }
   };
 

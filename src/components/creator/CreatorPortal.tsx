@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Campaign, CreatorApplication } from '../../types';
 import { INITIAL_CAMPAIGNS, INITIAL_CREATOR_APPLICATIONS } from '../../data/campaigns';
+import { supabase, isSupabaseConfigured } from '../../lib/supabase';
 import {
   Sparkles,
   DollarSign,
@@ -47,18 +48,29 @@ interface CreatorPortalProps {
 
 export const CreatorPortal: React.FC<CreatorPortalProps> = ({ onExploreProducts }) => {
   // Creator Applications / Registered Creators State
-  const [creators, setCreators] = useState<CreatorApplication[]>(() => {
-    try {
-      const stored = localStorage.getItem('de_creator_applications');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        return [...parsed, ...INITIAL_CREATOR_APPLICATIONS.filter((a) => !parsed.some((p: any) => p.id === a.id))];
-      }
-    } catch (e) {
-      console.error(e);
-    }
-    return INITIAL_CREATOR_APPLICATIONS;
-  });
+  const [creators, setCreators] = useState<CreatorApplication[]>(INITIAL_CREATOR_APPLICATIONS);
+
+  // Load creators from Supabase creator_applications table
+  useEffect(() => {
+    if (!isSupabaseConfigured() || !supabase) return;
+    supabase
+      .from('creator_applications')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .then(({ data, error }) => {
+        if (!error && data && data.length > 0) {
+          const mapped = data.map((d: any) => ({
+            ...d.data,
+            id: d.id,
+            status: d.status || d.data?.status || 'Approved',
+          }));
+          setCreators((prev) => [
+            ...mapped,
+            ...INITIAL_CREATOR_APPLICATIONS.filter((a) => !mapped.some((m: any) => m.id === a.id)),
+          ]);
+        }
+      });
+  }, []);
 
   // Current Logged-in Creator (Default to first approved demo creator)
   const [currentCreatorId, setCurrentCreatorId] = useState<string>(
@@ -94,6 +106,8 @@ export const CreatorPortal: React.FC<CreatorPortalProps> = ({ onExploreProducts 
   const [signUpPincode, setSignUpPincode] = useState('');
   const [signUpUpi, setSignUpUpi] = useState('');
   const [signUpSuccess, setSignUpSuccess] = useState(false);
+  const [signUpError, setSignUpError] = useState<string | null>(null);
+  const [isSubmittingSignUp, setIsSubmittingSignUp] = useState(false);
 
   // Simulated referral conversions history
   const referralTransactions = [
@@ -127,9 +141,11 @@ export const CreatorPortal: React.FC<CreatorPortalProps> = ({ onExploreProducts 
     }
   };
 
-  const handleSignUpSubmit = (e: React.FormEvent) => {
+  const handleSignUpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!signUpName || !signUpEmail || !signUpCode) return;
+    setSignUpError(null);
+    setIsSubmittingSignUp(true);
 
     const newCreator: CreatorApplication = {
       id: `app-${Date.now()}`,
@@ -149,15 +165,39 @@ export const CreatorPortal: React.FC<CreatorPortalProps> = ({ onExploreProducts 
       commissionRatePct: 15,
     };
 
-    setCreators((prev) => [newCreator, ...prev]);
-    setCurrentCreatorId(newCreator.id);
-
-    try {
-      localStorage.setItem('de_creator_applications', JSON.stringify([newCreator, ...creators]));
-    } catch (err) {
-      console.error(err);
+    if (!isSupabaseConfigured() || !supabase) {
+      setSignUpError('Database service is not configured. Unable to complete registration.');
+      setIsSubmittingSignUp(false);
+      return;
     }
 
+    try {
+      const { data, error: dbErr } = await supabase
+        .from('creator_applications')
+        .insert({
+          status: 'Approved',
+          data: newCreator,
+        })
+        .select();
+
+      if (dbErr) {
+        setSignUpError(`Failed to save creator application to Supabase: ${dbErr.message}`);
+        setIsSubmittingSignUp(false);
+        return; // Never silently fall back on database failure!
+      }
+
+      const assignedId = data?.[0]?.id || newCreator.id;
+      const savedCreator = { ...newCreator, id: assignedId };
+
+      setCreators((prev) => [savedCreator, ...prev]);
+      setCurrentCreatorId(assignedId);
+    } catch (err: any) {
+      setSignUpError(`Database communication error: ${err.message}`);
+      setIsSubmittingSignUp(false);
+      return;
+    }
+
+    setIsSubmittingSignUp(false);
     setSignUpSuccess(true);
     confetti({ particleCount: 80, spread: 70, origin: { y: 0.5 } });
 
@@ -758,12 +798,20 @@ export const CreatorPortal: React.FC<CreatorPortalProps> = ({ onExploreProducts 
                   </div>
                 </div>
 
+                {signUpError && (
+                  <div className="p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-xs flex items-center gap-2.5">
+                    <AlertCircle className="w-4 h-4 text-rose-500 shrink-0" />
+                    <span>{signUpError}</span>
+                  </div>
+                )}
+
                 <div className="pt-4 border-t border-[#EDE2DB] dark:border-[#2A2328] flex justify-end">
                   <button
                     type="submit"
-                    className="inline-flex items-center gap-2 px-8 py-3 rounded-full text-xs font-bold bg-[#F0508C] text-white hover:bg-[#D93D78] shadow-md shadow-[#F0508C]/25 transition-all"
+                    disabled={isSubmittingSignUp}
+                    className="inline-flex items-center gap-2 px-8 py-3 rounded-full text-xs font-bold bg-[#F0508C] text-white hover:bg-[#D93D78] shadow-md shadow-[#F0508C]/25 transition-all disabled:opacity-50"
                   >
-                    Complete Registration & Open Dashboard <ArrowRight className="w-4 h-4" />
+                    {isSubmittingSignUp ? 'Registering with Database...' : 'Complete Registration & Open Dashboard'} <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>
               </form>

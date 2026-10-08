@@ -16,9 +16,10 @@ interface HeaderProps {
   setCurrentView: (view: string, params?: Record<string, string>) => void;
   openSearch: () => void;
   onQuickView?: (product: Product) => void;
+  products?: Product[];
 }
 
-export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, openSearch, onQuickView }) => {
+export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, openSearch, onQuickView, products = INITIAL_PRODUCTS }) => {
   const { totalItemsCount, openCart } = useCart();
   const { wishlistCount } = useWishlist();
   const { theme, toggleTheme } = useTheme();
@@ -58,14 +59,14 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, ope
   const liveSuggestions = useMemo(() => {
     if (!headerSearchQuery.trim()) return [];
     const q = headerSearchQuery.toLowerCase();
-    return INITIAL_PRODUCTS.filter(
+    return products.filter(
       (p) =>
         p.name.toLowerCase().includes(q) ||
         p.category.toLowerCase().includes(q) ||
         p.description.toLowerCase().includes(q) ||
         (p.supportedBrands && p.supportedBrands.some((b) => b.toLowerCase().includes(q)))
     ).slice(0, 5);
-  }, [headerSearchQuery]);
+  }, [headerSearchQuery, products]);
 
   const handleMouseEnter = () => {
     if (dropdownTimeoutRef.current) clearTimeout(dropdownTimeoutRef.current);

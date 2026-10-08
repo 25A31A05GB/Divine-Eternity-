@@ -125,7 +125,7 @@ export const GiftPersonalizer: React.FC<GiftPersonalizerProps> = ({
             <div className="w-full max-w-xs bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 shadow-2xl space-y-3 text-center">
               <div className="w-20 h-20 mx-auto rounded-xl overflow-hidden bg-stone-800 border border-white/30 flex items-center justify-center">
                 {customPhoto ? (
-                  <img src={customPhoto} alt="Album Art" className="w-full h-full object-cover" />
+                  <img src={customPhoto} alt="Album Art" loading="lazy" decoding="async" className="w-full h-full object-cover" />
                 ) : (
                   <Music className="w-8 h-8 text-[#FF2E93]" />
                 )}
@@ -153,7 +153,7 @@ export const GiftPersonalizer: React.FC<GiftPersonalizerProps> = ({
             <div className="flex flex-col items-center space-y-2">
               <div className="relative w-28 h-28 rounded-2xl bg-white/10 backdrop-blur-md border border-white/30 p-2 shadow-2xl flex items-center justify-center overflow-hidden">
                 {customPhoto ? (
-                  <img src={customPhoto} alt="Photo Proof" className="w-full h-full object-cover rounded-xl opacity-90 brightness-110" />
+                  <img src={customPhoto} alt="Photo Proof" loading="lazy" decoding="async" className="w-full h-full object-cover rounded-xl opacity-90 brightness-110" />
                 ) : (
                   <ImageIcon className="w-10 h-10 text-[#FFD94A] opacity-70" />
                 )}
@@ -311,7 +311,7 @@ export const GiftPersonalizer: React.FC<GiftPersonalizerProps> = ({
 
             {customPhoto && (
               <div className="w-12 h-12 rounded-xl overflow-hidden border border-[#F3E8E2] shrink-0 shadow-2xs">
-                <img src={customPhoto} alt="Upload preview" className="w-full h-full object-cover" />
+                <img src={customPhoto} alt="Upload preview" loading="lazy" decoding="async" className="w-full h-full object-cover" />
               </div>
             )}
           </div>

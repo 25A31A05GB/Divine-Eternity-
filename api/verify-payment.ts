@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
 import crypto from 'crypto';
-import { supabaseAdmin } from './_lib/supabaseAdmin';
+import { supabaseAdmin, isSupabaseAdminConfigured } from './_lib/supabaseAdmin';
 import { verifyPaymentSchema } from './_lib/schemas';
 import { sendOrderConfirmationEmail, sendOrderConfirmationWhatsApp } from '../src/lib/notifications';
 
@@ -23,7 +23,10 @@ export default async function handler(req: Request, res: Response) {
       hmac.update(`${razorpayOrderId}|${razorpayPaymentId}`);
       const expectedSignature = hmac.digest('hex');
 
-      if (expectedSignature !== razorpaySignature) {
+      const expectedBuf = Buffer.from(expectedSignature, 'utf8');
+      const signatureBuf = Buffer.from(razorpaySignature, 'utf8');
+
+      if (expectedBuf.length !== signatureBuf.length || !crypto.timingSafeEqual(expectedBuf, signatureBuf)) {
         return res.status(400).json({
           success: false,
           verified: false,
@@ -32,45 +35,48 @@ export default async function handler(req: Request, res: Response) {
       }
     }
 
-    // Update in Supabase Database
+    // Update in Supabase Database only when payment signature passes
     let updatedOrder: any = null;
-    try {
-      const { data } = await supabaseAdmin
-        .from('orders')
-        .update({
-          payment_status: 'Paid',
-          payment_id: razorpayPaymentId,
-        })
-        .eq('id', orderId)
-        .select('*')
-        .maybeSingle();
+    if (isSupabaseAdminConfigured() && supabaseAdmin) {
+      try {
+        const { data } = await supabaseAdmin
+          .from('orders')
+          .update({
+            payment_status: 'Paid',
+            payment_id: razorpayPaymentId,
+            status: 'Placed',
+          })
+          .eq('id', orderId)
+          .select('*')
+          .maybeSingle();
 
-      if (data) {
-        updatedOrder = data;
-        const customer = data.customer || {};
-        sendOrderConfirmationEmail({
-          orderId: data.id,
-          customerName: customer.fullName || 'Valued Customer',
-          customerEmail: customer.email || '',
-          customerPhone: customer.phone || '',
-          totalAmount: data.total_amount,
-          paymentMethod: data.payment_method || 'Online (Razorpay)',
-          trackingNumber: data.tracking_number,
-          itemsSummary: 'Personalized Keepsakes',
-        });
-        sendOrderConfirmationWhatsApp({
-          orderId: data.id,
-          customerName: customer.fullName || 'Valued Customer',
-          customerEmail: customer.email || '',
-          customerPhone: customer.phone || '',
-          totalAmount: data.total_amount,
-          paymentMethod: data.payment_method || 'Online (Razorpay)',
-          trackingNumber: data.tracking_number,
-          itemsSummary: 'Personalized Keepsakes',
-        });
+        if (data) {
+          updatedOrder = data;
+          const customer = data.customer || {};
+          sendOrderConfirmationEmail({
+            orderId: data.id,
+            customerName: customer.fullName || 'Valued Customer',
+            customerEmail: customer.email || '',
+            customerPhone: customer.phone || '',
+            totalAmount: data.total_amount,
+            paymentMethod: data.payment_method || 'Online (Razorpay)',
+            trackingNumber: data.tracking_number,
+            itemsSummary: 'Personalized Keepsakes',
+          });
+          sendOrderConfirmationWhatsApp({
+            orderId: data.id,
+            customerName: customer.fullName || 'Valued Customer',
+            customerEmail: customer.email || '',
+            customerPhone: customer.phone || '',
+            totalAmount: data.total_amount,
+            paymentMethod: data.payment_method || 'Online (Razorpay)',
+            trackingNumber: data.tracking_number,
+            itemsSummary: 'Personalized Keepsakes',
+          });
+        }
+      } catch (err) {
+        console.warn('DB payment status update fallback', err);
       }
-    } catch (err) {
-      console.warn('DB payment status update fallback', err);
     }
 
     return res.json({

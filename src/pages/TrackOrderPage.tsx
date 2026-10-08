@@ -60,7 +60,7 @@ export const TrackOrderPage: React.FC<TrackOrderPageProps> = ({ initialOrderId =
     setIsLoading(true);
 
     try {
-      const res = await fetch('/api/track', {
+      const res = await fetch('/api/track-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

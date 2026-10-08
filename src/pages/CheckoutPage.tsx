@@ -235,7 +235,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onBackToCart, onOrde
     onOrderSuccess(confirmedOrder);
   };
 
-  const checkoutUrl = typeof window !== 'undefined' ? window.location.href : 'https://divineseternity.com/#checkout';
+  const checkoutUrl = typeof window !== 'undefined' ? `${window.location.origin}/checkout` : 'https://divineseternity.com/checkout';
 
   return (
     <div className="py-8 sm:py-12 bg-[#FFFDF8]">

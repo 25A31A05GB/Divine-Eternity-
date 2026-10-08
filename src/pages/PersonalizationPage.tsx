@@ -29,6 +29,8 @@ import { CATEGORIES } from '../data/products';
 import { useCart } from '../context/CartContext';
 import { soundFeedback } from '../lib/soundFeedback';
 import { Product } from '../types';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { AlertCircle } from 'lucide-react';
 
 interface PersonalizationPageProps {
   onExploreProducts: (cat?: string) => void;
@@ -267,6 +269,8 @@ export const PersonalizationPage: React.FC<PersonalizationPageProps> = ({
   const [customerPhone, setCustomerPhone] = useState('');
   const [isCopied, setIsCopied] = useState(false);
   const [isSent, setIsSent] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   /* --- Corporate Bulk State --- */
   const [bulkQuantity, setBulkQuantity] = useState(50);
@@ -399,9 +403,44 @@ Kindly verify availability and guide me through the next steps! Thank you.`;
     return encodeURIComponent(text);
   };
 
-  const handleSendWhatsApp = (e: React.FormEvent) => {
+  const handleSendWhatsApp = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitError(null);
+    setIsSubmitting(true);
     soundFeedback.playConciergePop(0.1);
+
+    const requestData = {
+      category: selectedCategory,
+      color: selectedColor,
+      design: selectedDesign,
+      theme: selectedTheme,
+      customText: customText || 'To be decided',
+      customRequirements: customRequirements || 'Standard handcrafted edition',
+      customerName: customerName || 'Valued Guest',
+      customerPhone: customerPhone || 'WhatsApp Lead',
+      submittedAt: new Date().toISOString(),
+    };
+
+    if (isSupabaseConfigured() && supabase) {
+      try {
+        const { error: dbErr } = await supabase.from('personalization_requests').insert({
+          status: 'Pending',
+          data: requestData,
+        });
+
+        if (dbErr) {
+          setSubmitError(`Database failed to record personalization request: ${dbErr.message}`);
+          setIsSubmitting(false);
+          return; // Never silently fall back on database error!
+        }
+      } catch (err: any) {
+        setSubmitError(`Database error: ${err.message}`);
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
+    setIsSubmitting(false);
     const encoded = generateWhatsAppMessage();
     const whatsappUrl = `https://wa.me/919353652043?text=${encoded}`;
     setIsSent(true);
@@ -595,6 +634,8 @@ Please share your latest B2B luxury catalogue, custom branding options, and offi
                           <img
                             src={box.image}
                             alt={box.name}
+                            loading="lazy"
+                            decoding="async"
                             referrerPolicy="no-referrer"
                             className="w-14 h-14 rounded-xl object-cover border border-stone-200 shrink-0"
                           />
@@ -648,6 +689,8 @@ Please share your latest B2B luxury catalogue, custom branding options, and offi
                           <img
                             src={item.image}
                             alt={item.name}
+                            loading="lazy"
+                            decoding="async"
                             referrerPolicy="no-referrer"
                             className="w-12 h-12 rounded-xl object-cover border border-stone-200 shrink-0"
                           />
@@ -723,6 +766,8 @@ Please share your latest B2B luxury catalogue, custom branding options, and offi
                           <img
                             src={item.image}
                             alt={item.name}
+                            loading="lazy"
+                            decoding="async"
                             referrerPolicy="no-referrer"
                             className="w-12 h-12 rounded-xl object-cover border border-stone-200 shrink-0"
                           />
@@ -832,6 +877,8 @@ Please share your latest B2B luxury catalogue, custom branding options, and offi
                     <img
                       src={selectedBox.image}
                       alt={selectedBox.name}
+                      loading="lazy"
+                      decoding="async"
                       referrerPolicy="no-referrer"
                       className="w-full h-full object-cover"
                     />
@@ -1128,15 +1175,23 @@ Please share your latest B2B luxury catalogue, custom branding options, and offi
                 </div>
               </div>
 
+              {submitError && (
+                <div className="p-3.5 bg-rose-50 border border-rose-300 rounded-2xl text-xs text-rose-800 flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                  <span>{submitError}</span>
+                </div>
+              )}
+
               {/* Action Bar */}
               <div className="pt-4 border-t border-stone-100 flex flex-col sm:flex-row items-center gap-3">
                 <button
                   type="button"
+                  disabled={isSubmitting}
                   onClick={handleSendWhatsApp}
-                  className="w-full sm:flex-1 py-3.5 px-6 rounded-full bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold text-xs sm:text-sm shadow-md flex items-center justify-center gap-2 transition-transform active:scale-98 cursor-pointer"
+                  className="w-full sm:flex-1 py-3.5 px-6 rounded-full bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold text-xs sm:text-sm shadow-md flex items-center justify-center gap-2 transition-transform active:scale-98 cursor-pointer disabled:opacity-50"
                 >
                   <MessageCircle className="w-5 h-5" />
-                  <span>Check Availability & Confirm via WhatsApp</span>
+                  <span>{isSubmitting ? 'Recording Request...' : 'Check Availability & Confirm via WhatsApp'}</span>
                 </button>
 
                 <button

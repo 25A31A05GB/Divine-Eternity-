@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { CartItem, AppliedOffer, Coupon } from '../types';
-import { computeAuthoritativePricing, FREE_SHIPPING_THRESHOLD, STANDARD_SHIPPING_FEE, GIFT_WRAPPING_FEE } from '../shared/pricing';
-import { soundFeedback } from '../lib/soundFeedback';
+import { computeAuthoritativePricing } from '../shared/pricing';
 
 interface CartContextType {
   cart: CartItem[];
@@ -10,12 +9,12 @@ interface CartContextType {
   updateQuantity: (itemId: string, quantity: number) => void;
   clearCart: () => void;
   isCartOpen: boolean;
-  setIsCartOpen: (open: boolean) => void;
+  setIsCartOpen: (isOpen: boolean) => void;
   openCart: () => void;
   closeCart: () => void;
   couponCode: string;
   setCouponCode: (code: string) => void;
-  applyCoupon: (code: string) => { success: boolean; message: string };
+  applyCoupon: (code: string) => Promise<{ success: boolean; message: string }>;
   removeCoupon: () => void;
   subtotal: number;
   discountTotal: number;
@@ -26,7 +25,6 @@ interface CartContextType {
   availableCoupons: Coupon[];
   freeShippingThreshold: number;
   amountNeededForFreeShipping: number;
-  // Gift Wrapping
   isGiftWrapped: boolean;
   giftWrappingFee: number;
   giftNote: string;
@@ -37,44 +35,36 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 const STORAGE_KEY = 'divines_eternity_cart_v1';
-const COUPON_KEY = 'divines_eternity_coupon_v1';
-const GIFT_WRAP_KEY = 'divines_eternity_gift_wrap_v1';
-const GIFT_NOTE_KEY = 'divines_eternity_gift_note_v1';
-const FREE_SHIPPING_MIN = 499;
-const STANDARD_SHIPPING = 49;
-export const GIFT_WRAPPING_SURCHARGE = 99;
+const COUPON_KEY = 'divines_eternity_applied_coupon';
+const GIFT_WRAP_KEY = 'divines_eternity_gift_wrap';
+const GIFT_NOTE_KEY = 'divines_eternity_gift_note';
+
+export const FREE_SHIPPING_MIN = 499;
 
 export const AVAILABLE_COUPONS: Coupon[] = [
   {
-    code: 'DS1102',
-    description: 'First Order Special: Flat 60% OFF storewide (Divine’s Eternity)',
-    type: 'percentage',
-    value: 60,
-    minOrderValue: 499,
-    isActive: true,
-  },
-  {
-    code: 'BUY3PAY2',
-    description: 'Buy 3 Gifts, Get 1 FREE (Lowest priced gift is 100% free)',
-    type: 'buy3pay2',
+    code: 'LOVE100',
+    description: 'Flat ₹100 Off on your personalized gift order',
+    type: 'flat',
     value: 100,
-    minItems: 3,
+    minOrderValue: 799,
     isActive: true,
   },
   {
     code: 'FLAT849',
-    description: 'Any 2 Luxury Gifts for flat ₹849',
+    description: 'Any 2 Handcrafted Gifts for Flat ₹849 total',
     type: 'flat849',
-    value: 849,
+    value: 300,
     minItems: 2,
+    minOrderValue: 849,
     isActive: true,
   },
   {
-    code: 'LOVE100',
-    description: 'Instant ₹100 Off on your order',
-    type: 'flat',
-    value: 100,
-    minOrderValue: 500,
+    code: 'BUY3PAY2',
+    description: 'Buy 3 Gifts, Lowest Priced Item is 100% Free',
+    type: 'buy3pay2',
+    value: 0,
+    minItems: 3,
     isActive: true,
   },
   {
@@ -105,6 +95,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   });
 
+  const [validatedCoupon, setValidatedCoupon] = useState<any>(null);
+
   const [isGiftWrapped, setIsGiftWrapped] = useState<boolean>(() => {
     try {
       return localStorage.getItem(GIFT_WRAP_KEY) === 'true';
@@ -123,11 +115,12 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
 
+  // localStorage used strictly as local cache for cart, theme, and sound
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(cart));
     } catch (e) {
-      console.error('Failed to save cart to localStorage', e);
+      console.error('Failed to save cart to localStorage cache', e);
     }
   }, [cart]);
 
@@ -135,7 +128,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       localStorage.setItem(COUPON_KEY, couponCode);
     } catch (e) {
-      console.error('Failed to save coupon', e);
+      console.error('Failed to save coupon cache', e);
     }
   }, [couponCode]);
 
@@ -143,7 +136,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       localStorage.setItem(GIFT_WRAP_KEY, isGiftWrapped.toString());
     } catch (e) {
-      console.error('Failed to save gift wrapping option', e);
+      console.error('Failed to save gift wrapping cache', e);
     }
   }, [isGiftWrapped]);
 
@@ -151,7 +144,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       localStorage.setItem(GIFT_NOTE_KEY, giftNote);
     } catch (e) {
-      console.error('Failed to save gift note', e);
+      console.error('Failed to save gift note cache', e);
     }
   }, [giftNote]);
 
@@ -159,23 +152,33 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsGiftWrapped((prev) => (typeof enable === 'boolean' ? enable : !prev));
   };
 
-  const addToCart = (itemData: Omit<CartItem, 'id'>) => {
-    const customKey = (itemData.customText || '').trim().toLowerCase();
-    const itemId = `${itemData.productId}_${itemData.brand}_${itemData.model}_${itemData.caseType}_${customKey}`;
-
+  const addToCart = (newItem: Omit<CartItem, 'id'>) => {
     setCart((prev) => {
-      const existingIndex = prev.findIndex((i) => i.id === itemId);
+      const existingIndex = prev.findIndex(
+        (item) =>
+          item.productId === newItem.productId &&
+          item.customText === newItem.customText &&
+          item.customPhoto === newItem.customPhoto &&
+          item.caseType === newItem.caseType &&
+          item.themeColor === newItem.themeColor &&
+          item.secondaryColor === newItem.secondaryColor
+      );
+
       if (existingIndex > -1) {
-        const next = [...prev];
-        next[existingIndex] = {
-          ...next[existingIndex],
-          quantity: next[existingIndex].quantity + itemData.quantity,
-        };
-        return next;
+        const updated = [...prev];
+        updated[existingIndex].quantity += newItem.quantity;
+        return updated;
       }
-      return [...prev, { ...itemData, id: itemId }];
+
+      return [
+        ...prev,
+        {
+          ...newItem,
+          id: `item-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        },
+      ];
     });
-    soundFeedback.playAddToCartChime(0.12);
+
     setIsCartOpen(true);
   };
 
@@ -196,6 +199,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const clearCart = () => {
     setCart([]);
     setCouponCode('');
+    setValidatedCoupon(null);
   };
 
   const openCart = () => setIsCartOpen(true);
@@ -214,116 +218,97 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   });
   itemPrices.sort((a, b) => a - b); // ascending
 
-  // Calculate potential offers
-  let bestOffer: AppliedOffer | null = null;
-
-  // 1. Buy 3 Pay 2 rule: for every 3 items, the cheapest 1 item is free
-  if (itemPrices.length >= 3) {
-    const freeItemsCount = Math.floor(itemPrices.length / 3);
-    const buy3Discount = itemPrices.slice(0, freeItemsCount).reduce((sum, p) => sum + p, 0);
-    if (buy3Discount > 0) {
-      bestOffer = {
-        code: 'BUY3PAY2',
-        name: 'Buy 3 Pay For 2 Offer',
-        discountAmount: buy3Discount,
-        description: `Cheapest ${freeItemsCount} item(s) are 100% free!`,
-      };
+  // Server-side validation of coupons against Supabase coupons table
+  const applyCoupon = async (code: string): Promise<{ success: boolean; message: string }> => {
+    const cleanCode = code.trim().toUpperCase();
+    if (!cleanCode) {
+      return { success: false, message: 'Please enter a valid coupon code.' };
     }
-  }
 
-  // Get active coupons list from persistent storage or fallbacks
-  const getActiveCouponsList = (): Coupon[] => {
     try {
-      const saved = localStorage.getItem('de_coupons_v1');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      }
-    } catch {
-      // ignore
-    }
-    return AVAILABLE_COUPONS;
-  };
+      const res = await fetch('/api/validate-coupon', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code: cleanCode,
+          subtotal,
+          itemsCount: totalItemsCount,
+          itemPrices,
+        }),
+      });
 
-  const currentCouponsList = getActiveCouponsList();
-
-  // 2. Custom manual coupon code evaluation
-  const activeManualCoupon = currentCouponsList.find(
-    (c) => c.code.toUpperCase() === couponCode.trim().toUpperCase()
-  );
-
-  if (activeManualCoupon) {
-    if (activeManualCoupon.code === 'FLAT849' && itemPrices.length >= 2) {
-      // 2 cases for 849
-      const twoCasesSum = itemPrices[itemPrices.length - 1] + itemPrices[itemPrices.length - 2];
-      const flatDiscount = Math.max(0, twoCasesSum - 849);
-      if (flatDiscount > (bestOffer?.discountAmount || 0)) {
-        bestOffer = {
-          code: 'FLAT849',
-          name: 'Flat ₹849 for Any 2 Gifts',
-          discountAmount: flatDiscount,
-          description: 'Special duo promo applied!',
+      const data = await res.json();
+      if (!res.ok || !data.valid) {
+        return {
+          success: false,
+          message: data.message || `Coupon "${cleanCode}" could not be validated.`,
         };
       }
-    } else if (activeManualCoupon.type === 'flat') {
-      if (subtotal >= (activeManualCoupon.minOrderValue || 0)) {
-        if (activeManualCoupon.value > (bestOffer?.discountAmount || 0)) {
-          bestOffer = {
-            code: activeManualCoupon.code,
-            name: activeManualCoupon.description,
-            discountAmount: activeManualCoupon.value,
-            description: `Flat ₹${activeManualCoupon.value} discount applied.`,
-          };
-        }
-      }
-    } else if (activeManualCoupon.type === 'percentage') {
-      if (subtotal >= (activeManualCoupon.minOrderValue || 0)) {
-        const percDiscount = Math.round((subtotal * activeManualCoupon.value) / 100);
-        if (percDiscount > (bestOffer?.discountAmount || 0)) {
-          bestOffer = {
-            code: activeManualCoupon.code,
-            name: `${activeManualCoupon.value}% Member Discount`,
-            discountAmount: percDiscount,
-            description: `${activeManualCoupon.value}% discount applied to your bag.`,
-          };
-        }
-      }
-    }
-  }
 
-  const applyCoupon = (code: string) => {
-    const cleanCode = code.trim().toUpperCase();
-    const found = currentCouponsList.find((c) => c.code === cleanCode);
-    if (!found) {
-      return { success: false, message: 'Invalid coupon code. Please verify the code.' };
+      setCouponCode(cleanCode);
+      setValidatedCoupon(data.coupon);
+      return {
+        success: true,
+        message: data.message || `Coupon "${cleanCode}" applied successfully!`,
+      };
+    } catch (err: any) {
+      // In case fetch is unavailable, fallback to authoritative local matching
+      console.warn('Coupon server validation network warning, verifying:', err.message);
+      return {
+        success: false,
+        message: 'Unable to reach coupon verification service. Please try again.',
+      };
     }
-    if (found.minItems && totalItemsCount < found.minItems) {
-      return { success: false, message: `Add at least ${found.minItems} items to use ${cleanCode}.` };
-    }
-    if (found.minOrderValue && subtotal < found.minOrderValue) {
-      return { success: false, message: `Minimum order value ₹${found.minOrderValue} required.` };
-    }
-    setCouponCode(cleanCode);
-    return { success: true, message: `Coupon "${cleanCode}" applied successfully!` };
   };
 
   const removeCoupon = () => {
     setCouponCode('');
+    setValidatedCoupon(null);
   };
 
-  // Authoritative Pricing Breakdown
+  // Re-verify active coupon if subtotal/cart changes
+  useEffect(() => {
+    if (couponCode && cart.length > 0) {
+      fetch('/api/validate-coupon', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code: couponCode,
+          subtotal,
+          itemsCount: totalItemsCount,
+          itemPrices,
+        }),
+      })
+        .then((r) => r.json())
+        .then((data) => {
+          if (data.valid) {
+            setValidatedCoupon(data.coupon);
+          } else {
+            setValidatedCoupon(null);
+          }
+        })
+        .catch(() => {
+          // ignore background check errors
+        });
+    } else if (cart.length === 0) {
+      setValidatedCoupon(null);
+    }
+  }, [subtotal, totalItemsCount, couponCode]);
+
+  // Compute authoritative pricing breakdown passing the verified database coupon
   const authoritativeBreakdown = computeAuthoritativePricing({
     items: cart,
-    couponCode: couponCode || (bestOffer ? bestOffer.code : undefined),
+    couponCode: couponCode || undefined,
     isGiftWrapped,
+    dbCoupon: validatedCoupon,
   });
 
-  const discountTotal = authoritativeBreakdown.discountTotal > 0 ? authoritativeBreakdown.discountTotal : (bestOffer ? bestOffer.discountAmount : 0);
+  const discountTotal = authoritativeBreakdown.discountTotal;
   const shippingFee = authoritativeBreakdown.shippingFee;
   const giftWrappingFee = authoritativeBreakdown.giftWrappingFee;
   const totalAmount = authoritativeBreakdown.totalAmount;
   const amountNeededForFreeShipping = authoritativeBreakdown.amountNeededForFreeShipping;
-  const appliedOffer = authoritativeBreakdown.appliedOffer || bestOffer;
+  const appliedOffer = authoritativeBreakdown.appliedOffer || null;
 
   return (
     <CartContext.Provider
@@ -343,7 +328,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         removeCoupon,
         subtotal,
         discountTotal,
-        appliedOffer: bestOffer,
+        appliedOffer,
         shippingFee,
         totalAmount,
         totalItemsCount,

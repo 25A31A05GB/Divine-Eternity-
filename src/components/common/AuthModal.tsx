@@ -27,6 +27,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  const [hasAgreedConsent, setHasAgreedConsent] = useState(false);
 
   if (!isOpen) return null;
 
@@ -61,6 +62,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     if (mode === 'signup') {
       if (!email.trim() || !password.trim()) {
         setErrorMsg('Email and password are required');
+        setIsLoading(false);
+        return;
+      }
+      if (!hasAgreedConsent) {
+        setErrorMsg('Please agree to the Terms of Service and Privacy Policy to create an account.');
         setIsLoading(false);
         return;
       }
@@ -254,6 +260,28 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 </button>
               </div>
             </div>
+          )}
+
+          {mode === 'signup' && (
+            <label className="flex items-start gap-2.5 text-[11px] text-stone-600 cursor-pointer pt-1">
+              <input
+                type="checkbox"
+                checked={hasAgreedConsent}
+                onChange={(e) => setHasAgreedConsent(e.target.checked)}
+                className="mt-0.5 rounded border-stone-300 text-[#FF2E93] focus:ring-[#FF2E93]"
+              />
+              <span>
+                I agree to Divine’s Eternity{' '}
+                <a href="/terms" target="_blank" className="text-[#FF2E93] font-bold hover:underline">
+                  Terms of Service
+                </a>{' '}
+                and{' '}
+                <a href="/privacy-policy" target="_blank" className="text-[#FF2E93] font-bold hover:underline">
+                  Privacy Policy
+                </a>{' '}
+                [REVIEW WITH LAWYER].
+              </span>
+            </label>
           )}
 
           <button

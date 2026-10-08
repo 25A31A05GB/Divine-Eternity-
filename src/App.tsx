@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
@@ -14,23 +14,26 @@ import { QuickViewModal } from './components/common/QuickViewModal';
 import { CartDrawer } from './components/common/CartDrawer';
 import { SearchModal } from './components/common/SearchModal';
 import { NewsletterModal } from './components/common/NewsletterModal';
-import { FloatingWhatsApp } from './components/common/FloatingWhatsApp';
 import { HomePage } from './pages/HomePage';
-import { CollectionsPage } from './pages/CollectionsPage';
-import { ProductDetailPage } from './pages/ProductDetailPage';
-import { CheckoutPage } from './pages/CheckoutPage';
-import { OrderConfirmationPage } from './pages/OrderConfirmationPage';
-import { TrackOrderPage } from './pages/TrackOrderPage';
-import { WishlistPage } from './pages/WishlistPage';
-import { PersonalizationPage } from './pages/PersonalizationPage';
-import { ContactPage } from './pages/ContactPage';
-import { CreatorCollabPage } from './pages/CreatorCollabPage';
-import { PolicyPage } from './pages/PolicyPage';
-import { SecretAdminPortal } from './pages/SecretAdminPortal';
-import { NotFoundPage } from './pages/NotFoundPage';
 import { INITIAL_PRODUCTS } from './data/products';
 import { Product, Order } from './types';
 import { db, getStoredProducts } from './lib/db';
+import { parseCurrentLocation, formatPath } from './lib/router';
+import { X, AlertCircle } from 'lucide-react';
+
+const CollectionsPage = React.lazy(() => import('./pages/CollectionsPage').then((m) => ({ default: m.CollectionsPage })));
+const ProductDetailPage = React.lazy(() => import('./pages/ProductDetailPage').then((m) => ({ default: m.ProductDetailPage })));
+const CheckoutPage = React.lazy(() => import('./pages/CheckoutPage').then((m) => ({ default: m.CheckoutPage })));
+const OrderConfirmationPage = React.lazy(() => import('./pages/OrderConfirmationPage').then((m) => ({ default: m.OrderConfirmationPage })));
+const TrackOrderPage = React.lazy(() => import('./pages/TrackOrderPage').then((m) => ({ default: m.TrackOrderPage })));
+const WishlistPage = React.lazy(() => import('./pages/WishlistPage').then((m) => ({ default: m.WishlistPage })));
+const PersonalizationPage = React.lazy(() => import('./pages/PersonalizationPage').then((m) => ({ default: m.PersonalizationPage })));
+const ContactPage = React.lazy(() => import('./pages/ContactPage').then((m) => ({ default: m.ContactPage })));
+const CreatorCollabPage = React.lazy(() => import('./pages/CreatorCollabPage').then((m) => ({ default: m.CreatorCollabPage })));
+const PolicyPage = React.lazy(() => import('./pages/PolicyPage').then((m) => ({ default: m.PolicyPage })));
+const SecretAdminPortal = React.lazy(() => import('./pages/SecretAdminPortal').then((m) => ({ default: m.SecretAdminPortal })));
+const NotFoundPage = React.lazy(() => import('./pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage })));
+const FloatingWhatsApp = React.lazy(() => import('./components/common/FloatingWhatsApp').then((m) => ({ default: m.FloatingWhatsApp })));
 
 const VALID_VIEWS = new Set([
   'home',
@@ -50,114 +53,6 @@ const VALID_VIEWS = new Set([
   'secret-admin-portal',
 ]);
 
-// Universal URL parser to support hashes (#collections), pathnames (/collections), and search params (?view=collections&category=jewellery)
-function parseURL(productsList: Product[]) {
-  if (typeof window === 'undefined') {
-    return { view: 'home', params: {} as Record<string, string>, product: null as Product | null };
-  }
-
-  const rawHash = window.location.hash.replace(/^#\/?/, '').trim();
-  const rawPathname = window.location.pathname.replace(/^\//, '').trim();
-  const rawSearch = window.location.search.replace(/^\?/, '').trim();
-
-  const params: Record<string, string> = {};
-
-  // 1. Parse standard URL search parameters (?view=collections&category=jewellery)
-  if (rawSearch) {
-    const searchParams = new URLSearchParams(rawSearch);
-    searchParams.forEach((val, key) => {
-      params[key] = val;
-    });
-  }
-
-  // 2. Parse hash query parameters (#collections?category=jewellery)
-  let rawRoute = '';
-  if (rawHash) {
-    const [hashRoute, hashQuery] = rawHash.split('?');
-    if (hashRoute) rawRoute = hashRoute;
-    if (hashQuery) {
-      const hashSearchParams = new URLSearchParams(hashQuery);
-      hashSearchParams.forEach((val, key) => {
-        params[key] = val;
-      });
-    }
-  }
-
-  // 3. Fallback to pathname if hash is empty (/collections, /secret-admin-portal, /checkout)
-  if (!rawRoute && rawPathname) {
-    const cleanPath = rawPathname.replace(/\/$/, '').replace(/^index\.html$/, '');
-    if (cleanPath) {
-      rawRoute = cleanPath;
-    }
-  }
-
-  // Override view if explicitly provided in query params (?view=collections or ?page=collections)
-  if (params.view) {
-    rawRoute = params.view;
-  } else if (params.page) {
-    rawRoute = params.page;
-  }
-
-  let view = (rawRoute || 'home').toLowerCase();
-
-  // Admin aliases
-  if (view === 'admin' || view === 'secret-admin-portal' || params.admin === 'true') {
-    view = 'secret-admin-portal';
-  }
-
-  // Legal policy direct aliases
-  if (view === 'privacy-policy' || view === 'privacy') {
-    view = 'policy';
-    params.tab = 'privacy';
-  } else if (view === 'terms-and-conditions' || view === 'terms') {
-    view = 'policy';
-    params.tab = 'terms';
-  } else if (view === 'refund-and-cancellation' || view === 'refund-policy' || view === 'refund') {
-    view = 'policy';
-    params.tab = 'refund';
-  } else if (view === 'shipping-and-delivery' || view === 'shipping-policy' || view === 'shipping') {
-    view = 'policy';
-    params.tab = 'shipping';
-  }
-
-  // Fallback for unknown routes
-  if (!VALID_VIEWS.has(view)) {
-    // Check if view matches a product slug directly (/gift-hamper-1 or /#gift-hamper-1)
-    const foundBySlug = productsList.find((p) => p.slug === view || p.id === view);
-    if (foundBySlug) {
-      view = 'product-detail';
-      params.slug = foundBySlug.slug;
-    } else {
-      view = 'home';
-    }
-  }
-
-  // Locate selected product if in product-detail view or if slug/product is in params
-  let foundProduct: Product | null = null;
-  const targetSlug = params.slug || params.product;
-  if (targetSlug) {
-    foundProduct = productsList.find((p) => p.slug === targetSlug || p.id === targetSlug) || null;
-    if (foundProduct && view === 'home') {
-      view = 'product-detail';
-    }
-  }
-
-  return { view, params, product: foundProduct };
-}
-
-// Helper to format view and params into a hash string
-function formatHash(view: string, params?: Record<string, string>) {
-  if (view === 'home' && (!params || Object.keys(params).length === 0)) {
-    return '#home';
-  }
-  let hashStr = `#${view}`;
-  if (params && Object.keys(params).length > 0) {
-    const q = new URLSearchParams(params).toString();
-    if (q) hashStr += `?${q}`;
-  }
-  return hashStr;
-}
-
 export function AppContent() {
   const [products, setProducts] = useState<Product[]>(() => {
     if (typeof window !== 'undefined') {
@@ -173,24 +68,24 @@ export function AppContent() {
 
   const [currentView, setCurrentView] = useState<string>(() => {
     if (typeof window !== 'undefined') {
-      const { view } = parseURL(INITIAL_PRODUCTS);
-      return view;
+      const match = parseCurrentLocation(INITIAL_PRODUCTS);
+      return match.view;
     }
     return 'home';
   });
 
   const [viewParams, setViewParams] = useState<Record<string, string>>(() => {
     if (typeof window !== 'undefined') {
-      const { params } = parseURL(INITIAL_PRODUCTS);
-      return params;
+      const match = parseCurrentLocation(INITIAL_PRODUCTS);
+      return match.params;
     }
     return {};
   });
 
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(() => {
     if (typeof window !== 'undefined') {
-      const { product } = parseURL(INITIAL_PRODUCTS);
-      return product;
+      const match = parseCurrentLocation(INITIAL_PRODUCTS);
+      return match.product;
     }
     return null;
   });
@@ -198,6 +93,7 @@ export function AppContent() {
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [completedOrder, setCompletedOrder] = useState<Order | null>(null);
+  const [cloudError, setCloudError] = useState<string | null>(null);
 
   // Load products via Database Access Layer and re-evaluate URL targeting
   useEffect(() => {
@@ -214,14 +110,56 @@ export function AppContent() {
     loadProducts();
   }, []);
 
+  // Re-fetch products on window focus, tab visibility, and every 2 minutes (NOT while admin is open)
+  const isSecretAdminView = currentView === 'secret-admin-portal' || currentView === 'admin';
+
+  useEffect(() => {
+    if (isSecretAdminView) return;
+
+    let isMounted = true;
+    const fetchLatestProducts = async () => {
+      try {
+        const { data } = await db.getProducts();
+        if (data && data.length > 0 && isMounted) {
+          setProducts((current) => {
+            if (JSON.stringify(current) !== JSON.stringify(data)) {
+              return data;
+            }
+            return current;
+          });
+        }
+      } catch (err) {
+        console.warn('Re-fetch products error:', err);
+      }
+    };
+
+    const handleFocus = () => fetchLatestProducts();
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        fetchLatestProducts();
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibility);
+    const interval = setInterval(fetchLatestProducts, 2 * 60 * 1000);
+
+    return () => {
+      isMounted = false;
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibility);
+      clearInterval(interval);
+    };
+  }, [isSecretAdminView]);
+
   // Sync route and selected product whenever products change or URL updates
   useEffect(() => {
     const handleLocationChange = () => {
-      const { view, params, product } = parseURL(products);
-      setCurrentView(view);
-      setViewParams(params);
-      if (product) {
-        setSelectedProduct(product);
+      const match = parseCurrentLocation(products);
+      setCurrentView(match.view);
+      setViewParams(match.params);
+      if (match.product) {
+        setSelectedProduct(match.product);
       }
     };
 
@@ -244,14 +182,21 @@ export function AppContent() {
     };
   }, [products]);
 
-  // Navigate handler that updates both URL hash and state
+  // Navigate handler that updates History API path and state
   const handleNavigate = (view: string, params?: Record<string, string>) => {
-    const targetHash = formatHash(view, params);
-    if (window.location.hash !== targetHash) {
-      window.location.hash = targetHash;
+    const targetPath = formatPath(view, params);
+    if (typeof window !== 'undefined') {
+      const currentFull = window.location.pathname + window.location.search;
+      if (currentFull !== targetPath) {
+        window.history.pushState(null, '', targetPath);
+      }
     }
-    setCurrentView(view);
-    setViewParams(params || {});
+    const match = parseCurrentLocation(products);
+    setCurrentView(match.view);
+    setViewParams(match.params);
+    if (match.product) {
+      setSelectedProduct(match.product);
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -266,37 +211,65 @@ export function AppContent() {
   };
 
   // Admin Catalog Update Handlers (saved to Database layer)
-  const handleAddProduct = (newProduct: Product) => {
+  const handleAddProduct = async (newProduct: Product) => {
     setProducts((prev) => [newProduct, ...prev]);
-    db.saveProduct(newProduct);
+    const res = await db.saveProduct(newProduct);
+    if (!res.success) {
+      setCloudError(res.error || 'Failed to save product to cloud');
+    }
   };
 
-  const handleUpdateProduct = (updatedProduct: Product) => {
+  const handleUpdateProduct = async (updatedProduct: Product) => {
     setProducts((prev) =>
       prev.map((p) => (p.id === updatedProduct.id ? updatedProduct : p))
     );
-    db.saveProduct(updatedProduct);
+    const res = await db.saveProduct(updatedProduct);
+    if (!res.success) {
+      setCloudError(res.error || 'Failed to update product in cloud');
+    }
   };
 
-  const handleBulkUpdateProducts = (updatedProducts: Product[]) => {
+  const handleBulkUpdateProducts = async (updatedProducts: Product[]) => {
     setProducts((prev) => {
       const updateMap = new Map(updatedProducts.map((p) => [p.id, p]));
       return prev.map((p) => updateMap.get(p.id) || p);
     });
-    db.saveProducts(updatedProducts);
+    const res = await db.saveProducts(updatedProducts);
+    if (!res.success) {
+      setCloudError(res.error || 'Failed to save products to cloud');
+    }
   };
 
-  const handleDeleteProduct = (productId: string) => {
+  const handleDeleteProduct = async (productId: string) => {
     setProducts((prev) => prev.filter((p) => p.id !== productId));
-    db.deleteProduct(productId);
+    const res = await db.deleteProduct(productId);
+    if (!res.success) {
+      setCloudError(res.error || 'Failed to delete product from cloud');
+    }
   };
 
-  const isSecretAdminView = currentView === 'secret-admin-portal' || currentView === 'admin';
   const isKnownView = VALID_VIEWS.has(currentView);
 
   return (
     <div className="min-h-screen w-full overflow-x-hidden flex flex-col justify-between bg-[#FFFDF8] text-[#211D1C] selection:bg-[#FF2E93] selection:text-white transition-colors duration-300">
       
+      {/* Cloud save failure banner */}
+      {cloudError && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[9999] max-w-xl w-[90%] bg-red-600 text-white px-4 py-3 rounded-2xl shadow-2xl border border-red-400 flex items-center justify-between gap-3 text-xs animate-in slide-in-from-top-2">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0 text-white" />
+            <span>Saved on this device only — cloud save failed: {cloudError}</span>
+          </div>
+          <button
+            onClick={() => setCloudError(null)}
+            className="p-1 hover:bg-red-700 rounded-lg transition-colors cursor-pointer text-white"
+            aria-label="Dismiss error"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
       {/* 1. Global Announcement Bar (hidden in secret admin view) */}
       {!isSecretAdminView && <AnnouncementBar />}
 
@@ -307,113 +280,116 @@ export function AppContent() {
           setCurrentView={handleNavigate}
           openSearch={() => setIsSearchOpen(true)}
           onQuickView={handleOpenQuickView}
+          products={products}
         />
       )}
 
       {/* Main View Router */}
       <main key={currentView} className="flex-1 w-full animate-in fade-in duration-300 relative z-0">
-        {currentView === 'home' && (
-          <HomePage
-            products={products}
-            onQuickView={handleOpenQuickView}
-            onOpenDetail={handleOpenDetail}
-            onNavigateToCollection={(cat) => handleNavigate('collections', { category: cat })}
-          />
-        )}
-
-        {currentView === 'collections' && (
-          <CollectionsPage
-            initialCategory={viewParams.category || 'all'}
-            products={products}
-            onQuickView={handleOpenQuickView}
-            onOpenDetail={handleOpenDetail}
-          />
-        )}
-
-        {currentView === 'product-detail' && selectedProduct && (
-          <ProductDetailPage
-            product={selectedProduct}
-            allProducts={products}
-            onBack={() => handleNavigate('collections', { category: 'all' })}
-            onQuickView={handleOpenQuickView}
-            onSelectProduct={setSelectedProduct}
-          />
-        )}
-
-        {currentView === 'checkout' && (
-          <CheckoutPage
-            onBackToCart={() => handleNavigate('home')}
-            onOrderSuccess={(order) => {
-              setCompletedOrder(order);
-              handleNavigate('order-confirmation');
-            }}
-          />
-        )}
-
-        {currentView === 'order-confirmation' && completedOrder && (
-          <OrderConfirmationPage
-            order={completedOrder}
-            onTrackOrder={(orderId) => handleNavigate('track-order', { orderId })}
-            onContinueShopping={() => handleNavigate('home')}
-          />
-        )}
-
-        {currentView === 'track-order' && (
-          <TrackOrderPage
-            initialOrderId={viewParams.orderId || ''}
-            onExploreProducts={() => handleNavigate('collections', { category: 'all' })}
-          />
-        )}
-
-        {currentView === 'wishlist' && (
-          <WishlistPage
-            products={products}
-            onQuickView={handleOpenQuickView}
-            onOpenDetail={handleOpenDetail}
-            onExploreProducts={() => handleNavigate('collections', { category: 'all' })}
-          />
-        )}
-
-        {(currentView === 'personalization' || currentView === 'bespoke' || currentView === 'hamper-builder') && (
-          <PersonalizationPage
-            onExploreProducts={(cat) => handleNavigate('collections', { category: cat || 'all' })}
-            initialTab={currentView === 'hamper-builder' ? 'hamper' : (viewParams.tab as any) || 'hamper'}
-          />
-        )}
-
-        {currentView === 'contact' && <ContactPage />}
-
-        {currentView === 'creator-club' && (
-          <CreatorCollabPage
-            onExploreProducts={() => handleNavigate('collections', { category: 'all' })}
-          />
-        )}
-
-        {currentView === 'policy' && (
-          <PolicyPage initialTab={(viewParams.tab as any) || 'refund'} />
-        )}
-
-        {/* Protected Admin Route with Supabase Auth & RLS Guard */}
-        {isSecretAdminView && (
-          <AdminRouteGuard onReturnToStore={() => handleNavigate('home')}>
-            <SecretAdminPortal
+        <Suspense fallback={<div className="min-h-[40vh] flex items-center justify-center text-xs font-serif text-stone-500 py-12">Loading…</div>}>
+          {currentView === 'home' && (
+            <HomePage
               products={products}
-              onAddProduct={handleAddProduct}
-              onUpdateProduct={handleUpdateProduct}
-              onBulkUpdateProducts={handleBulkUpdateProducts}
-              onDeleteProduct={handleDeleteProduct}
-              onReturnToStore={() => handleNavigate('home')}
+              onQuickView={handleOpenQuickView}
+              onOpenDetail={handleOpenDetail}
+              onNavigateToCollection={(cat) => handleNavigate('collections', { category: cat })}
             />
-          </AdminRouteGuard>
-        )}
+          )}
 
-        {/* 404 Fallback for Unrecognized Routes */}
-        {!isKnownView && (
-          <NotFoundPage
-            onReturnHome={() => handleNavigate('home')}
-            onExploreCollections={() => handleNavigate('collections', { category: 'all' })}
-          />
-        )}
+          {currentView === 'collections' && (
+            <CollectionsPage
+              initialCategory={viewParams.category || 'all'}
+              products={products}
+              onQuickView={handleOpenQuickView}
+              onOpenDetail={handleOpenDetail}
+            />
+          )}
+
+          {currentView === 'product-detail' && selectedProduct && (
+            <ProductDetailPage
+              product={selectedProduct}
+              allProducts={products}
+              onBack={() => handleNavigate('collections', { category: 'all' })}
+              onQuickView={handleOpenQuickView}
+              onSelectProduct={setSelectedProduct}
+            />
+          )}
+
+          {currentView === 'checkout' && (
+            <CheckoutPage
+              onBackToCart={() => handleNavigate('home')}
+              onOrderSuccess={(order) => {
+                setCompletedOrder(order);
+                handleNavigate('order-confirmation');
+              }}
+            />
+          )}
+
+          {currentView === 'order-confirmation' && completedOrder && (
+            <OrderConfirmationPage
+              order={completedOrder}
+              onTrackOrder={(orderId) => handleNavigate('track-order', { orderId })}
+              onContinueShopping={() => handleNavigate('home')}
+            />
+          )}
+
+          {currentView === 'track-order' && (
+            <TrackOrderPage
+              initialOrderId={viewParams.orderId || ''}
+              onExploreProducts={() => handleNavigate('collections', { category: 'all' })}
+            />
+          )}
+
+          {currentView === 'wishlist' && (
+            <WishlistPage
+              products={products}
+              onQuickView={handleOpenQuickView}
+              onOpenDetail={handleOpenDetail}
+              onExploreProducts={() => handleNavigate('collections', { category: 'all' })}
+            />
+          )}
+
+          {(currentView === 'personalization' || currentView === 'bespoke' || currentView === 'hamper-builder') && (
+            <PersonalizationPage
+              onExploreProducts={(cat) => handleNavigate('collections', { category: cat || 'all' })}
+              initialTab={currentView === 'hamper-builder' ? 'hamper' : (viewParams.tab as any) || 'hamper'}
+            />
+          )}
+
+          {currentView === 'contact' && <ContactPage />}
+
+          {currentView === 'creator-club' && (
+            <CreatorCollabPage
+              onExploreProducts={() => handleNavigate('collections', { category: 'all' })}
+            />
+          )}
+
+          {currentView === 'policy' && (
+            <PolicyPage initialTab={(viewParams.tab as any) || 'refund'} />
+          )}
+
+          {/* Protected Admin Route with Supabase Auth & RLS Guard */}
+          {isSecretAdminView && (
+            <AdminRouteGuard onReturnToStore={() => handleNavigate('home')}>
+              <SecretAdminPortal
+                products={products}
+                onAddProduct={handleAddProduct}
+                onUpdateProduct={handleUpdateProduct}
+                onBulkUpdateProducts={handleBulkUpdateProducts}
+                onDeleteProduct={handleDeleteProduct}
+                onReturnToStore={() => handleNavigate('home')}
+              />
+            </AdminRouteGuard>
+          )}
+
+          {/* 404 Fallback for Unrecognized Routes */}
+          {!isKnownView && (
+            <NotFoundPage
+              onReturnHome={() => handleNavigate('home')}
+              onExploreCollections={() => handleNavigate('collections', { category: 'all' })}
+            />
+          )}
+        </Suspense>
       </main>
 
       {/* 3. Global Luxury Footer (hidden in secret admin view) */}
@@ -441,6 +417,7 @@ export function AppContent() {
           handleNavigate('product-detail', { slug: p.slug });
         }}
         onSelectCategory={(cat) => handleNavigate('collections', { category: cat })}
+        products={products}
       />
 
       {/* Non-intrusive Welcome Newsletter Offer Popup on Homepage */}
@@ -450,12 +427,14 @@ export function AppContent() {
 
       {/* Luxury WhatsApp Concierge with Audio Ping Feedback & Dynamic Context Intelligence */}
       {!isSecretAdminView && (
-        <FloatingWhatsApp
-          currentView={currentView}
-          viewParams={viewParams}
-          activeProduct={selectedProduct}
-          products={products}
-        />
+        <Suspense fallback={null}>
+          <FloatingWhatsApp
+            currentView={currentView}
+            viewParams={viewParams}
+            activeProduct={selectedProduct}
+            products={products}
+          />
+        </Suspense>
       )}
     </div>
   );

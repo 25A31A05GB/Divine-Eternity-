@@ -10,6 +10,8 @@ interface NewsletterModalProps {
 export const NewsletterModal: React.FC<NewsletterModalProps> = ({ delayMs = 10000 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [email, setEmail] = useState('');
+  const [hasAgreedConsent, setHasAgreedConsent] = useState(false);
+  const [consentError, setConsentError] = useState('');
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
   const { applyCoupon, openCart } = useCart();
@@ -32,9 +34,25 @@ export const NewsletterModal: React.FC<NewsletterModalProps> = ({ delayMs = 1000
     sessionStorage.setItem('de_newsletter_dismissed', 'true');
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setConsentError('');
     if (!email.trim()) return;
+
+    if (!hasAgreedConsent) {
+      setConsentError('Please check the consent box to receive offers.');
+      return;
+    }
+
+    try {
+      await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim() }),
+      });
+    } catch {
+      // ignore
+    }
 
     setIsSubscribed(true);
     applyCoupon('LOVE100');
@@ -103,6 +121,28 @@ export const NewsletterModal: React.FC<NewsletterModalProps> = ({ delayMs = 1000
                   />
                 </div>
               </div>
+
+              {consentError && (
+                <div className="text-xs text-rose-600 font-medium">
+                  {consentError}
+                </div>
+              )}
+
+              <label className="flex items-start gap-2 text-[11px] text-stone-600 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={hasAgreedConsent}
+                  onChange={(e) => setHasAgreedConsent(e.target.checked)}
+                  className="mt-0.5 rounded border-stone-300 text-[#FF2E93] focus:ring-[#FF2E93]"
+                />
+                <span>
+                  I consent to receive newsletter updates & promotions in accordance with the{' '}
+                  <a href="/privacy-policy" target="_blank" className="text-[#FF2E93] font-bold hover:underline">
+                    Privacy Policy
+                  </a>{' '}
+                  [REVIEW WITH LAWYER].
+                </span>
+              </label>
 
               <button
                 type="submit"

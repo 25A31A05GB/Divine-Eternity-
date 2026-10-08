@@ -107,13 +107,16 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
     .filter((p) => p.id !== product.id && (p.category === product.category || p.isBestSeller))
     .slice(0, 4);
 
-  const productUrl = typeof window !== 'undefined' ? window.location.href : `https://divineseternity.com/#product-${product.id}`;
+  const currentSlug = product.slug || product.id;
+  const productUrl = typeof window !== 'undefined'
+    ? `${window.location.origin}/product/${encodeURIComponent(currentSlug)}`
+    : `https://divineseternity.com/product/${encodeURIComponent(currentSlug)}`;
 
-  const productSchema = {
+  const productSchema: Record<string, any> = {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: product.name,
-    image: product.images,
+    image: product.images[0] || '',
     description: product.description,
     sku: product.slug || product.id,
     brand: {
@@ -128,20 +131,24 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
       price: product.price,
       priceValidUntil: '2027-12-31',
       itemCondition: 'https://schema.org/NewCondition',
-      availability: 'https://schema.org/InStock',
+      availability: product.inStock !== false ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
       seller: {
         '@type': 'Organization',
-        name: "Gadgets Destiny",
+        name: "Divine’s Eternity",
       },
     },
-    aggregateRating: {
+  };
+
+  // aggregateRating ONLY if real reviews exist
+  if (totalReviews > 0) {
+    productSchema.aggregateRating = {
       '@type': 'AggregateRating',
-      ratingValue: averageRating || product.rating || 5.0,
-      reviewCount: totalReviews || product.reviewCount || 1,
+      ratingValue: averageRating,
+      reviewCount: totalReviews,
       bestRating: '5',
       worstRating: '1',
-    },
-    review: productReviews.slice(0, 5).map((r) => ({
+    };
+    productSchema.review = productReviews.slice(0, 5).map((r) => ({
       '@type': 'Review',
       reviewRating: {
         '@type': 'Rating',
@@ -154,8 +161,8 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
       },
       datePublished: r.date || '2026-01-01',
       reviewBody: r.comment,
-    })),
-  };
+    }));
+  }
 
   return (
     <div className="py-8 sm:py-12">
@@ -164,13 +171,23 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
         description={
           product.description
             ? `${product.name}: ${product.description.slice(0, 140)}`
-            : `Buy ${product.name} for ₹${product.price} at Divine’s Eternity. Jewellery made personal, for moments that mean everything. Purely gold plated.✨💖`
+            : `Buy ${product.name} for ₹${product.price} at Divine’s Eternity. Jewellery made personal, for moments that mean everything.`
         }
         image={product.images[0]}
         url={productUrl}
         type="product"
         keywords={`${product.name}, ${product.category}, personalized jewellery, divines eternity`}
         structuredData={productSchema}
+        productData={{
+          name: product.name,
+          description: product.description,
+          image: product.images[0],
+          price: product.price,
+          inStock: product.inStock !== false,
+          rating: totalReviews > 0 ? averageRating : undefined,
+          reviewCount: totalReviews,
+          slug: product.slug,
+        }}
       />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
@@ -210,6 +227,8 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                   <img
                     src={product.images[0]}
                     alt={product.name}
+                    loading="lazy"
+                    decoding="async"
                     referrerPolicy="no-referrer"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />

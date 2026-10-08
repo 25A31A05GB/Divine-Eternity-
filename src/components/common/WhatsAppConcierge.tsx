@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { MessageSquare, Sparkles, X, ArrowRight, Heart, Gift, Truck, Users } from 'lucide-react';
+import { BUSINESS_CONFIG } from '../../config/business';
 
 interface WhatsAppConciergeProps {
   phoneNumber?: string;
 }
 
 export const WhatsAppConcierge: React.FC<WhatsAppConciergeProps> = ({
-  phoneNumber = '919876543210',
+  phoneNumber = BUSINESS_CONFIG.whatsappNumber.replace(/[^0-9]/g, ''),
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 

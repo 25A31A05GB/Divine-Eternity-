@@ -41,11 +41,7 @@ export const CustomerReviews: React.FC<CustomerReviewsProps> = ({
   } = useReviews();
 
   const reviewsList = getProductReviews(product.id);
-  const { averageRating, totalReviews, ratingBreakdown } = getProductRatingStats(
-    product.id,
-    product.rating || 4.9,
-    product.reviewCount || 36
-  );
+  const { averageRating, totalReviews, ratingBreakdown } = getProductRatingStats(product.id);
 
   // Filter & Sort State
   const [starFilter, setStarFilter] = useState<number | 'all'>('all');
@@ -190,73 +186,98 @@ export const CustomerReviews: React.FC<CustomerReviewsProps> = ({
           </button>
         </div>
 
-        {/* Rating Overview Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 bg-[#FFF9EB] border border-[#F5E6CE] rounded-3xl p-6 sm:p-8 shadow-xs">
-          
-          {/* Main Average Score */}
-          <div className="md:col-span-4 flex flex-col justify-center items-center text-center md:border-r border-[#F3E8E2] md:pr-6 space-y-3">
-            <div className="font-serif-heading text-5xl sm:text-6xl font-extrabold text-[#211D1C]">
-              {averageRating.toFixed(1)}
-            </div>
-            
-            <div className="flex items-center gap-1">
-              {[1, 2, 3, 4, 5].map((s) => (
-                <Star
-                  key={s}
-                  className={`w-5 h-5 ${
-                    s <= Math.round(averageRating)
-                      ? 'text-[#FFD94A] fill-[#FFD94A]'
-                      : 'text-stone-300'
-                  }`}
-                />
-              ))}
+        {/* Rating Overview Grid or Empty State */}
+        {totalReviews > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 bg-[#FFF9EB] border border-[#F5E6CE] rounded-3xl p-6 sm:p-8 shadow-xs">
+            {/* Main Average Score */}
+            <div className="md:col-span-4 flex flex-col justify-center items-center text-center md:border-r border-[#F3E8E2] md:pr-6 space-y-3">
+              <div className="font-serif-heading text-5xl sm:text-6xl font-extrabold text-[#211D1C]">
+                {averageRating.toFixed(1)}
+              </div>
+              
+              <div className="flex items-center gap-1">
+                {[1, 2, 3, 4, 5].map((s) => (
+                  <Star
+                    key={s}
+                    className={`w-5 h-5 ${
+                      s <= Math.round(averageRating)
+                        ? 'text-[#FFD94A] fill-[#FFD94A]'
+                        : 'text-stone-300'
+                    }`}
+                  />
+                ))}
+              </div>
+
+              <p className="text-xs font-bold text-stone-700">
+                Based on {totalReviews} verified patron reviews
+              </p>
+
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-bold">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                <span>{recommendedPercent}% would recommend this keepsake</span>
+              </div>
             </div>
 
-            <p className="text-xs font-bold text-stone-700">
-              Based on {totalReviews} verified patron reviews
-            </p>
+            {/* Rating Breakdown Bars */}
+            <div className="md:col-span-8 flex flex-col justify-center space-y-2.5">
+              {[5, 4, 3, 2, 1].map((stars) => {
+                const count = ratingBreakdown[stars] || 0;
+                const percent = totalReviews > 0 ? Math.round((count / totalReviews) * 100) : 0;
+                const isSelected = starFilter === stars;
 
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-bold">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-              <span>{recommendedPercent}% would recommend this keepsake</span>
+                return (
+                  <button
+                    key={stars}
+                    onClick={() => setStarFilter(isSelected ? 'all' : stars)}
+                    className={`w-full flex items-center gap-3 group text-left p-1.5 rounded-xl transition-colors cursor-pointer ${
+                      isSelected ? 'bg-white shadow-xs' : 'hover:bg-white/60'
+                    }`}
+                  >
+                    <div className="flex items-center gap-1 w-14 shrink-0 text-xs font-bold text-stone-700">
+                      <span>{stars}</span>
+                      <Star className="w-3.5 h-3.5 text-[#FFD94A] fill-[#FFD94A]" />
+                    </div>
+
+                    <div className="flex-1 h-2.5 bg-stone-200/80 rounded-full overflow-hidden relative">
+                      <div
+                        className="h-full bg-gradient-to-r from-[#FFD94A] to-[#FF2E93] rounded-full transition-all duration-500"
+                        style={{ width: `${percent}%` }}
+                      />
+                    </div>
+
+                    <div className="w-16 text-right shrink-0 text-xs font-semibold text-stone-500 group-hover:text-[#211D1C]">
+                      {count} ({percent}%)
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
-
-          {/* Rating Breakdown Bars */}
-          <div className="md:col-span-8 flex flex-col justify-center space-y-2.5">
-            {[5, 4, 3, 2, 1].map((stars) => {
-              const count = ratingBreakdown[stars] || 0;
-              const percent = totalReviews > 0 ? Math.round((count / totalReviews) * 100) : 0;
-              const isSelected = starFilter === stars;
-
-              return (
-                <button
-                  key={stars}
-                  onClick={() => setStarFilter(isSelected ? 'all' : stars)}
-                  className={`w-full flex items-center gap-3 group text-left p-1.5 rounded-xl transition-colors cursor-pointer ${
-                    isSelected ? 'bg-white shadow-xs' : 'hover:bg-white/60'
-                  }`}
-                >
-                  <div className="flex items-center gap-1 w-14 shrink-0 text-xs font-bold text-stone-700">
-                    <span>{stars}</span>
-                    <Star className="w-3.5 h-3.5 text-[#FFD94A] fill-[#FFD94A]" />
-                  </div>
-
-                  <div className="flex-1 h-2.5 bg-stone-200/80 rounded-full overflow-hidden relative">
-                    <div
-                      className="h-full bg-gradient-to-r from-[#FFD94A] to-[#FF2E93] rounded-full transition-all duration-500"
-                      style={{ width: `${percent}%` }}
-                    />
-                  </div>
-
-                  <div className="w-16 text-right shrink-0 text-xs font-semibold text-stone-500 group-hover:text-[#211D1C]">
-                    {count} ({percent}%)
-                  </div>
-                </button>
-              );
-            })}
+        ) : (
+          <div className="bg-[#FFF9EB] border border-[#F5E6CE] rounded-3xl p-8 sm:p-12 text-center space-y-4">
+            <div className="w-12 h-12 rounded-full bg-white border border-[#F5E6CE] flex items-center justify-center text-[#FF2E93] mx-auto shadow-xs">
+              <Sparkles className="w-6 h-6 text-[#FFD94A]" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="font-serif-heading text-lg sm:text-xl font-bold text-[#211D1C]">
+                Be the First to Review This Keepsake
+              </h3>
+              <p className="text-xs sm:text-sm text-stone-600 max-w-md mx-auto">
+                No customer reviews have been published yet for this piece. Have you received yours? Share your experience with fellow patrons!
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                setShowReviewForm(true);
+                soundFeedback.playSoftPing();
+              }}
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#211D1C] hover:bg-[#FF2E93] text-white text-xs font-bold uppercase tracking-wider transition-all cursor-pointer shadow-sm"
+            >
+              <PenLine className="w-3.5 h-3.5" />
+              <span>Write the First Review</span>
+            </button>
           </div>
-        </div>
+        )}
 
         {/* Filter & Sort Controls */}
         <div className="flex flex-wrap items-center justify-between gap-4 pt-2">

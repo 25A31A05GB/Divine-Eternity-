@@ -52,6 +52,7 @@ import {
 import { useMediaCMS } from '../../context/MediaCMSContext';
 import { SEVEN_COLLECTIONS } from '../../data/collectionsData';
 import confetti from 'canvas-confetti';
+import { uploadSiteImage } from '../../lib/mediaUpload';
 
 interface MediaStudioCMSProps {
   products: Product[];
@@ -146,14 +147,9 @@ export const MediaStudioCMS: React.FC<MediaStudioCMSProps> = ({ products }) => {
         const imageType = item.types.find((t) => t.startsWith('image/'));
         if (imageType) {
           const blob = await item.getType(imageType);
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            if (e.target?.result) {
-              setter(e.target.result as string);
-              showToast('✨ Screenshot / Photo pasted from clipboard!');
-            }
-          };
-          reader.readAsDataURL(blob);
+          const uploadedUrl = await uploadSiteImage(blob);
+          setter(uploadedUrl);
+          showToast('✨ Screenshot / Photo pasted from clipboard!');
           return;
         }
       }
@@ -551,6 +547,8 @@ export const MediaStudioCMS: React.FC<MediaStudioCMSProps> = ({ products }) => {
                       <img
                         src={slide.customImageUrl}
                         alt={slide.title}
+                        loading="lazy"
+                        decoding="async"
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
                     ) : (
@@ -650,6 +648,8 @@ export const MediaStudioCMS: React.FC<MediaStudioCMSProps> = ({ products }) => {
                       <img
                         src={col.image}
                         alt={col.name}
+                        loading="lazy"
+                        decoding="async"
                         className="w-full h-full object-cover rounded-full group-hover:scale-105 transition-transform"
                       />
                     </div>
@@ -863,6 +863,8 @@ export const MediaStudioCMS: React.FC<MediaStudioCMSProps> = ({ products }) => {
                         <img
                           src={reel.posterImage}
                           alt={reel.title}
+                          loading="lazy"
+                          decoding="async"
                           className="w-full h-full object-cover"
                         />
                       ) : (
@@ -955,6 +957,8 @@ export const MediaStudioCMS: React.FC<MediaStudioCMSProps> = ({ products }) => {
                   <img
                     src={founderData.imageUrl}
                     alt={founderData.name}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover"
                   />
                 ) : (
@@ -978,17 +982,12 @@ export const MediaStudioCMS: React.FC<MediaStudioCMSProps> = ({ products }) => {
                     type="file"
                     accept="image/*"
                     className="hidden"
-                    onChange={(e) => {
+                    onChange={async (e) => {
                       const f = e.target.files?.[0];
                       if (f) {
-                        const reader = new FileReader();
-                        reader.onload = (evt) => {
-                          if (evt.target?.result) {
-                            updateFounderData({ imageUrl: evt.target.result as string });
-                            showToast('Founder portrait updated!');
-                          }
-                        };
-                        reader.readAsDataURL(f);
+                        const url = await uploadSiteImage(f);
+                        updateFounderData({ imageUrl: url });
+                        showToast('Founder portrait updated!');
                       }
                     }}
                   />
@@ -1650,14 +1649,12 @@ export const MediaStudioCMS: React.FC<MediaStudioCMSProps> = ({ products }) => {
                       type="file"
                       accept="image/*"
                       className="hidden"
-                      onChange={(e) => {
+                      onChange={async (e) => {
                         const f = e.target.files?.[0];
                         if (f) {
-                          const reader = new FileReader();
-                          reader.onload = (evt) => {
-                            if (evt.target?.result) setSlideImageUrl(evt.target.result as string);
-                          };
-                          reader.readAsDataURL(f);
+                          const url = await uploadSiteImage(f);
+                          setSlideImageUrl(url);
+                          showToast('Slide image uploaded!');
                         }
                       }}
                     />
@@ -1678,6 +1675,8 @@ export const MediaStudioCMS: React.FC<MediaStudioCMSProps> = ({ products }) => {
                     <img
                       src={slideImageUrl}
                       alt="Preview"
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover"
                     />
                   </div>

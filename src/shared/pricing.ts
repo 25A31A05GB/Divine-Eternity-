@@ -6,6 +6,16 @@ export interface PricingCalculationInput {
   isGiftWrapped?: boolean;
   state?: string;
   catalogProducts?: Product[];
+  dbCoupon?: {
+    code: string;
+    description?: string;
+    type: string;
+    value: number;
+    minOrderValue?: number;
+    minItems?: number;
+    isActive?: boolean;
+    expiresAt?: string | null;
+  } | null;
 }
 
 export interface PricingBreakdown {
@@ -68,8 +78,50 @@ export function computeAuthoritativePricing(input: PricingCalculationInput): Pri
 
   const cleanCode = couponCode ? couponCode.trim().toUpperCase() : '';
 
-  // 2. Authoritative Coupon Evaluation
-  if (cleanCode === 'BUY3PAY2') {
+  // 2. Authoritative Database Coupon Evaluation (Prioritized if dbCoupon provided)
+  if (input.dbCoupon && (input.dbCoupon.isActive !== false)) {
+    const dbC = input.dbCoupon;
+    const isNotExpired = !dbC.expiresAt || new Date(dbC.expiresAt).getTime() >= Date.now();
+    const meetsMinOrder = subtotal >= (dbC.minOrderValue || 0);
+    const meetsMinItems = totalItemCount >= (dbC.minItems || 1);
+
+    if (isNotExpired && meetsMinOrder && meetsMinItems) {
+      const type = dbC.type?.toLowerCase();
+      if (type === 'percentage') {
+        discountTotal = Math.round((subtotal * dbC.value) / 100);
+      } else if (type === 'flat') {
+        discountTotal = dbC.value;
+      } else if (type === 'buy3pay2') {
+        if (totalItemCount >= 3) {
+          const unitPrices: number[] = [];
+          for (const it of items) {
+            let p = it.price;
+            if (catalogProducts) {
+              const match = catalogProducts.find((cp) => cp.id === it.productId || cp.slug === it.slug);
+              if (match) p = match.price;
+            }
+            for (let i = 0; i < it.quantity; i++) unitPrices.push(p);
+          }
+          unitPrices.sort((a, b) => a - b);
+          discountTotal = unitPrices[0] || 0;
+        }
+      } else if (type === 'flat849') {
+        if (totalItemCount >= 2 && subtotal >= 849) {
+          discountTotal = Math.min(subtotal - 849, 300);
+        }
+      } else {
+        discountTotal = dbC.value || 0;
+      }
+
+      appliedOffer = {
+        code: dbC.code,
+        name: dbC.description || `${dbC.code} Privilege`,
+        title: dbC.description || `${dbC.code} Privilege`,
+        description: dbC.description || 'Database Verified Coupon',
+        discountAmount: discountTotal,
+      };
+    }
+  } else if (cleanCode === 'BUY3PAY2') {
     if (totalItemCount >= 3) {
       // Find cheapest single unit across items
       const unitPrices: number[] = [];

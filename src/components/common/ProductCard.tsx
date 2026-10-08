@@ -17,11 +17,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView, 
   const { getProductRatingStats } = useReviews();
 
   const wishlisted = isInWishlist(product.id);
-  const { averageRating, totalReviews } = getProductRatingStats(
-    product.id,
-    product.rating,
-    product.reviewCount
-  );
+  const { averageRating, totalReviews } = getProductRatingStats(product.id);
 
   const discountPercent = Math.round(((product.mrp - product.price) / product.mrp) * 100);
 
@@ -42,6 +38,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView, 
             <img
               src={product.images[0]}
               alt={product.name}
+              loading="lazy"
+              decoding="async"
               referrerPolicy="no-referrer"
               className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-108"
             />
@@ -119,11 +117,17 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView, 
             <span className="text-[11px] font-bold uppercase tracking-wider text-[#FF2E93] truncate max-w-[65%]">
               {product.category}
             </span>
-            <div className="flex items-center gap-1 text-[11px] font-medium text-stone-600">
-              <Star className="w-3 h-3 text-[#F59E0B] fill-[#F59E0B]" />
-              <span className="tabular-nums font-bold text-[#211D1C]">{averageRating}</span>
-              <span className="text-stone-400">({totalReviews})</span>
-            </div>
+            {totalReviews > 0 ? (
+              <div className="flex items-center gap-1 text-[11px] font-medium text-stone-600">
+                <Star className="w-3 h-3 text-[#F59E0B] fill-[#F59E0B]" />
+                <span className="tabular-nums font-bold text-[#211D1C]">{averageRating}</span>
+                <span className="text-stone-400">({totalReviews})</span>
+              </div>
+            ) : (
+              <div className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
+                New
+              </div>
+            )}
           </div>
 
           {/* Product Title */}

@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
+import { fetchSiteContent, saveSiteContent } from '../lib/siteContent';
 import {
   HeroSlideCMS,
   VideoReelCMS,
@@ -178,59 +179,14 @@ export const INITIAL_VIDEO_SECTION: VideoSectionCMS = {
   isVisible: true,
 };
 
-export const INITIAL_VIDEO_REELS: VideoReelCMS[] = [
-  {
-    id: 'reel-1',
-    title: 'Watch Unboxing: 18k Gold Cursive Name Pendant',
-    tagline: 'See the micro-engraving shine under velvet studio lights',
-    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-hands-of-a-woman-opening-a-jewelry-box-43306-large.mp4',
-    posterImage: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=600&q=80',
-    linkedProductId: 'gift-1',
-    viewsCount: '48.2k',
-    durationSeconds: 15,
-    isActive: true,
-  },
-  {
-    id: 'reel-2',
-    title: '3-Year Preserved Rose Bell Jar in Night Glow',
-    tagline: 'Real rose preserved at peak bloom with ambient fairy lights',
-    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-red-rose-in-a-glass-jar-with-lights-42907-large.mp4',
-    posterImage: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80',
-    linkedProductId: 'gift-2',
-    viewsCount: '92.4k',
-    durationSeconds: 18,
-    isActive: true,
-  },
-  {
-    id: 'reel-3',
-    title: 'Custom Spotify Acrylic Plaque Scan Test',
-    tagline: 'Scans instantly on the Spotify App to play your song',
-    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-hands-holding-a-smartphone-playing-music-42999-large.mp4',
-    posterImage: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=600&q=80',
-    linkedProductId: 'gift-3',
-    viewsCount: '120.5k',
-    durationSeconds: 12,
-    isActive: true,
-  },
-  {
-    id: 'reel-4',
-    title: '3D Laser Memory Crystal Lamp Unboxing',
-    tagline: 'Watch how memories glow inside multi-faceted K9 crystal',
-    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-crystal-glass-reflecting-colored-light-43224-large.mp4',
-    posterImage: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b675?auto=format&fit=crop&w=600&q=80',
-    linkedProductId: 'gift-4',
-    viewsCount: '64.1k',
-    durationSeconds: 14,
-    isActive: true,
-  },
-];
+export const INITIAL_VIDEO_REELS: VideoReelCMS[] = [];
 
 export const INITIAL_FOUNDER_DATA: FounderCMS = {
   name: 'Sonu',
   role: 'Founder — Divine’s Eternity',
   badge1: '20-Year-Old Founder',
   badge2: 'Educator & Creator',
-  imageUrl: '/src/assets/images/founder_sonu_real_1791375717528.jpg',
+  imageUrl: '/images/founder/founder_sonu_real_1791375717528.jpg',
   establishedDate: 'EST. AUG 31',
   dreamAge: 'Dreamed at Age 16',
   launchDate: 'August 31st',
@@ -342,9 +298,9 @@ export const INITIAL_BRAND_STORY: BrandStoryCMS = {
   title: 'Crafted with Love. Made for Moments That Mean Everything.',
   subtitle: 'The Divine’s Eternity Gift Atelier',
   description: 'Every creation in the Divine’s Eternity collection is crafted with love and devotion. From pure gold plated personalized jewellery to handcrafted hampers, fragrant bouquets, and bespoke keepsakes, our mission is to celebrate the people and memories you cherish most.',
-  mediaType: 'video',
-  mediaUrl: 'https://assets.mixkit.co/videos/preview/mixkit-hands-of-a-woman-opening-a-jewelry-box-43306-large.mp4',
-  posterUrl: 'https://images.unsplash.com/photo-1586105251261-72a756497a11?auto=format&fit=crop&w=800&q=80',
+  mediaType: 'image',
+  mediaUrl: '',
+  posterUrl: '',
 };
 
 interface MediaCMSContextType {
@@ -492,7 +448,14 @@ export const MediaCMSProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [founderData, setFounderData] = useState<FounderCMS>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY_FOUNDER);
-      return saved ? JSON.parse(saved) : INITIAL_FOUNDER_DATA;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.imageUrl && parsed.imageUrl.startsWith('/src/assets')) {
+          parsed.imageUrl = '/images/founder/founder_sonu_real_1791375717528.jpg';
+        }
+        return parsed;
+      }
+      return INITIAL_FOUNDER_DATA;
     } catch {
       return INITIAL_FOUNDER_DATA;
     }
@@ -571,58 +534,218 @@ export const MediaCMSProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   });
 
-  // Auto-persist all state changes to localStorage
-  useEffect(() => {
-    try { localStorage.setItem(STORAGE_KEY_HERO, JSON.stringify(heroSlides)); } catch (e) { console.error(e); }
-  }, [heroSlides]);
+  // Cloud sync tracking refs
+  const isCloudLoadedRef = useRef(false);
+  const lastSyncedRef = useRef<Record<string, string>>({});
+  const debounceTimersRef = useRef<Record<string, NodeJS.Timeout>>({});
 
-  useEffect(() => {
-    try { localStorage.setItem(STORAGE_KEY_CIRCLES, JSON.stringify(categoryCircles)); } catch (e) { console.error(e); }
-  }, [categoryCircles]);
+  // Sync content across all visitors from Supabase site_content table
+  const syncFromCloud = useCallback(async () => {
+    try {
+      const content = await fetchSiteContent();
+      if (!content) {
+        isCloudLoadedRef.current = true;
+        return;
+      }
 
-  useEffect(() => {
-    try { localStorage.setItem(STORAGE_KEY_BESTSELLER, JSON.stringify(bestsellerSection)); } catch (e) { console.error(e); }
-  }, [bestsellerSection]);
+      if (content[STORAGE_KEY_HERO]) {
+        const val = content[STORAGE_KEY_HERO];
+        const json = JSON.stringify(val);
+        if (json !== lastSyncedRef.current[STORAGE_KEY_HERO]) {
+          lastSyncedRef.current[STORAGE_KEY_HERO] = json;
+          try { localStorage.setItem(STORAGE_KEY_HERO, json); } catch {}
+          if (Array.isArray(val) && val.length > 0) setHeroSlides(val);
+        }
+      }
 
-  useEffect(() => {
-    try { localStorage.setItem(STORAGE_KEY_VIDEO_SEC, JSON.stringify(videoSection)); } catch (e) { console.error(e); }
-  }, [videoSection]);
+      if (content[STORAGE_KEY_CIRCLES]) {
+        const val = content[STORAGE_KEY_CIRCLES];
+        const json = JSON.stringify(val);
+        if (json !== lastSyncedRef.current[STORAGE_KEY_CIRCLES]) {
+          lastSyncedRef.current[STORAGE_KEY_CIRCLES] = json;
+          try { localStorage.setItem(STORAGE_KEY_CIRCLES, json); } catch {}
+          if (Array.isArray(val) && val.length > 0) setCategoryCircles(val);
+        }
+      }
 
-  useEffect(() => {
-    try { localStorage.setItem(STORAGE_KEY_REELS, JSON.stringify(videoReels)); } catch (e) { console.error(e); }
-  }, [videoReels]);
+      if (content[STORAGE_KEY_BESTSELLER]) {
+        const val = content[STORAGE_KEY_BESTSELLER];
+        const json = JSON.stringify(val);
+        if (json !== lastSyncedRef.current[STORAGE_KEY_BESTSELLER]) {
+          lastSyncedRef.current[STORAGE_KEY_BESTSELLER] = json;
+          try { localStorage.setItem(STORAGE_KEY_BESTSELLER, json); } catch {}
+          setBestsellerSection(val);
+        }
+      }
 
-  useEffect(() => {
-    try { localStorage.setItem(STORAGE_KEY_FOUNDER, JSON.stringify(founderData)); } catch (e) { console.error(e); }
-  }, [founderData]);
+      if (content[STORAGE_KEY_VIDEO_SEC]) {
+        const val = content[STORAGE_KEY_VIDEO_SEC];
+        const json = JSON.stringify(val);
+        if (json !== lastSyncedRef.current[STORAGE_KEY_VIDEO_SEC]) {
+          lastSyncedRef.current[STORAGE_KEY_VIDEO_SEC] = json;
+          try { localStorage.setItem(STORAGE_KEY_VIDEO_SEC, json); } catch {}
+          setVideoSection(val);
+        }
+      }
 
-  useEffect(() => {
-    try { localStorage.setItem(STORAGE_KEY_SPOTLIGHT, JSON.stringify(spotlightSection)); } catch (e) { console.error(e); }
-  }, [spotlightSection]);
+      if (content[STORAGE_KEY_REELS]) {
+        const val = content[STORAGE_KEY_REELS];
+        const json = JSON.stringify(val);
+        if (json !== lastSyncedRef.current[STORAGE_KEY_REELS]) {
+          lastSyncedRef.current[STORAGE_KEY_REELS] = json;
+          try { localStorage.setItem(STORAGE_KEY_REELS, json); } catch {}
+          if (Array.isArray(val) && val.length > 0) setVideoReels(val);
+        }
+      }
 
-  useEffect(() => {
-    try { localStorage.setItem(STORAGE_KEY_CHOICE, JSON.stringify(choiceSection)); } catch (e) { console.error(e); }
-  }, [choiceSection]);
+      if (content[STORAGE_KEY_FOUNDER]) {
+        const val = content[STORAGE_KEY_FOUNDER];
+        if (val?.imageUrl && val.imageUrl.startsWith('/src/assets')) {
+          val.imageUrl = '/images/founder/founder_sonu_real_1791375717528.jpg';
+        }
+        const json = JSON.stringify(val);
+        if (json !== lastSyncedRef.current[STORAGE_KEY_FOUNDER]) {
+          lastSyncedRef.current[STORAGE_KEY_FOUNDER] = json;
+          try { localStorage.setItem(STORAGE_KEY_FOUNDER, json); } catch {}
+          setFounderData(val);
+        }
+      }
 
-  useEffect(() => {
-    try { localStorage.setItem(STORAGE_KEY_VALUE_PROPS, JSON.stringify(valueProps)); } catch (e) { console.error(e); }
-  }, [valueProps]);
+      if (content[STORAGE_KEY_SPOTLIGHT]) {
+        const val = content[STORAGE_KEY_SPOTLIGHT];
+        const json = JSON.stringify(val);
+        if (json !== lastSyncedRef.current[STORAGE_KEY_SPOTLIGHT]) {
+          lastSyncedRef.current[STORAGE_KEY_SPOTLIGHT] = json;
+          try { localStorage.setItem(STORAGE_KEY_SPOTLIGHT, json); } catch {}
+          setSpotlightSection(val);
+        }
+      }
 
-  useEffect(() => {
-    try { localStorage.setItem(STORAGE_KEY_ANN, JSON.stringify(announcements)); } catch (e) { console.error(e); }
-  }, [announcements]);
+      if (content[STORAGE_KEY_CHOICE]) {
+        const val = content[STORAGE_KEY_CHOICE];
+        const json = JSON.stringify(val);
+        if (json !== lastSyncedRef.current[STORAGE_KEY_CHOICE]) {
+          lastSyncedRef.current[STORAGE_KEY_CHOICE] = json;
+          try { localStorage.setItem(STORAGE_KEY_CHOICE, json); } catch {}
+          setChoiceSection(val);
+        }
+      }
 
-  useEffect(() => {
-    try { localStorage.setItem(STORAGE_KEY_MARQUEE, JSON.stringify(marqueeData)); } catch (e) { console.error(e); }
-  }, [marqueeData]);
+      if (content[STORAGE_KEY_VALUE_PROPS]) {
+        const val = content[STORAGE_KEY_VALUE_PROPS];
+        const json = JSON.stringify(val);
+        if (json !== lastSyncedRef.current[STORAGE_KEY_VALUE_PROPS]) {
+          lastSyncedRef.current[STORAGE_KEY_VALUE_PROPS] = json;
+          try { localStorage.setItem(STORAGE_KEY_VALUE_PROPS, json); } catch {}
+          if (Array.isArray(val) && val.length > 0) setValueProps(val);
+        }
+      }
 
-  useEffect(() => {
-    try { localStorage.setItem(STORAGE_KEY_NEWSLETTER, JSON.stringify(newsletterData)); } catch (e) { console.error(e); }
-  }, [newsletterData]);
+      if (content[STORAGE_KEY_ANN]) {
+        const val = content[STORAGE_KEY_ANN];
+        const json = JSON.stringify(val);
+        if (json !== lastSyncedRef.current[STORAGE_KEY_ANN]) {
+          lastSyncedRef.current[STORAGE_KEY_ANN] = json;
+          try { localStorage.setItem(STORAGE_KEY_ANN, json); } catch {}
+          if (Array.isArray(val) && val.length > 0) setAnnouncements(val);
+        }
+      }
 
+      if (content[STORAGE_KEY_MARQUEE]) {
+        const val = content[STORAGE_KEY_MARQUEE];
+        const json = JSON.stringify(val);
+        if (json !== lastSyncedRef.current[STORAGE_KEY_MARQUEE]) {
+          lastSyncedRef.current[STORAGE_KEY_MARQUEE] = json;
+          try { localStorage.setItem(STORAGE_KEY_MARQUEE, json); } catch {}
+          setMarqueeData(val);
+        }
+      }
+
+      if (content[STORAGE_KEY_NEWSLETTER]) {
+        const val = content[STORAGE_KEY_NEWSLETTER];
+        const json = JSON.stringify(val);
+        if (json !== lastSyncedRef.current[STORAGE_KEY_NEWSLETTER]) {
+          lastSyncedRef.current[STORAGE_KEY_NEWSLETTER] = json;
+          try { localStorage.setItem(STORAGE_KEY_NEWSLETTER, json); } catch {}
+          setNewsletterData(val);
+        }
+      }
+
+      if (content[STORAGE_KEY_STORY]) {
+        const val = content[STORAGE_KEY_STORY];
+        const json = JSON.stringify(val);
+        if (json !== lastSyncedRef.current[STORAGE_KEY_STORY]) {
+          lastSyncedRef.current[STORAGE_KEY_STORY] = json;
+          try { localStorage.setItem(STORAGE_KEY_STORY, json); } catch {}
+          setBrandStory(val);
+        }
+      }
+    } catch (e) {
+      console.warn('syncFromCloud error:', e);
+    } finally {
+      isCloudLoadedRef.current = true;
+    }
+  }, []);
+
+  // Sync on mount, on window focus/visibility, and every 2 minutes
   useEffect(() => {
-    try { localStorage.setItem(STORAGE_KEY_STORY, JSON.stringify(brandStory)); } catch (e) { console.error(e); }
-  }, [brandStory]);
+    syncFromCloud();
+
+    const handleFocus = () => syncFromCloud();
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        syncFromCloud();
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibility);
+    const interval = setInterval(syncFromCloud, 2 * 60 * 1000);
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibility);
+      clearInterval(interval);
+    };
+  }, [syncFromCloud]);
+
+  // Persist helper: writes localStorage, and after first cloud load debounces 800ms to saveSiteContent
+  const persist = useCallback((key: string, value: any) => {
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+    } catch (e) {
+      console.warn('localStorage error:', e);
+    }
+
+    if (!isCloudLoadedRef.current) return;
+
+    const currentJson = JSON.stringify(value);
+    if (currentJson === lastSyncedRef.current[key]) return;
+
+    if (debounceTimersRef.current[key]) {
+      clearTimeout(debounceTimersRef.current[key]);
+    }
+
+    debounceTimersRef.current[key] = setTimeout(async () => {
+      lastSyncedRef.current[key] = currentJson;
+      await saveSiteContent(key, value);
+    }, 800);
+  }, []);
+
+  // 13 auto-persist calls using persist(key, value)
+  useEffect(() => { persist(STORAGE_KEY_HERO, heroSlides); }, [heroSlides, persist]);
+  useEffect(() => { persist(STORAGE_KEY_CIRCLES, categoryCircles); }, [categoryCircles, persist]);
+  useEffect(() => { persist(STORAGE_KEY_BESTSELLER, bestsellerSection); }, [bestsellerSection, persist]);
+  useEffect(() => { persist(STORAGE_KEY_VIDEO_SEC, videoSection); }, [videoSection, persist]);
+  useEffect(() => { persist(STORAGE_KEY_REELS, videoReels); }, [videoReels, persist]);
+  useEffect(() => { persist(STORAGE_KEY_FOUNDER, founderData); }, [founderData, persist]);
+  useEffect(() => { persist(STORAGE_KEY_SPOTLIGHT, spotlightSection); }, [spotlightSection, persist]);
+  useEffect(() => { persist(STORAGE_KEY_CHOICE, choiceSection); }, [choiceSection, persist]);
+  useEffect(() => { persist(STORAGE_KEY_VALUE_PROPS, valueProps); }, [valueProps, persist]);
+  useEffect(() => { persist(STORAGE_KEY_ANN, announcements); }, [announcements, persist]);
+  useEffect(() => { persist(STORAGE_KEY_MARQUEE, marqueeData); }, [marqueeData, persist]);
+  useEffect(() => { persist(STORAGE_KEY_NEWSLETTER, newsletterData); }, [newsletterData, persist]);
+  useEffect(() => { persist(STORAGE_KEY_STORY, brandStory); }, [brandStory, persist]);
 
   // Updaters for Section 1: Hero Slides
   const updateHeroSlide = (id: string, updated: Partial<HeroSlideCMS>) => {
