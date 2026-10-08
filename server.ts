@@ -9,6 +9,7 @@ import { sendOrderConfirmationEmail, sendOrderConfirmationWhatsApp } from './src
 import { BRAND_CONFIG } from './src/config/brand';
 import { supabaseAdmin, verifyUserToken } from './api/_lib/supabaseAdmin';
 import { validateCouponLogic } from './api/validate-coupon';
+import { adminLoginLogic } from './api/admin-login';
 
 const app = express();
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3000;
@@ -565,6 +566,16 @@ app.delete('/api/coupons/:code', async (req: Request, res: Response) => {
     return res.json({ success: true, message: `Coupon ${code} deleted.` });
   } catch (err: any) {
     return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// POST /api/admin-login: Authenticate atelier administrator
+app.post('/api/admin-login', rateLimiter(20, 60000), async (req: Request, res: Response) => {
+  try {
+    const result = await adminLoginLogic(req.body);
+    return res.status(result.status).json(result);
+  } catch (err: any) {
+    return res.status(500).json({ success: false, message: err.message || 'Authentication error' });
   }
 });
 
