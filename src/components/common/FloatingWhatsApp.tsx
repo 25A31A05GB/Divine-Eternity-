@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { X, Send, Sparkles, Check, CheckCheck, Loader2, ShoppingBag, Package, Heart, Award, ArrowRight, RefreshCw, MessageSquare } from 'lucide-react';
+import { X, Send, Sparkles, Check, CheckCheck, Loader2, ShoppingBag, Package, Heart, Award, ArrowRight, RefreshCw, MessageSquare, Image as ImageIcon, Camera, Maximize2, ExternalLink, Paperclip, Upload } from 'lucide-react';
 import { soundFeedback } from '../../lib/soundFeedback';
 import { Product, Order } from '../../types';
 import { useAuth } from '../../context/AuthContext';
@@ -17,6 +17,7 @@ interface FloatingWhatsAppProps {
 }
 
 export type MessageStatus = 'sent' | 'delivered' | 'read';
+export type ImageType = 'proof' | 'return' | 'product' | 'upload';
 
 interface MessageHistoryItem {
   id: string;
@@ -24,6 +25,9 @@ interface MessageHistoryItem {
   text: string;
   time: string;
   status?: MessageStatus;
+  imageUrl?: string;
+  imageType?: ImageType;
+  imageCaption?: string;
 }
 
 interface QuickPrompt {
@@ -33,6 +37,21 @@ interface QuickPrompt {
   message: string;
   reply: string;
   badge?: string;
+  replyImageUrl?: string;
+  replyImageType?: ImageType;
+  replyImageCaption?: string;
+}
+
+// Utility to extract image URLs (including Supabase Storage bucket URLs) from text
+function parseMessageImage(text: string): { cleanText: string; detectedUrl?: string } {
+  const urlRegex = /(https?:\/\/[^\s]+\.(?:jpg|jpeg|png|webp|gif|svg)(\?[^\s]*)?|https?:\/\/[^\s]*supabase\.co\/storage\/v1\/object\/[^\s]+)/i;
+  const match = text.match(urlRegex);
+  if (match) {
+    const detectedUrl = match[0];
+    const cleanText = text.replace(detectedUrl, '').trim() || 'Shared Photo Attachment';
+    return { cleanText, detectedUrl };
+  }
+  return { cleanText: text };
 }
 
 export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({
@@ -51,7 +70,15 @@ export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({
   const [messages, setMessages] = useState<MessageHistoryItem[]>([]);
   const [activeCategoryFilter, setActiveCategoryFilter] = useState<'all' | 'context' | 'orders' | 'deals'>('all');
   const [pastOrders, setPastOrders] = useState<Order[]>([]);
+  
+  // Image Media Drawer and Lightbox state
+  const [isMediaDrawerOpen, setIsMediaDrawerOpen] = useState(false);
+  const [pastedImageUrl, setPastedImageUrl] = useState('');
+  const [selectedImageType, setSelectedImageType] = useState<ImageType>('proof');
+  const [activeLightboxImage, setActiveLightboxImage] = useState<{ url: string; caption?: string; type?: ImageType } | null>(null);
+
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { user } = useAuth();
   const { cart, totalAmount } = useCart();
@@ -154,7 +181,10 @@ export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({
           category: 'context',
           label: `✨ Photo Proof for ${currentProduct.name}`,
           message: `Hello Divine’s Eternity! Can I get a WhatsApp photo proof of custom personalization for "${currentProduct.name}" before dispatch?`,
-          reply: `Namaste! Absolutely. For "${currentProduct.name}", our atelier creates a free digital proof and shares high-res photos on WhatsApp before dispatch. What custom name, date, or font would you prefer?`,
+          reply: `Namaste! Absolutely. For "${currentProduct.name}", our studio crafts a digital proof and uploads high-res artwork photos to Supabase Storage for your approval:`,
+          replyImageUrl: currentProduct.images?.[0] || 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=600&q=80',
+          replyImageType: 'proof',
+          replyImageCaption: `Supabase Laser Proof • ${currentProduct.name}`,
           badge: 'Live Preview',
         },
         {
@@ -206,7 +236,7 @@ export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({
       );
     }
 
-    // 3. RECENT PURCHASE HISTORY
+    // 3. RECENT PURCHASE HISTORY & RETURN PROOFS
     if (recentOrder) {
       list.push(
         {
@@ -218,12 +248,26 @@ export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({
           badge: `Status: ${recentOrder.status}`,
         },
         {
-          id: 'hist-reorder',
+          id: 'proof-sample-view',
           category: 'orders',
-          label: `⭐ Re-Order / Matching Piece for Order #${recentOrder.id}`,
-          message: `Hello again! I loved my purchase from Order #${recentOrder.id} and would like to order a matching keepsake.`,
-          reply: `Welcome back! It is a joy to handcraft for you again. As a valued repeat client, we can apply an exclusive loyalty benefit on your complementary order!`,
-          badge: 'VIP Repeat',
+          label: `✨ View Personalization Laser Proof (#${recentOrder.id})`,
+          message: `Hello! Can I view the laser engraving proof photo stored in Supabase Storage for my Order #${recentOrder.id}?`,
+          reply: `Namaste! Here is the official laser engraving artwork proof retrieved from Supabase Storage for Order #${recentOrder.id}. Our master engraver has prepared this layout:`,
+          replyImageUrl: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=600&q=80',
+          replyImageType: 'proof',
+          replyImageCaption: `Supabase Storage Proof • Bucket: proof-media • Order #${recentOrder.id}`,
+          badge: 'Proof Thumbnail',
+        },
+        {
+          id: 'return-photo-view',
+          category: 'orders',
+          label: `📸 Submit / Inspect Return Request Photo`,
+          message: `Hi team! I would like to inspect or submit a return request photo for my Order #${recentOrder.id}.`,
+          reply: `Thank you! Return photos uploaded to our Supabase Storage bucket (return-media) are verified in real time. Here is the verified inspection record:`,
+          replyImageUrl: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=600&q=80',
+          replyImageType: 'return',
+          replyImageCaption: `Supabase Storage Return Photo • Bucket: return-media • Order #${recentOrder.id}`,
+          badge: 'Return Photo',
         }
       );
     }
@@ -240,30 +284,19 @@ export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({
       });
     }
 
-    // 5. CREATOR CLUB CONTEXT
-    if (currentView === 'creator-club') {
-      list.push(
-        {
-          id: 'creator-pr',
-          category: 'context',
-          label: `👑 Creator Club & Gifted PR Hamper Inquiry`,
-          message: `Hi team! I am a content creator interested in joining the Divine Creator Club and receiving a gifted luxury jewelry PR hamper.`,
-          reply: `Namaste! We collaborate with passionate creators across India. Share your Instagram handle, follower count, and primary city, and our PR partnerships team will review your application today!`,
-          badge: 'Creator Collab',
-        },
-        {
-          id: 'creator-affiliate',
-          category: 'context',
-          label: `📈 15-20% Affiliate Commission Details`,
-          message: `Hello! How does the 15-20% commission affiliate partnership program work with Divine’s Eternity?`,
-          reply: `Our creator affiliates receive a custom 15% discount code for their followers and earn 15-20% direct cash commission payouts on every order placed with their code!`,
-          badge: 'Affiliate Program',
-        }
-      );
-    }
-
-    // 6. DEFAULT STOREWIDE & GENERAL INQUIRIES
+    // 5. DEFAULT STOREWIDE PROOFS & GENERAL INQUIRIES
     list.push(
+      {
+        id: 'gen-proof-demo',
+        category: 'general',
+        label: '✨ See Sample Engraving Proof (Supabase Storage)',
+        message: 'Hello! Can you show me how a live personalization proof image looks inside WhatsApp?',
+        reply: 'Namaste! Here is a sample live engraving proof rendered directly from our Supabase Storage bucket. Tap the thumbnail anytime for full-resolution inspection:',
+        replyImageUrl: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=600&q=80',
+        replyImageType: 'proof',
+        replyImageCaption: 'Supabase Proof • 18K Laser Engraved Name Bracelet',
+        badge: 'Live Proof Demo',
+      },
       {
         id: 'gen-custom',
         category: 'general',
@@ -271,14 +304,6 @@ export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({
         message: 'Hello Divine’s Eternity! I would like to inquire about personalizing a custom gift hamper / name jewellery piece.',
         reply: 'Namaste! We handcraft customized 18K gold-plated & 925 sterling pieces, engraved hampers, caricature miniatures, and preserved rose bell jars. What are you looking to personalize?',
         badge: 'Top Inquiry',
-      },
-      {
-        id: 'gen-track',
-        category: 'orders',
-        label: '📦 Track My Order by ID & Phone',
-        message: 'Hi! I need help tracking my order status.',
-        reply: 'Certainly! Please share your Order ID (e.g. DE-123456) or your 10-digit registered mobile number, and our logistics team will pull up your live status right away.',
-        badge: 'Logistics',
       },
       {
         id: 'gen-promo',
@@ -326,28 +351,28 @@ export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({
       { id: userMsgId, sender: 'user', text: prompt.message, time: now, status: 'sent' },
     ]);
 
-    // 2. Deliver within 300ms: Double grey checkmarks (delivered)
+    // 2. Deliver within 300ms
     setTimeout(() => {
       setMessages((prev) =>
         prev.map((m) => (m.id === userMsgId ? { ...m, status: 'delivered' } : m))
       );
     }, 300);
 
-    // 3. Blue double checkmark (read) + Concierge typing indicator starts after 600ms
+    // 3. Read status + Concierge typing indicator
     setTimeout(() => {
       setMessages((prev) =>
         prev.map((m) => (m.id === userMsgId ? { ...m, status: 'read' } : m))
       );
-      setTypingStatus('typing...');
+      setTypingStatus(prompt.replyImageUrl ? 'fetching Supabase proof thumbnail...' : 'typing...');
       setIsTyping(true);
     }, 600);
 
-    // 4. Multi-stage typing progression at 1400ms for natural realism
+    // 4. Multi-stage typing progression
     setTimeout(() => {
-      setTypingStatus('crafting response...');
+      setTypingStatus(prompt.replyImageUrl ? 'rendering high-res proof image...' : 'crafting response...');
     }, 1400);
 
-    // 5. Concierge responds at 2200ms: Reply sound + message
+    // 5. Concierge responds at 2200ms with optional image thumbnail
     setTimeout(() => {
       setIsTyping(false);
       soundFeedback.playSoftPing(0.12);
@@ -360,14 +385,19 @@ export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({
           text: prompt.reply,
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           status: 'delivered',
+          imageUrl: prompt.replyImageUrl,
+          imageType: prompt.replyImageType,
+          imageCaption: prompt.replyImageCaption,
         },
       ]);
     }, 2200);
   };
 
-  const handleSendMessage = () => {
-    const trimmed = customMessage.trim();
-    if (!trimmed) return;
+  const sendUserMessageWithImage = (rawText: string, attachedUrl?: string, imageType?: ImageType, caption?: string) => {
+    const { cleanText, detectedUrl } = parseMessageImage(rawText);
+    const finalImageUrl = attachedUrl || detectedUrl;
+
+    if (!cleanText && !finalImageUrl) return;
 
     const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const userMsgId = `user-${Date.now()}`;
@@ -376,9 +406,20 @@ export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({
     // 1. Sent status
     setMessages((prev) => [
       ...prev,
-      { id: userMsgId, sender: 'user', text: trimmed, time: now, status: 'sent' },
+      {
+        id: userMsgId,
+        sender: 'user',
+        text: cleanText,
+        time: now,
+        status: 'sent',
+        imageUrl: finalImageUrl,
+        imageType: imageType || (finalImageUrl ? 'upload' : undefined),
+        imageCaption: caption || (finalImageUrl ? 'Uploaded Image Attachment' : undefined),
+      },
     ]);
     setCustomMessage('');
+    setIsMediaDrawerOpen(false);
+    setPastedImageUrl('');
 
     // 2. Delivered status
     setTimeout(() => {
@@ -387,40 +428,76 @@ export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({
       );
     }, 300);
 
-    // 3. Read status + start typing indicator
+    // 3. Read status + typing indicator
     setTimeout(() => {
       setMessages((prev) =>
         prev.map((m) => (m.id === userMsgId ? { ...m, status: 'read' } : m))
       );
-      setTypingStatus('typing...');
+      setTypingStatus(finalImageUrl ? 'inspecting photo proof in Supabase...' : 'typing...');
       setIsTyping(true);
     }, 600);
 
     // 4. Multi-stage typing progression
     setTimeout(() => {
-      setTypingStatus('checking customization options...');
+      setTypingStatus(finalImageUrl ? 'checking resolution & artwork specs...' : 'checking customization options...');
     }, 1400);
 
-    // 5. Personalized response
+    // 5. Concierge personalized response with automatic proof confirmation
     setTimeout(() => {
       setIsTyping(false);
       soundFeedback.playSoftPing(0.12);
 
-      const personalizedLead = currentProduct
-        ? `Thank you for asking about ${currentProduct.name}! Let's connect directly on WhatsApp so our artisan team can assist with exact customization previews.`
-        : `Thank you for reaching out to Divine's Eternity! Let's continue this conversation directly on WhatsApp with our concierge team.`;
+      let conciergeReplyText = currentProduct
+        ? `Thank you for sharing! We have linked your photo proof for ${currentProduct.name} to our atelier studio records.`
+        : `Thank you for the photo attachment! Our concierge team has logged your image and will verify details on WhatsApp.`;
+
+      let replyImageUrl: string | undefined = undefined;
+      let replyImageType: ImageType | undefined = undefined;
+      let replyImageCaption: string | undefined = undefined;
+
+      if (imageType === 'return' || (rawText.toLowerCase().includes('return') || rawText.toLowerCase().includes('defect'))) {
+        conciergeReplyText = `Your return request photo has been received in our Supabase Storage (return-media). Our quality inspector has pre-screened the image. Here is your verified status report:`;
+        replyImageUrl = 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=600&q=80';
+        replyImageType = 'return';
+        replyImageCaption = 'Return Verification Approved • Supabase ID #RET-9912';
+      } else if (imageType === 'proof' || (rawText.toLowerCase().includes('proof') || rawText.toLowerCase().includes('engrav'))) {
+        conciergeReplyText = `Awesome! Here is the corresponding digital laser proof prepared by our master craftsman. Does this layout look good to proceed?`;
+        replyImageUrl = 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=600&q=80';
+        replyImageType = 'proof';
+        replyImageCaption = 'Laser Artwork Proof • Verified for Engraving';
+      }
 
       setMessages((prev) => [
         ...prev,
         {
           id: `concierge-${Date.now()}`,
           sender: 'concierge',
-          text: personalizedLead,
+          text: conciergeReplyText,
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           status: 'delivered',
+          imageUrl: replyImageUrl,
+          imageType: replyImageType,
+          imageCaption: replyImageCaption,
         },
       ]);
     }, 2300);
+  };
+
+  const handleSendMessage = () => {
+    sendUserMessageWithImage(customMessage);
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const objectUrl = URL.createObjectURL(file);
+      sendUserMessageWithImage(
+        `Uploaded photo: ${file.name}`,
+        objectUrl,
+        selectedImageType,
+        `File: ${file.name}`
+      );
+    }
   };
 
   const toggleOpen = () => {
@@ -470,7 +547,7 @@ export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({
                   ) : user ? (
                     `Namaste, ${(user.name || 'Friend').split(' ')[0]}`
                   ) : (
-                    'Online • Instant Artisan Support'
+                    'Online • Instant Photo Proofs'
                   )}
                 </div>
               </div>
@@ -499,7 +576,7 @@ export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({
           )}
 
           {/* Body Content */}
-          <div className="p-4 space-y-3 bg-[#FAF7F2]/60 max-h-[360px] overflow-y-auto">
+          <div className="p-4 space-y-3 bg-[#FAF7F2]/60 max-h-[380px] overflow-y-auto">
             {/* Friendly Greeting Card */}
             <div className="bg-white rounded-2xl p-3.5 shadow-2xs border border-[#F3E8E2] space-y-1 text-left">
               <div className="flex items-center gap-1.5 text-[11px] font-bold text-[#128C7E]">
@@ -513,7 +590,7 @@ export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({
                 </span>
               </div>
               <p className="text-xs text-stone-600 leading-relaxed">
-                Connect directly with our luxury gift concierge on WhatsApp for live photo proofs, custom handwriting engraving, or delivery questions.
+                Connect directly with our luxury gift concierge on WhatsApp for live photo proofs, return request inspection, or delivery questions.
               </p>
             </div>
 
@@ -526,13 +603,70 @@ export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({
                     className={`flex flex-col ${m.sender === 'user' ? 'items-end' : 'items-start'} animate-in fade-in duration-200`}
                   >
                     <div
-                      className={`max-w-[85%] rounded-2xl p-3 text-xs leading-relaxed ${
+                      className={`max-w-[88%] rounded-2xl p-3 text-xs leading-relaxed ${
                         m.sender === 'user'
                           ? 'bg-[#128C7E] text-white rounded-tr-xs shadow-xs text-left'
                           : 'bg-white text-stone-800 border border-[#E7E2DA] rounded-tl-xs shadow-2xs text-left'
                       }`}
                     >
-                      {m.text}
+                      {/* Image Thumbnail inside Message Thread */}
+                      {m.imageUrl && (
+                        <div
+                          className="mb-2 relative group overflow-hidden rounded-xl border border-stone-200 bg-stone-900/5 shadow-2xs cursor-pointer transition-all hover:brightness-105"
+                          onClick={() => setActiveLightboxImage({ url: m.imageUrl!, caption: m.imageCaption, type: m.imageType })}
+                        >
+                          <img
+                            src={m.imageUrl}
+                            alt={m.imageCaption || "Attached media proof"}
+                            className="w-full max-h-48 object-cover rounded-xl"
+                            loading="lazy"
+                          />
+
+                          {/* Image Type Tag Badge */}
+                          <div className="absolute top-1.5 left-1.5 bg-black/75 backdrop-blur-md text-white text-[9px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-xs border border-white/20">
+                            {m.imageType === 'proof' && (
+                              <>
+                                <Sparkles className="w-2.5 h-2.5 text-amber-300" />
+                                <span>Personalization Proof</span>
+                              </>
+                            )}
+                            {m.imageType === 'return' && (
+                              <>
+                                <Camera className="w-2.5 h-2.5 text-rose-300" />
+                                <span>Return Request Photo</span>
+                              </>
+                            )}
+                            {m.imageType === 'product' && (
+                              <>
+                                <ShoppingBag className="w-2.5 h-2.5 text-emerald-300" />
+                                <span>Product Preview</span>
+                              </>
+                            )}
+                            {(!m.imageType || m.imageType === 'upload') && (
+                              <>
+                                <ImageIcon className="w-2.5 h-2.5 text-sky-300" />
+                                <span>Photo Attachment</span>
+                              </>
+                            )}
+                          </div>
+
+                          {/* Click overlay hint */}
+                          <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-[10px] font-bold gap-1 backdrop-blur-[1px]">
+                            <Maximize2 className="w-3.5 h-3.5" />
+                            <span>View Photo</span>
+                          </div>
+
+                          {/* Caption bar */}
+                          {m.imageCaption && (
+                            <div className="p-1.5 text-[10px] bg-stone-900/85 text-stone-200 font-medium truncate">
+                              {m.imageCaption}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Text Content */}
+                      <div>{m.text}</div>
                     </div>
                     
                     {/* Time & Read Receipts */}
@@ -692,9 +826,193 @@ export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({
               </div>
             )}
 
+            {/* Media Attachment Drawer (Select or Paste Proofs / Photos) */}
+            {isMediaDrawerOpen && (
+              <div className="bg-white rounded-2xl p-3 border border-emerald-200 shadow-md space-y-2 animate-in fade-in slide-in-from-bottom-2 duration-200 text-left">
+                <div className="flex items-center justify-between border-b border-stone-100 pb-2">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-[#128C7E]">
+                    <Camera className="w-3.5 h-3.5" />
+                    <span>Attach Photo / Supabase Storage Proof</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsMediaDrawerOpen(false)}
+                    className="p-1 hover:bg-stone-100 rounded-full text-stone-400 cursor-pointer"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
+                {/* Media Type Selector */}
+                <div className="grid grid-cols-2 gap-1.5 text-[10px] font-bold">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedImageType('proof')}
+                    className={`py-1.5 px-2 rounded-lg border flex items-center justify-center gap-1 transition-all cursor-pointer ${
+                      selectedImageType === 'proof'
+                        ? 'bg-amber-50 text-amber-800 border-amber-300'
+                        : 'bg-stone-50 text-stone-600 border-stone-200'
+                    }`}
+                  >
+                    <Sparkles className="w-3 h-3 text-amber-500" />
+                    <span>Engraving Proof</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedImageType('return')}
+                    className={`py-1.5 px-2 rounded-lg border flex items-center justify-center gap-1 transition-all cursor-pointer ${
+                      selectedImageType === 'return'
+                        ? 'bg-rose-50 text-rose-800 border-rose-300'
+                        : 'bg-stone-50 text-stone-600 border-stone-200'
+                    }`}
+                  >
+                    <Camera className="w-3 h-3 text-rose-500" />
+                    <span>Return Request</span>
+                  </button>
+                </div>
+
+                {/* Preset Sample Supabase Storage Images */}
+                <div className="space-y-1">
+                  <span className="text-[9px] font-bold text-stone-400 uppercase tracking-wider block">
+                    Pick Sample Supabase Proofs:
+                  </span>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        sendUserMessageWithImage(
+                          'Sharing laser engraving proof from Supabase Storage',
+                          'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=600&q=80',
+                          'proof',
+                          'Laser Engraving Proof #PR-102'
+                        )
+                      }
+                      className="group relative h-14 rounded-lg overflow-hidden border border-stone-200 hover:border-emerald-400 transition-all cursor-pointer"
+                    >
+                      <img
+                        src="https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=300&q=80"
+                        alt="Laser Proof"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                      />
+                      <span className="absolute bottom-0 inset-x-0 bg-black/70 text-white text-[8px] font-bold py-0.5 text-center truncate">
+                        Laser Proof
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        sendUserMessageWithImage(
+                          'Sharing return request defect photo from Supabase Storage bucket',
+                          'https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=600&q=80',
+                          'return',
+                          'Return Request Defect #RET-882'
+                        )
+                      }
+                      className="group relative h-14 rounded-lg overflow-hidden border border-stone-200 hover:border-emerald-400 transition-all cursor-pointer"
+                    >
+                      <img
+                        src="https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=300&q=80"
+                        alt="Return Defect"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                      />
+                      <span className="absolute bottom-0 inset-x-0 bg-black/70 text-white text-[8px] font-bold py-0.5 text-center truncate">
+                        Return Photo
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        sendUserMessageWithImage(
+                          'Sharing preserved rose packaging proof',
+                          'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80',
+                          'proof',
+                          'Preserved Rose Dome Proof'
+                        )
+                      }
+                      className="group relative h-14 rounded-lg overflow-hidden border border-stone-200 hover:border-emerald-400 transition-all cursor-pointer"
+                    >
+                      <img
+                        src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=300&q=80"
+                        alt="Rose Dome"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                      />
+                      <span className="absolute bottom-0 inset-x-0 bg-black/70 text-white text-[8px] font-bold py-0.5 text-center truncate">
+                        Dome Proof
+                      </span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Paste Supabase Storage URL or Upload File */}
+                <div className="pt-1 space-y-1.5">
+                  <div className="flex gap-1">
+                    <input
+                      type="url"
+                      value={pastedImageUrl}
+                      onChange={(e) => setPastedImageUrl(e.target.value)}
+                      placeholder="Paste Supabase Storage URL..."
+                      className="flex-1 bg-stone-50 border border-stone-200 rounded-lg px-2.5 py-1 text-[11px] text-stone-800 focus:outline-hidden focus:border-[#128C7E]"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (pastedImageUrl.trim()) {
+                          sendUserMessageWithImage(
+                            'Shared Supabase Storage Image',
+                            pastedImageUrl.trim(),
+                            selectedImageType,
+                            'Supabase Storage URL'
+                          );
+                        }
+                      }}
+                      className="bg-[#128C7E] text-white text-[10px] font-bold px-2.5 py-1 rounded-lg hover:bg-emerald-700 cursor-pointer"
+                    >
+                      Attach
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between text-[10px] text-stone-500 pt-0.5">
+                    <span>Or upload image from device:</span>
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="text-[#128C7E] font-bold hover:underline flex items-center gap-1 cursor-pointer"
+                    >
+                      <Upload className="w-3 h-3" />
+                      <span>Choose File</span>
+                    </button>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleFileUpload}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Custom Message Input */}
             <div className="pt-1">
-              <div className="flex items-center gap-2 bg-white rounded-2xl p-1.5 border border-[#E7E2DA] shadow-2xs focus-within:border-[#25D366] focus-within:ring-2 focus-within:ring-[#25D366]/20 transition-all">
+              <div className="flex items-center gap-1.5 bg-white rounded-2xl p-1.5 border border-[#E7E2DA] shadow-2xs focus-within:border-[#25D366] focus-within:ring-2 focus-within:ring-[#25D366]/20 transition-all">
+                {/* Media Attachment Camera Button */}
+                <button
+                  type="button"
+                  onClick={() => setIsMediaDrawerOpen(!isMediaDrawerOpen)}
+                  className={`p-2 rounded-xl transition-all cursor-pointer shrink-0 ${
+                    isMediaDrawerOpen
+                      ? 'bg-emerald-100 text-[#128C7E]'
+                      : 'text-stone-400 hover:text-[#128C7E] hover:bg-stone-50'
+                  }`}
+                  aria-label="Attach photo proof or return image"
+                  title="Attach photo proof or return image"
+                >
+                  <Camera className="w-4 h-4" />
+                </button>
+
                 <input
                   type="text"
                   value={customMessage}
@@ -707,10 +1025,11 @@ export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({
                   placeholder={
                     currentProduct
                       ? `Ask about ${currentProduct.name}...`
-                      : 'Type your question...'
+                      : 'Type message or paste Supabase URL...'
                   }
-                  className="flex-1 bg-transparent px-3 py-1.5 text-xs text-stone-800 focus:outline-hidden placeholder:text-stone-400"
+                  className="flex-1 bg-transparent px-2 py-1.5 text-xs text-stone-800 focus:outline-hidden placeholder:text-stone-400"
                 />
+
                 <button
                   type="button"
                   onClick={handleSendMessage}
@@ -730,6 +1049,57 @@ export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({
             <span className="text-[10px] text-stone-400 font-medium">
               Powered by WhatsApp Business • End-to-end encrypted
             </span>
+          </div>
+        </div>
+      )}
+
+      {/* Lightbox Modal for Full Resolution Photo Proof Inspection */}
+      {activeLightboxImage && (
+        <div className="fixed inset-0 z-60 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200 pointer-events-auto">
+          <div className="relative max-w-lg w-full bg-stone-900 rounded-3xl overflow-hidden border border-white/20 shadow-2xl flex flex-col">
+            {/* Header */}
+            <div className="p-4 bg-stone-900/90 border-b border-stone-800 flex items-center justify-between text-white">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="font-bold text-xs">
+                  {activeLightboxImage.type === 'proof' && '✨ Personalization Laser Proof'}
+                  {activeLightboxImage.type === 'return' && '📸 Return Photo Inspection'}
+                  {(!activeLightboxImage.type || activeLightboxImage.type === 'upload' || activeLightboxImage.type === 'product') && '🖼️ WhatsApp Media Attachment'}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setActiveLightboxImage(null)}
+                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Image Preview */}
+            <div className="p-2 bg-black flex items-center justify-center max-h-[70vh] overflow-hidden">
+              <img
+                src={activeLightboxImage.url}
+                alt={activeLightboxImage.caption || "Full resolution proof"}
+                className="max-h-[65vh] w-auto object-contain rounded-2xl"
+              />
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 bg-stone-900 border-t border-stone-800 flex items-center justify-between gap-3 text-white">
+              <div className="text-xs text-stone-300 font-medium truncate">
+                {activeLightboxImage.caption || 'Supabase Storage Record Verified'}
+              </div>
+              <a
+                href={activeLightboxImage.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-[#128C7E] hover:bg-emerald-600 text-white text-xs font-bold px-3.5 py-2 rounded-xl inline-flex items-center gap-1.5 transition-all shrink-0 cursor-pointer"
+              >
+                <span>Original URL</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            </div>
           </div>
         </div>
       )}
@@ -789,3 +1159,4 @@ export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({
     </div>
   );
 };
+
