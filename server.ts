@@ -2,23 +2,23 @@ import express from 'express';
 import cors from 'cors';
 import { createServer as createViteServer } from 'vite';
 
-// Handlers imported from /api to ensure local dev and Vercel serverless behave identically
-import healthHandler from './api/health';
-import trackHandler from './api/track';
-import trackOrderHandler from './api/track-order';
-import createOrderHandler from './api/create-order';
-import verifyPaymentHandler from './api/verify-payment';
-import razorpayWebhookHandler from './api/razorpay-webhook';
-import validateCouponHandler from './api/validate-coupon';
-import couponsHandler from './api/coupons';
-import adminOrderStatusHandler from './api/admin-order-status';
-import invoiceHandler from './api/invoice';
-import returnRequestHandler from './api/return-request';
-import contactHandler from './api/contact';
-import newsletterHandler from './api/newsletter';
-import cartSaveHandler from './api/cart-save';
-import pincodeCheckHandler from './api/pincode-check';
-import reviewHandler from './api/review';
+// Handlers imported from server/handlers
+import healthHandler from './server/handlers/health';
+import trackHandler from './server/handlers/track';
+import trackOrderHandler from './server/handlers/track-order';
+import createOrderHandler from './server/handlers/create-order';
+import verifyPaymentHandler from './server/handlers/verify-payment';
+import razorpayWebhookHandler from './server/handlers/razorpay-webhook';
+import validateCouponHandler from './server/handlers/validate-coupon';
+import couponsHandler from './server/handlers/coupons';
+import adminOrderStatusHandler from './server/handlers/admin-order-status';
+import invoiceHandler from './server/handlers/invoice';
+import returnRequestHandler from './server/handlers/return-request';
+import contactHandler from './server/handlers/contact';
+import newsletterHandler from './server/handlers/newsletter';
+import cartSaveHandler from './server/handlers/cart-save';
+import pincodeCheckHandler from './server/handlers/pincode-check';
+import reviewHandler from './server/handlers/review';
 import abandonedCartsCronHandler from './api/cron/abandoned-carts';
 import dailySummaryCronHandler from './api/cron/daily-summary';
 
