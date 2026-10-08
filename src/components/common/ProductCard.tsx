@@ -23,7 +23,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView, 
 
   return (
     <div
-      className="group relative bg-white rounded-2xl border border-[#F3E8E2] overflow-hidden shadow-xs hover:shadow-xl hover:border-[#FF2E93]/50 transition-all duration-300 flex flex-col justify-between"
+      data-testid="product-card"
+      className="group product-card relative bg-white rounded-2xl border border-[#F3E8E2] overflow-hidden shadow-xs hover:shadow-xl hover:border-[#FF2E93]/50 transition-all duration-300 flex flex-col justify-between"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >

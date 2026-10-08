@@ -1,5 +1,5 @@
 {
-  "buildCommand": "vite build",
+  "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "headers": [
     {
@@ -30,14 +30,14 @@
       "destination": "/api/:path*"
     },
     {
-      "source": "/(.*)",
+      "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
   ],
   "crons": [
     {
       "path": "/api/cron/abandoned-carts",
-      "schedule": "0 * * * *"
+      "schedule": "0 20 * * *"
     },
     {
       "path": "/api/cron/daily-summary",

@@ -159,7 +159,7 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, ope
 
           <button
             onClick={() => navigateTo('home')}
-            className="flex flex-col text-left group focus:outline-none cursor-pointer"
+            className="flex flex-col text-left focus:outline-none cursor-pointer"
           >
             <div className="flex items-baseline">
               <span className="font-extrabold text-2xl sm:text-3xl tracking-tight text-[#FF2E93]">
@@ -388,7 +388,7 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, ope
                     setIsMobileMenuOpen(false);
                     navigateTo('home');
                   }}
-                  className="flex items-baseline text-left group focus:outline-none cursor-pointer"
+                  className="flex items-baseline text-left focus:outline-none cursor-pointer"
                 >
                   <span className="font-extrabold text-xl tracking-tight text-[#FF2E93]">
                     Divine’s

@@ -247,7 +247,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onBackToCart, onOrde
       />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        <div className="mb-6">
+        <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <button
             onClick={onBackToCart}
             className="text-xs font-bold text-stone-500 hover:text-[#FF2E93] flex items-center gap-1.5 transition-colors cursor-pointer"
@@ -255,6 +255,9 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onBackToCart, onOrde
             <ArrowLeft className="w-4 h-4" />
             <span>Return to Shopping Bag</span>
           </button>
+          <h1 className="font-serif-heading text-xl sm:text-2xl font-bold text-[#211D1C]">
+            Secure Checkout
+          </h1>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -286,6 +289,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onBackToCart, onOrde
                   <label className="text-xs font-bold text-[#211D1C]">Recipient Full Name *</label>
                   <input
                     id="fullName"
+                    name="fullName"
                     type="text"
                     value={formData.fullName}
                     onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
@@ -301,6 +305,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onBackToCart, onOrde
                   <label className="text-xs font-bold text-[#211D1C]">10-Digit Mobile (For Tracking SMS) *</label>
                   <input
                     id="phone"
+                    name="phone"
                     type="tel"
                     maxLength={10}
                     value={formData.phone}
@@ -317,6 +322,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onBackToCart, onOrde
                   <label className="text-xs font-bold text-[#211D1C]">Email Address (For Tax Invoice) *</label>
                   <input
                     id="email"
+                    name="email"
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -332,6 +338,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onBackToCart, onOrde
                   <label className="text-xs font-bold text-[#211D1C]">Street Address, House/Flat No, Landmark *</label>
                   <input
                     id="streetAddress"
+                    name="streetAddress"
                     type="text"
                     value={formData.streetAddress}
                     onChange={(e) => setFormData({ ...formData, streetAddress: e.target.value })}
@@ -347,6 +354,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onBackToCart, onOrde
                   <label className="text-xs font-bold text-[#211D1C]">City *</label>
                   <input
                     id="city"
+                    name="city"
                     type="text"
                     value={formData.city}
                     onChange={(e) => setFormData({ ...formData, city: e.target.value })}
@@ -361,6 +369,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onBackToCart, onOrde
                 <div className="space-y-1">
                   <label className="text-xs font-bold text-[#211D1C]">State</label>
                   <input
+                    name="state"
                     type="text"
                     value={formData.state}
                     onChange={(e) => setFormData({ ...formData, state: e.target.value })}
@@ -372,6 +381,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onBackToCart, onOrde
                   <label className="text-xs font-bold text-[#211D1C]">6-Digit Postal PIN Code *</label>
                   <input
                     id="pincode"
+                    name="pincode"
                     type="text"
                     maxLength={6}
                     value={formData.pincode}
@@ -451,50 +461,62 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onBackToCart, onOrde
 
               <div className="space-y-3">
                 {/* Real Razorpay Online Payment */}
-                <div
+                <label
                   onClick={() => setPaymentMethod('Online')}
-                  className={`p-4 rounded-2xl border cursor-pointer transition-all ${
+                  className={`p-4 rounded-2xl border cursor-pointer transition-all flex items-center justify-between ${
                     paymentMethod === 'Online'
                       ? 'border-[#FF2E93] bg-[#FFF0F3] shadow-xs'
                       : 'border-stone-200 hover:border-pink-300'
                   }`}
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <ShieldCheck className="w-5 h-5 text-[#FF2E93]" />
-                      <div>
-                        <p className="text-xs font-bold text-[#211D1C]">
-                          Razorpay (UPI, GPay, PhonePe, Cards, NetBanking)
-                        </p>
-                        <p className="text-[10px] text-stone-500">Official Razorpay checkout with instant verification</p>
-                      </div>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="online"
+                      checked={paymentMethod === 'Online'}
+                      onChange={() => setPaymentMethod('Online')}
+                      className="accent-[#FF2E93] cursor-pointer"
+                    />
+                    <ShieldCheck className="w-5 h-5 text-[#FF2E93]" />
+                    <div>
+                      <p className="text-xs font-bold text-[#211D1C]">
+                        Razorpay (UPI, GPay, PhonePe, Cards, NetBanking)
+                      </p>
+                      <p className="text-[10px] text-stone-500">Official Razorpay checkout with instant verification</p>
                     </div>
-                    {paymentMethod === 'Online' && <Check className="w-4 h-4 text-[#FF2E93]" />}
                   </div>
-                </div>
+                  {paymentMethod === 'Online' && <Check className="w-4 h-4 text-[#FF2E93]" />}
+                </label>
 
                 {/* Cash on Delivery */}
-                <div
+                <label
                   onClick={() => setPaymentMethod('COD')}
-                  className={`p-4 rounded-2xl border cursor-pointer transition-all ${
+                  className={`p-4 rounded-2xl border cursor-pointer transition-all flex items-center justify-between ${
                     paymentMethod === 'COD'
                       ? 'border-[#FF2E93] bg-[#FFF0F3] shadow-xs'
                       : 'border-stone-200 hover:border-pink-300'
                   }`}
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <Banknote className="w-5 h-5 text-emerald-600" />
-                      <div>
-                        <p className="text-xs font-bold text-[#211D1C]">
-                          Cash on Delivery (COD)
-                        </p>
-                        <p className="text-[10px] text-stone-500">Pay cash or scan courier QR upon doorstep delivery</p>
-                      </div>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="cod"
+                      checked={paymentMethod === 'COD'}
+                      onChange={() => setPaymentMethod('COD')}
+                      className="accent-[#FF2E93] cursor-pointer"
+                    />
+                    <Banknote className="w-5 h-5 text-emerald-600" />
+                    <div>
+                      <p className="text-xs font-bold text-[#211D1C]">
+                        Cash on Delivery (COD)
+                      </p>
+                      <p className="text-[10px] text-stone-500">Pay cash or scan courier QR upon doorstep delivery</p>
                     </div>
-                    {paymentMethod === 'COD' && <Check className="w-4 h-4 text-[#FF2E93]" />}
                   </div>
-                </div>
+                  {paymentMethod === 'COD' && <Check className="w-4 h-4 text-[#FF2E93]" />}
+                </label>
               </div>
             </div>
           </div>

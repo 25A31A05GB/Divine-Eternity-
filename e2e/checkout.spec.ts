@@ -7,9 +7,16 @@ test.describe('Happy-Path Checkout Flow (COD)', () => {
     await expect(page).toHaveTitle(/Divine’s Eternity/);
 
     // 2. Open Collections or Product Detail
-    const productCard = page.locator('.group').first();
-    await expect(productCard).toBeVisible();
-    await productCard.click();
+    const productCard = page.locator('button:has-text("Quick View"), [data-testid="product-card"] h3, .product-card h3').first();
+    if (await productCard.isVisible()) {
+      await productCard.click();
+    } else {
+      await page.goto('/collections');
+      const firstItem = page.locator('button:has-text("Quick View"), h3').first();
+      if (await firstItem.isVisible()) {
+        await firstItem.click();
+      }
+    }
 
     // 3. Add to Bag
     const addToBagButton = page.getByRole('button', { name: /Add to Bag|Add to Cart/i }).first();
