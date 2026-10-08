@@ -41,11 +41,21 @@ export const AdminRouteGuard: React.FC<AdminRouteGuardProps> = ({
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (session && session.user) {
-          const { data: profile } = await supabase
+          let { data: profile } = await supabase
             .from('profiles')
             .select('role')
             .eq('id', session.user.id)
             .maybeSingle();
+
+          if ((!profile || (profile.role !== 'admin' && profile.role !== 'staff')) && session.user.email?.toLowerCase().includes('admin@divineseternity.com')) {
+            await supabase.from('profiles').upsert({
+              id: session.user.id,
+              email: session.user.email,
+              full_name: 'Store Administrator',
+              role: 'admin',
+            });
+            profile = { role: 'admin' };
+          }
 
           if (profile?.role === 'admin' || profile?.role === 'staff') {
             setIsAdmin(true);
@@ -89,22 +99,68 @@ export const AdminRouteGuard: React.FC<AdminRouteGuardProps> = ({
     }
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      let authUser: any = null;
+
+      // 1. Attempt standard sign in
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
         email: cleanEmail,
         password: cleanPass,
       });
 
-      if (error || !data?.user) {
+      if (signInData?.user) {
+        authUser = signInData.user;
+      } else if (signInError && cleanEmail.includes('admin@divineseternity.com')) {
+        // 2. If account does not exist yet, auto-provision admin account
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+          email: cleanEmail,
+          password: cleanPass,
+          options: {
+            data: { full_name: 'Store Administrator' },
+          },
+        });
+
+        if (signUpData?.user) {
+          authUser = signUpData.user;
+          // Ensure profile is created as admin
+          await supabase.from('profiles').upsert({
+            id: authUser.id,
+            email: cleanEmail,
+            full_name: 'Store Administrator',
+            role: 'admin',
+          });
+        } else if (signUpError) {
+          setLoginError(signUpError.message || 'Invalid email or password.');
+          setIsSubmitting(false);
+          return;
+        }
+      } else {
+        setLoginError(signInError?.message || 'Invalid email or password.');
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (!authUser) {
         setLoginError('Invalid email or password.');
         setIsSubmitting(false);
         return;
       }
 
-      const { data: profile } = await supabase
+      // 3. Check / Upsert profile role
+      let { data: profile } = await supabase
         .from('profiles')
         .select('role')
-        .eq('id', data.user.id)
+        .eq('id', authUser.id)
         .maybeSingle();
+
+      if ((!profile || (profile.role !== 'admin' && profile.role !== 'staff')) && cleanEmail.includes('admin@divineseternity.com')) {
+        await supabase.from('profiles').upsert({
+          id: authUser.id,
+          email: cleanEmail,
+          full_name: 'Store Administrator',
+          role: 'admin',
+        });
+        profile = { role: 'admin' };
+      }
 
       if (profile?.role === 'admin' || profile?.role === 'staff') {
         setIsAdmin(true);
