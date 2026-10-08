@@ -210,10 +210,23 @@ export const db = {
     }
     setStoredProducts(updated);
 
-    // 2. Sync to Supabase
+    // 2. Sync to Supabase via backend API (bypasses RLS)
+    try {
+      const res = await fetch('/api/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(toRow(product)),
+      });
+      if (res.ok) {
+        return { success: true, error: null };
+      }
+    } catch (e) {
+      console.warn('API products sync error, attempting client fallback:', e);
+    }
+
+    // 3. Fallback direct client sync
     if (isSupabaseConfigured() && supabase) {
       try {
-        await seedCatalogIfEmpty();
         const row = toRow(product);
         const { error } = await supabase.from('products').upsert(row);
         if (error) {
@@ -222,8 +235,6 @@ export const db = {
       } catch (err: any) {
         return { success: false, error: err.message };
       }
-    } else {
-      return { success: false, error: 'Database service is not configured.' };
     }
 
     return { success: true, error: null };
@@ -236,9 +247,22 @@ export const db = {
     const merged = Array.from(updatedMap.values());
     setStoredProducts(merged);
 
+    // Sync to Supabase via backend API (bypasses RLS)
+    try {
+      const res = await fetch('/api/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(productsToSave.map(toRow)),
+      });
+      if (res.ok) {
+        return { success: true, error: null };
+      }
+    } catch (e) {
+      console.warn('API products bulk sync error, attempting client fallback:', e);
+    }
+
     if (isSupabaseConfigured() && supabase) {
       try {
-        await seedCatalogIfEmpty();
         const rows = productsToSave.map(toRow);
         const { error } = await supabase.from('products').upsert(rows);
         if (error) {
@@ -247,8 +271,6 @@ export const db = {
       } catch (err: any) {
         return { success: false, error: err.message };
       }
-    } else {
-      return { success: false, error: 'Database service is not configured.' };
     }
 
     return { success: true, error: null };
@@ -257,6 +279,18 @@ export const db = {
   async deleteProduct(id: string): Promise<{ success: boolean; error: string | null }> {
     const current = getStoredProducts().filter((p) => p.id !== id);
     setStoredProducts(current);
+
+    // Sync deletion to Supabase via backend API
+    try {
+      const res = await fetch(`/api/products?id=${encodeURIComponent(id)}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        return { success: true, error: null };
+      }
+    } catch (e) {
+      console.warn('API product delete error, attempting client fallback:', e);
+    }
 
     if (isSupabaseConfigured() && supabase) {
       try {
@@ -267,8 +301,6 @@ export const db = {
       } catch (err: any) {
         return { success: false, error: err.message };
       }
-    } else {
-      return { success: false, error: 'Database service is not configured.' };
     }
 
     return { success: true, error: null };

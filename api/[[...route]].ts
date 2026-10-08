@@ -18,6 +18,7 @@ import cartSaveHandler from '../server/handlers/cart-save';
 import pincodeCheckHandler from '../server/handlers/pincode-check';
 import reviewHandler from '../server/handlers/review';
 import notifyHandler from '../server/handlers/notify';
+import productsHandler from '../server/handlers/products';
 
 export function resolveApiPath(req: Request): { routeName: string; subRoute?: string } {
   let pathStr = '';
@@ -108,6 +109,9 @@ export default async function handler(req: Request, res: Response) {
 
     case 'review':
       return reviewHandler(req, res);
+
+    case 'products':
+      return productsHandler(req, res);
 
     case 'notify':
       return notifyHandler(req, res);
