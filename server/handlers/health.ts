@@ -3,6 +3,10 @@ import { supabaseAdmin, isSupabaseAdminConfigured } from '../lib/supabaseAdmin';
 import { BUSINESS_CONFIG } from '../../src/config/business';
 
 export default async function handler(req: Request, res: Response) {
+  if (req.method !== 'GET' && req.method !== 'HEAD') {
+    return res.status(405).json({ success: false, error: 'Method not allowed' });
+  }
+
   let dbStatus = 'disconnected';
   let dbLatencyMs: number | null = null;
   let dbError: string | null = null;

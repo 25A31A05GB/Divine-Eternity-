@@ -17,6 +17,7 @@ import newsletterHandler from '../server/handlers/newsletter';
 import cartSaveHandler from '../server/handlers/cart-save';
 import pincodeCheckHandler from '../server/handlers/pincode-check';
 import reviewHandler from '../server/handlers/review';
+import notifyHandler from '../server/handlers/notify';
 
 export function resolveApiPath(req: Request): { routeName: string; subRoute?: string } {
   let pathStr = '';
@@ -107,6 +108,15 @@ export default async function handler(req: Request, res: Response) {
 
     case 'review':
       return reviewHandler(req, res);
+
+    case 'notify':
+      return notifyHandler(req, res);
+
+    case '_lib':
+      if (subRoute === 'notify') {
+        return notifyHandler(req, res);
+      }
+      return res.status(404).json({ success: false, error: 'Endpoint not found' });
 
     default:
       return res.status(404).json({

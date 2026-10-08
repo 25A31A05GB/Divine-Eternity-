@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import { supabaseAdmin } from '../_lib/supabaseAdmin';
+import { supabaseAdmin } from '../../server/lib/supabaseAdmin';
 import { BUSINESS_CONFIG } from '../../src/config/business';
 
 export default async function handler(req: Request, res: Response) {
