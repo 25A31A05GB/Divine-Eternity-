@@ -84,7 +84,7 @@ export default async function handler(req: Request, res: Response) {
       let razorpayOrderId: string | undefined;
 
       if (!isCOD) {
-        const keyId = process.env.VITE_RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID;
+        const keyId = process.env.RAZORPAY_KEY_ID || process.env.VITE_RAZORPAY_KEY_ID;
         const keySecret = process.env.RAZORPAY_KEY_SECRET;
 
         if (keyId && keySecret) {

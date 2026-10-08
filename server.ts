@@ -234,7 +234,7 @@ app.post(['/api/create-order', '/api/orders'], rateLimiter(20, 60000), async (re
   const isCOD = paymentMethod === 'COD' || paymentMethod === 'Cash on Delivery';
 
   if (!isCOD) {
-    const keyId = process.env.VITE_RAZORPAY_KEY_ID;
+    const keyId = process.env.RAZORPAY_KEY_ID || process.env.VITE_RAZORPAY_KEY_ID;
     const keySecret = process.env.RAZORPAY_KEY_SECRET;
 
     if (keyId && keySecret) {

@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { createClient } from '@supabase/supabase-js';
+import { INITIAL_PRODUCTS } from '../src/data/products';
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
@@ -26,7 +27,7 @@ const STATIC_ROUTES = [
 ];
 
 async function generateSitemap() {
-  console.log('[sitemap] Generating sitemap with dynamic Supabase products...');
+  console.log('[sitemap] Generating sitemap...');
   const today = new Date().toISOString().split('T')[0];
   let productUrls: string[] = [];
 
@@ -38,7 +39,9 @@ async function generateSitemap() {
         .select('slug, updated_at')
         .eq('is_active', true);
 
-      if (!error && data) {
+      if (error) {
+        console.error('[sitemap] Supabase products query error:', error.message || error);
+      } else if (data && data.length > 0) {
         productUrls = data
           .filter((p) => p.slug)
           .map((p) => `  <url>
@@ -48,14 +51,28 @@ async function generateSitemap() {
     <priority>0.8</priority>
   </url>`);
         console.log(`[sitemap] Found ${data.length} active products from Supabase.`);
-      } else if (error) {
-        console.warn('[sitemap] Supabase products query error:', error.message);
+      } else {
+        console.warn('[sitemap] Supabase returned 0 active products.');
       }
     } catch (e: any) {
-      console.warn('[sitemap] Supabase connection failed:', e.message);
+      console.warn('[sitemap] Supabase connection failed:', e?.message || e);
     }
   } else {
-    console.log('[sitemap] Supabase credentials not set, generating static sitemap.');
+    console.log('[sitemap] Supabase credentials not set or incomplete.');
+  }
+
+  // Fallback to static catalog products if Supabase returns 0 rows or query errors
+  if (productUrls.length === 0) {
+    console.log(`[sitemap] Falling back to ${INITIAL_PRODUCTS.length} static products from src/data/products.ts...`);
+    productUrls = INITIAL_PRODUCTS
+      .filter((p) => p.slug)
+      .map((p) => `  <url>
+    <loc>${DOMAIN}/product/${encodeURIComponent(p.slug)}</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>`);
+    console.log(`[sitemap] Successfully added ${productUrls.length} fallback product URLs.`);
   }
 
   const staticXml = STATIC_ROUTES.map(
@@ -74,15 +91,19 @@ ${productUrls.join('\n')}
 </urlset>
 `;
 
-  const publicDir = path.resolve(process.cwd(), 'public');
-  if (!fs.existsSync(publicDir)) {
-    fs.mkdirSync(publicDir, { recursive: true });
+  try {
+    const publicDir = path.resolve(process.cwd(), 'public');
+    if (!fs.existsSync(publicDir)) {
+      fs.mkdirSync(publicDir, { recursive: true });
+    }
+    const sitemapPath = path.join(publicDir, 'sitemap.xml');
+    fs.writeFileSync(sitemapPath, sitemapXml, 'utf-8');
+    console.log(`[sitemap] Successfully written to ${sitemapPath}`);
+  } catch (fsErr: any) {
+    console.error('[sitemap] Non-fatal file write error:', fsErr?.message || fsErr);
   }
-  const sitemapPath = path.join(publicDir, 'sitemap.xml');
-  fs.writeFileSync(sitemapPath, sitemapXml, 'utf-8');
-  console.log(`[sitemap] Successfully written to ${sitemapPath}`);
 }
 
 generateSitemap().catch((err) => {
-  console.error('[sitemap] Failed to generate sitemap:', err);
+  console.error('[sitemap] Non-fatal sitemap generation error:', err);
 });
