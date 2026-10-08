@@ -196,7 +196,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         .select('*')
         .order('created_at', { ascending: false });
       if (error) {
-        console.error('Error fetching creator applications', error);
+        console.warn('Note fetching creator applications:', error.message || error);
         return;
       }
       if (data && data.length > 0) {
@@ -225,7 +225,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         .select('*')
         .order('created_at', { ascending: false });
       if (error) {
-        console.error('Error fetching personalization requests', error);
+        console.warn('Note fetching personalization requests:', error.message || error);
         return;
       }
       if (data) {
@@ -245,7 +245,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         .select('*')
         .order('created_at', { ascending: false });
       if (error) {
-        console.error('Error loading reviews from Supabase', error);
+        console.warn('Note loading reviews from Supabase:', error.message || error);
         return;
       }
       if (data) {
@@ -2597,11 +2597,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {pendingReviews.map((rev) => {
+                    {pendingReviews.map((rev, idx) => {
                       const prod = products.find((p) => p.id === rev.product_id);
                       return (
                         <div
-                          key={rev.id}
+                          key={`${rev.id}-${idx}`}
                           className="bg-white dark:bg-[#181418] rounded-2xl border border-amber-200 dark:border-amber-900 p-4 shadow-sm flex flex-col justify-between gap-3"
                         >
                           <div className="space-y-1.5">
@@ -2663,9 +2663,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <h4 className="font-serif font-bold text-sm text-stone-700 dark:text-stone-300">
                   Published & Live Testimonials
                 </h4>
-                {allReviewsList.map((rev) => (
+                {allReviewsList.map((rev, idx) => (
                   <div
-                    key={rev.id}
+                    key={`${rev.id}-${idx}`}
                     className="bg-white dark:bg-[#181418] rounded-2xl border border-[#EFE7DE] dark:border-[#2C242A] p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xs"
                   >
                     <div className="space-y-1.5 flex-1">

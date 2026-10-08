@@ -58,8 +58,7 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           .eq('user_id', user.id);
 
         if (fetchErr) {
-          console.error('Failed to load wishlist from Supabase', fetchErr);
-          setError(`Supabase Wishlist Error: ${fetchErr.message}`);
+          console.warn('Failed to load wishlist from Supabase, using local cache:', fetchErr.message || fetchErr);
           return;
         }
 
@@ -87,8 +86,7 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             .upsert(rowsToInsert);
 
           if (insertErr) {
-            console.error('Failed to merge local wishlist to Supabase', insertErr);
-            setError(`Supabase Wishlist Sync Error: ${insertErr.message}`);
+            console.warn('Failed to merge local wishlist to Supabase:', insertErr.message || insertErr);
           } else {
             // Local guest items successfully merged into remote database
             try {

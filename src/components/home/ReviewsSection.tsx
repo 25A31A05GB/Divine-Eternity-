@@ -126,9 +126,9 @@ export const ReviewsSection: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-            {allReviewsList.slice(currentReviewIdx, currentReviewIdx + 4).map((rev) => (
+            {allReviewsList.slice(currentReviewIdx, currentReviewIdx + 4).map((rev, idx) => (
               <div
-                key={rev.id}
+                key={`${rev.productId || 'item'}-${rev.id}-${currentReviewIdx + idx}`}
                 className="bg-white p-6 rounded-2xl border border-[#F3E8E2] shadow-xs flex flex-col justify-between space-y-4"
               >
                 <div>

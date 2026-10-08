@@ -458,13 +458,13 @@ export const ProductReviews: React.FC<ProductReviewsProps> = ({ product, classNa
             </button>
           </div>
         ) : (
-          displayReviews.map((rev) => {
+          displayReviews.map((rev, idx) => {
             const hasLiked = !!likedReviews[rev.id];
             const authorInitial = rev.author ? rev.author.charAt(0).toUpperCase() : 'C';
 
             return (
               <div
-                key={rev.id}
+                key={`${rev.id}-${idx}`}
                 className="bg-[#FFFDF8] rounded-2xl border border-[#F3E8E2] p-5 sm:p-6 transition-all hover:border-[#FF2E93]/40 hover:shadow-sm space-y-3"
               >
                 {/* Review Header: User Info & Rating */}

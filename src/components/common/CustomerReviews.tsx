@@ -364,9 +364,9 @@ export const CustomerReviews: React.FC<CustomerReviewsProps> = ({
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {filteredAndSortedReviews.map((rev) => (
+            {filteredAndSortedReviews.map((rev, idx) => (
               <div
-                key={rev.id}
+                key={`${rev.id}-${idx}`}
                 className="bg-white rounded-3xl border border-[#F3E8E2] p-6 space-y-4 hover:shadow-md transition-shadow flex flex-col justify-between"
               >
                 <div className="space-y-3">

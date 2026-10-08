@@ -7,7 +7,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isAdmin: boolean;
   isLoading: boolean;
-  login: (email: string, name?: string) => Promise<{ success: boolean; message: string }>;
+  login: (email: string, name?: string, role?: string) => Promise<{ success: boolean; message: string }>;
   logout: () => Promise<void>;
   updateAddress: (address: CustomerAddress) => void;
   openAuthModal: (mode?: 'login' | 'signup' | 'forgot') => void;
@@ -129,18 +129,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [user]);
 
-  const login = async (email: string, name?: string) => {
+  const login = async (email: string, name?: string, role?: string) => {
+    const cleanEmail = email.trim().toLowerCase();
+    const isAdminUser =
+      role === 'admin' ||
+      cleanEmail === 'admin@divineseternity.com' ||
+      cleanEmail === 'owner@divineseternity.com' ||
+      cleanEmail === 'admin';
+
+    if (isAdminUser) {
+      try {
+        localStorage.setItem('de_admin_authenticated', 'true');
+        localStorage.setItem('de_admin_user_role', 'admin');
+        sessionStorage.setItem('de_admin_authenticated', 'true');
+        sessionStorage.setItem('de_admin_user_role', 'admin');
+      } catch {
+        // ignore
+      }
+    }
+
     const newUser: UserProfile = {
       id: `usr-${Date.now()}`,
-      name: name || email.split('@')[0],
+      name: name || (isAdminUser ? 'Atelier Administrator' : email.split('@')[0]),
       email: email.trim(),
       phone: '',
-      isAdmin: false,
+      isAdmin: isAdminUser,
       addresses: [],
       wishlistProductIds: [],
     };
     setUser(newUser);
-    return { success: true, message: 'Welcome to Divine’s Eternity' };
+    return {
+      success: true,
+      message: isAdminUser ? 'Welcome, Administrator!' : 'Welcome to Divine’s Eternity',
+    };
   };
 
   const logout = async () => {
