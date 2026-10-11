@@ -1,23 +1,16 @@
 import type { Request, Response } from 'express';
-import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
 
 // Upstash Redis instance (initialized if environment variables exist)
 const redisUrl = process.env.UPSTASH_REDIS_REST_URL;
 const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
 
-let upstashRatelimit: Ratelimit | null = null;
+let redisClient: Redis | null = null;
 if (redisUrl && redisToken) {
   try {
-    const redis = new Redis({
+    redisClient = new Redis({
       url: redisUrl,
       token: redisToken,
-    });
-    upstashRatelimit = new Ratelimit({
-      redis,
-      limiter: Ratelimit.slidingWindow(20, '60 s'),
-      analytics: true,
-      prefix: '@upstash/ratelimit/de',
     });
   } catch (err) {
     console.warn('Upstash Redis initialization warning, using in-memory fallback:', err);
@@ -32,10 +25,14 @@ export function rateLimit(limit: number, windowMs: number) {
     const ip = (req.headers['x-forwarded-for'] as string) || req.socket?.remoteAddress || '127.0.0.1';
 
     // 1. Try Upstash Redis if configured
-    if (upstashRatelimit) {
+    if (redisClient) {
       try {
-        const { success } = await upstashRatelimit.limit(ip);
-        if (!success) {
+        const key = `@upstash/ratelimit/de:${ip}`;
+        const count = await redisClient.incr(key);
+        if (count === 1) {
+          await redisClient.expire(key, Math.ceil(windowMs / 1000));
+        }
+        if (count > limit) {
           return res.status(429).json({
             success: false,
             error: 'Too many requests. Please try again after some time.',
